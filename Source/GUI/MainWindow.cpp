@@ -5,9 +5,22 @@
 
 MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colours::lightgrey, DocumentWindow::allButtons)
 {
-    setSize (400, 300);
-    setUsingNativeTitleBar (true);
-    centreWithSize (300, 200);
+    setUsingNativeTitleBar(true);
+    setResizable(true, true);
+    setSize(600, 400);
+
+    // Ajoute les boutons de navigation
+    addAndMakeVisible(&buttonPage1);
+    addAndMakeVisible(&buttonPage2);
+
+    buttonPage1.setButtonText(juce::String("Aller à la page de login"));
+    buttonPage2.setButtonText("Aller à la page Main");
+
+    buttonPage1.onClick = [this] { navigateToLoginPage(); };
+    buttonPage2.onClick = [this] { navigateToMainPage(); };
+
+    // Initialise avec la Page 1
+    navigateToLoginPage();
     setVisible (true);
 }
 
@@ -28,5 +41,26 @@ void MainWindow::paint(juce::Graphics& g)
 
 void MainWindow::resized()
 {
+    auto area = getLocalBounds();
+    auto buttonHeight = 40;
 
+    buttonPage1.setBounds(area.removeFromTop(buttonHeight).reduced(10));
+    buttonPage2.setBounds(area.removeFromTop(buttonHeight).reduced(10));
+
+    if (currentPage != nullptr)
+        currentPage->setBounds(area);
+}
+
+void MainWindow::navigateToLoginPage()
+{
+    currentPage = std::make_unique<LoginPageComponent>();
+    addAndMakeVisible(currentPage.get());
+    resized(); // Réorganise la disposition
+}
+
+void MainWindow::navigateToMainPage()
+{
+    currentPage = std::make_unique<MainPageComponent>();
+    addAndMakeVisible(currentPage.get());
+    resized(); // Réorganise la disposition
 }

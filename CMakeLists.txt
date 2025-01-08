@@ -35,6 +35,10 @@ set(SourceFiles
         Source/MainAudioProcessor.h
         Source/GUI/MainWindow.cpp
         Source/GUI/MainWindow.h
+        Source/GUI/MainPageComponent.cpp
+        Source/GUI/MainPageComponent.h
+        Source/GUI/LoginPageComponent.cpp
+        Source/GUI/LoginPageComponent.h
 )
 
 # Change these to your own preferences
