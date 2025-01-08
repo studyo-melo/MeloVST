@@ -29,10 +29,12 @@ CPMAddPackage(
 
 # Make sure you include any new source files here
 set(SourceFiles
-        Source/PluginEditor.cpp
-        Source/PluginEditor.h
-        Source/PluginProcessor.cpp
-        Source/PluginProcessor.h
+        Source/MainApplication.cpp
+        Source/MainApplication.h
+        Source/MainAudioProcessor.cpp
+        Source/MainAudioProcessor.h
+        Source/GUI/MainWindow.cpp
+        Source/GUI/MainWindow.h
 )
 
 # Change these to your own preferences
