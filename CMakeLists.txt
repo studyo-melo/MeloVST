@@ -6,6 +6,8 @@ project(MeloVST VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # We're going to use CPM as our package manager to bring in JUCE
@@ -29,6 +31,8 @@ CPMAddPackage(
 
 # Make sure you include any new source files here
 set(SourceFiles
+        Source/Utils.h
+        Source/Constants.h
         Source/MainApplication.cpp
         Source/MainApplication.h
         Source/MainAudioProcessor.cpp
@@ -39,6 +43,11 @@ set(SourceFiles
         Source/GUI/MainPageComponent.h
         Source/GUI/LoginPageComponent.cpp
         Source/GUI/LoginPageComponent.h
+        Source/API/ApiRoutes.h
+        Source/API/MeloApiService.cpp
+        Source/API/MeloApiService.h
+        Source/API/MeloWebSocketService.cpp
+        Source/API/MeloWebSocketService.h
 )
 
 # Change these to your own preferences

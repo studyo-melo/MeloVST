@@ -9,7 +9,7 @@ class LoginPageComponent: public juce::Component
 public:
     LoginPageComponent();
     ~LoginPageComponent() override;
-    void onLoginButtonClick();
+    void onLoginButtonClick() const;
     void resized() override;
     void paint(juce::Graphics &g) override;
 

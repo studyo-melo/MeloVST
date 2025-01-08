@@ -2,6 +2,7 @@
 // Created by Padoa on 08/01/2025.
 //
 #include "LoginPageComponent.h"
+#include "../API/MeloApiService.h"
 
 LoginPageComponent::LoginPageComponent() {
     addAndMakeVisible(title);
@@ -42,18 +43,24 @@ void LoginPageComponent::resized() {
     loginButton.setBounds(area.removeFromTop(fieldHeight));
 }
 
-void LoginPageComponent::onLoginButtonClick() {
-    juce::String username = usernameField.getText();
+void LoginPageComponent::onLoginButtonClick() const {
+    juce::String email = usernameField.getText();
     juce::String password = passwordField.getText();
 
+    juce::StringPairArray jsonBody;
+    jsonBody.set("email", email);
+    jsonBody.set("password", password);
+
+    MeloApiService::getInstance().makePOSTRequest(ApiRoute::PostLogin, jsonBody);
+
     // Logique de validation (par exemple, vérifier les informations)
-    if (username == "admin" && password == "password") {
-        juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::InfoIcon,
-            "Connexion réussie", "Bienvenue, " + username);
-    } else {
-        juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
-            "Erreur de connexion", "Nom d'utilisateur ou mot de passe incorrect.");
-    }
+    // if (username == "admin" && password == "password") {
+    //     juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::InfoIcon,
+    //         "Connexion réussie", "Bienvenue, " + username);
+    // } else {
+    //     juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
+    //         "Erreur de connexion", "Nom d'utilisateur ou mot de passe incorrect.");
+    // }
 }
 
 void LoginPageComponent::paint(juce::Graphics &g) {
