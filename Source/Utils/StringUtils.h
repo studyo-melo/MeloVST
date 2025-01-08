@@ -1,7 +1,7 @@
 #pragma once
 #include <juce_core/juce_core.h>
 
-namespace Utils {
+namespace StringUtils {
     static juce::String convertStringPairArrayToPOSTData(const juce::StringPairArray& parameters)
     {
         juce::StringArray parameterStrings;

@@ -19,7 +19,7 @@ juce::String MeloApiService::makePOSTRequest(const ApiRoute route, const juce::S
 {
     return makeHttpRequest(route, [&body](juce::URL& url, juce::URL::InputStreamOptions& options) {
         options.withHttpRequestCmd("POST");
-        const auto postData = Utils::convertStringPairArrayToPOSTData(body);
+        const auto postData = StringUtils::convertStringPairArrayToPOSTData(body);
         url = url.withPOSTData(postData);
     });
 }

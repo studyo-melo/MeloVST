@@ -19,8 +19,6 @@ public:
 
 private:
    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
-    juce::TextButton buttonPage1;
-    juce::TextButton buttonPage2;
 
     std::unique_ptr<juce::Component> currentPage;
     void navigateToLoginPage();

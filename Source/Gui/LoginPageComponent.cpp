@@ -2,6 +2,7 @@
 // Created by Padoa on 08/01/2025.
 //
 #include "LoginPageComponent.h"
+#include "../Api/MeloApiService.h"
 
 LoginPageComponent::LoginPageComponent() {
     addAndMakeVisible(title);
@@ -19,19 +20,18 @@ LoginPageComponent::LoginPageComponent() {
     passwordLabel.setText("Mot de passe:", juce::dontSendNotification);
 
     addAndMakeVisible(passwordField);
-    passwordField.setPasswordCharacter('*'); // Masquer les caractères du mot de passe
+    passwordField.setPasswordCharacter('*');  // Masquer les caractères du mot de passe
 
     // Créer le bouton de connexion
     addAndMakeVisible(loginButton);
     loginButton.setButtonText("Se connecter");
     loginButton.onClick = [this] { onLoginButtonClick(); };
-
 }
 
 LoginPageComponent::~LoginPageComponent() = default;
 
 void LoginPageComponent::resized() {
-    auto area = getLocalBounds().reduced(20); // Ajouter un peu de padding
+    auto area = getLocalBounds().reduced(20);  // Ajouter un peu de padding
     int fieldHeight = 40;
 
     usernameLabel.setBounds(area.removeFromTop(fieldHeight));

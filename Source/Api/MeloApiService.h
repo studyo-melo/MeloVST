@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ApiRoutes.h"
-#include "../Utils.h"
+#include "../Utils/StringUtils.h"
 
 class MeloApiService
 {

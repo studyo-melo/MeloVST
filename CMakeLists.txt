@@ -31,25 +31,26 @@ CPMAddPackage(
 
 # Make sure you include any new source files here
 set(SourceFiles
-        Source/Utils.h
-        Source/Constants.h
+        Source/Utils/StringUtils.h
+        Source/Utils/Constants.h
+        Source/Utils/JuceLocalStorage.h
         Source/MainApplication.cpp
         Source/MainApplication.h
         Source/MainAudioProcessor.cpp
         Source/MainAudioProcessor.h
-        Source/GUI/MainWindow.cpp
-        Source/GUI/MainWindow.h
-        Source/GUI/MainPageComponent.cpp
-        Source/GUI/MainPageComponent.h
-        Source/GUI/LoginPageComponent.cpp
-        Source/GUI/LoginPageComponent.h
-        Source/API/ApiRoutes.h
-        Source/API/MeloApiService.cpp
-        Source/API/MeloApiService.h
-        Source/API/MeloWebSocketService.cpp
-        Source/API/MeloWebSocketService.h
-        Source/API/AuthService.cpp
-        Source/API/AuthService.h
+        Source/Gui/MainWindow.cpp
+        Source/Gui/MainWindow.h
+        Source/Gui/MainPageComponent.cpp
+        Source/Gui/MainPageComponent.h
+        Source/Gui/LoginPageComponent.cpp
+        Source/Gui/LoginPageComponent.h
+        Source/Api/ApiRoutes.h
+        Source/Api/MeloApiService.cpp
+        Source/Api/MeloApiService.h
+        Source/Api/MeloWebSocketService.cpp
+        Source/Api/MeloWebSocketService.h
+        Source/Api/AuthService.cpp
+        Source/Api/AuthService.h
 )
 
 # Change these to your own preferences

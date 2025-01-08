@@ -9,18 +9,15 @@ MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colo
     setResizable(true, true);
     setSize(600, 400);
 
-    // Ajoute les boutons de navigation
-    addAndMakeVisible(&buttonPage1);
-    addAndMakeVisible(&buttonPage2);
+    auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
+    juce::Logger::outputDebugString("Access Token From Main Page: " + accessToken);
+    if (accessToken.isEmpty()) {
+        navigateToLoginPage();
+    }
+    else {
+        navigateToMainPage();
+    }
 
-    buttonPage1.setButtonText(juce::String("Aller à la page de login"));
-    buttonPage2.setButtonText("Aller à la page Main");
-
-    buttonPage1.onClick = [this] { navigateToLoginPage(); };
-    buttonPage2.onClick = [this] { navigateToMainPage(); };
-
-    // Initialise avec la Page 1
-    navigateToLoginPage();
     setVisible (true);
 }
 
@@ -42,10 +39,6 @@ void MainWindow::paint(juce::Graphics& g)
 void MainWindow::resized()
 {
     auto area = getLocalBounds();
-    auto buttonHeight = 40;
-
-    buttonPage1.setBounds(area.removeFromTop(buttonHeight).reduced(10));
-    buttonPage2.setBounds(area.removeFromTop(buttonHeight).reduced(10));
 
     if (currentPage != nullptr)
         currentPage->setBounds(area);

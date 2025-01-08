@@ -1,6 +1,6 @@
 #include "MainAudioProcessor.h"
 #include "MainApplication.h"
-#include "GUI/MainWindow.h"
+#include "Gui/MainWindow.h"
 
 //==============================================================================
 MainApplication::MainApplication (MainAudioProcessor& p):

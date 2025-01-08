@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MainAudioProcessor.h"
-#include "GUI/MainWindow.h"
+#include "Gui/MainWindow.h"
 #include <memory>
 
 //==============================================================================

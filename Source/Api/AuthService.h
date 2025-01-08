@@ -2,7 +2,8 @@
 
 #include <juce_core/juce_core.h>
 #include "MeloApiService.h"
-#include "../Utils.h"
+#include "../Utils/StringUtils.h"
+#include "../Utils/JuceLocalStorage.h"
 
 class AuthService
 {
