@@ -48,6 +48,8 @@ set(SourceFiles
         Source/API/MeloApiService.h
         Source/API/MeloWebSocketService.cpp
         Source/API/MeloWebSocketService.h
+        Source/API/AuthService.cpp
+        Source/API/AuthService.h
 )
 
 # Change these to your own preferences

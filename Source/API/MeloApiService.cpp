@@ -1,6 +1,8 @@
 #include "MeloApiService.h"
 
-MeloApiService::MeloApiService() {
+MeloApiService &MeloApiService::getInstance() {
+    static MeloApiService instance;
+    return instance;
 }
 
 // Méthode GET
@@ -59,15 +61,4 @@ juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig
 juce::String MeloApiService::buildApiUrl(const ApiRoute route)
 {
     return Constants::apiUrl + getApiRouteString(route);
-}
-
-// Méthode de traitement des réponses
-void MeloApiService::handleResponse(const juce::String& response)
-{
-    DBG(response); // Vous pouvez personnaliser ce traitement
-}
-
-MeloApiService &MeloApiService::getInstance() {
-    static MeloApiService instance;
-    return instance;
 }

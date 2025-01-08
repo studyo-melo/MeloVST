@@ -14,4 +14,29 @@ namespace Utils {
 
         return parameterStrings.joinIntoString("&");
     }
+
+    static juce::StringPairArray parseJsonStringToKeyPair(const juce::String& jsonString)
+    {
+        juce::StringPairArray keyPairArray;
+
+        // Parse la chaîne JSON en un objet var
+        juce::var parsedJson = juce::JSON::parse(jsonString);
+
+        if (auto* jsonObject = parsedJson.getDynamicObject())
+        {
+            // Parcours des propriétés avec begin() et end()
+            for (const auto & it : jsonObject->getProperties())
+            {
+                juce::String key = it.name.toString();
+                juce::String value = it.value.toString();
+                keyPairArray.set(key, value);
+            }
+        }
+        else
+        {
+            juce::Logger::writeToLog("Invalid JSON or not an object: " + jsonString);
+        }
+
+        return keyPairArray;
+    }
 }

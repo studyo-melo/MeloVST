@@ -14,13 +14,8 @@ public:
 private:
     template <typename RequestConfig>
     juce::String makeHttpRequest(ApiRoute route, RequestConfig configureRequest);
-    static void handleResponse(const juce::String& response);
     static juce::String buildApiUrl(ApiRoute route);
-
-
-private:
-    MeloApiService();
-
+    MeloApiService() {};
     MeloApiService(const MeloApiService&) = delete;
     MeloApiService& operator=(const MeloApiService&) = delete;
 };

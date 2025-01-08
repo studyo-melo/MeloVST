@@ -2,7 +2,6 @@
 // Created by Padoa on 08/01/2025.
 //
 #include "LoginPageComponent.h"
-#include "../API/MeloApiService.h"
 
 LoginPageComponent::LoginPageComponent() {
     addAndMakeVisible(title);
@@ -20,18 +19,19 @@ LoginPageComponent::LoginPageComponent() {
     passwordLabel.setText("Mot de passe:", juce::dontSendNotification);
 
     addAndMakeVisible(passwordField);
-    passwordField.setPasswordCharacter('*');  // Masquer les caractères du mot de passe
+    passwordField.setPasswordCharacter('*'); // Masquer les caractères du mot de passe
 
     // Créer le bouton de connexion
     addAndMakeVisible(loginButton);
     loginButton.setButtonText("Se connecter");
     loginButton.onClick = [this] { onLoginButtonClick(); };
+
 }
 
 LoginPageComponent::~LoginPageComponent() = default;
 
 void LoginPageComponent::resized() {
-    auto area = getLocalBounds().reduced(20);  // Ajouter un peu de padding
+    auto area = getLocalBounds().reduced(20); // Ajouter un peu de padding
     int fieldHeight = 40;
 
     usernameLabel.setBounds(area.removeFromTop(fieldHeight));
@@ -44,23 +44,7 @@ void LoginPageComponent::resized() {
 }
 
 void LoginPageComponent::onLoginButtonClick() const {
-    juce::String email = usernameField.getText();
-    juce::String password = passwordField.getText();
-
-    juce::StringPairArray jsonBody;
-    jsonBody.set("email", email);
-    jsonBody.set("password", password);
-
-    MeloApiService::getInstance().makePOSTRequest(ApiRoute::PostLogin, jsonBody);
-
-    // Logique de validation (par exemple, vérifier les informations)
-    // if (username == "admin" && password == "password") {
-    //     juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::InfoIcon,
-    //         "Connexion réussie", "Bienvenue, " + username);
-    // } else {
-    //     juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
-    //         "Erreur de connexion", "Nom d'utilisateur ou mot de passe incorrect.");
-    // }
+    AuthService::getInstance().login(usernameField.getText(), passwordField.getText());
 }
 
 void LoginPageComponent::paint(juce::Graphics &g) {
