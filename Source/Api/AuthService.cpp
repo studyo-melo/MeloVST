@@ -13,11 +13,11 @@ juce::String AuthService::login(const juce::String& email, const juce::String& p
     jsonBody.set("password", password);
 
     auto res = MeloApiService::getInstance().makePOSTRequest(ApiRoute::PostLogin, jsonBody);
+    juce::Logger::outputDebugString("Réponse de la requête : " + res);
     if (res.isEmpty()) {
         return res;
     }
     auto accessToken = StringUtils::parseJsonStringToKeyPair(res).getValue("access_token", "");
-    juce::Logger::outputDebugString("Réponse de la requête : " + accessToken);
     JuceLocalStorage::getInstance().saveValue("access_token", accessToken);
     fetchUserContext();
     EventManager::getInstance().notifyLogin(accessToken);

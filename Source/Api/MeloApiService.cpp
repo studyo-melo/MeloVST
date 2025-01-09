@@ -43,7 +43,13 @@ juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig
             throw std::runtime_error("Unable to create input stream");
         }
 
-        return stream->readEntireStreamAsString();
+        auto res = stream->readEntireStreamAsString();
+        if (juce::JSON::parse(res)["error"].toString().isNotEmpty()) {
+            const juce::String message = juce::JSON::parse(res)["error"].toString();
+            juce::Logger::outputDebugString("Exception lors de la requête HTTP : " + juce::String(res));
+            throw std::runtime_error("Error from server: " + message.toStdString());
+        }
+        return res;
     }
     catch (const std::exception& e)
     {
