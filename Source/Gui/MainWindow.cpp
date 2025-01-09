@@ -11,12 +11,13 @@ MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colo
 
     auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
     juce::Logger::outputDebugString("Access Token From Main Page: " + accessToken);
-    if (accessToken.isEmpty()) {
-        navigateToLoginPage();
-    }
-    else {
-        navigateToMainPage();
-    }
+    navigateToLoginPage();
+    // if (accessToken.isEmpty()) {
+        // navigateToLoginPage();
+    // }
+    // else {
+        // navigateToMainPage();
+    // }
 
     setVisible (true);
 }
@@ -46,7 +47,7 @@ void MainWindow::resized()
 
 void MainWindow::navigateToLoginPage()
 {
-    currentPage = std::make_unique<LoginPageComponent>();
+    currentPage = std::make_unique<LoginPageComponent>([this]() { navigateToMainPage(); });
     addAndMakeVisible(currentPage.get());
     resized(); // Réorganise la disposition
 }

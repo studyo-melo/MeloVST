@@ -4,7 +4,7 @@
 #include "LoginPageComponent.h"
 #include "../Api/MeloApiService.h"
 
-LoginPageComponent::LoginPageComponent() {
+LoginPageComponent::LoginPageComponent(std::function<void()> onLogin): onLoginCallback(std::move(onLogin)) {
     addAndMakeVisible(title);
     title.setText("Bienvenue sur la Page de Login", juce::dontSendNotification);
     title.setJustificationType(juce::Justification::centred);
@@ -44,7 +44,14 @@ void LoginPageComponent::resized() {
 }
 
 void LoginPageComponent::onLoginButtonClick() const {
-    AuthService::getInstance().login(usernameField.getText(), passwordField.getText());
+    auto res = AuthService::getInstance().login(usernameField.getText(), passwordField.getText());
+    if (!res.isEmpty()) {
+        onLoginCallback();
+    }
+    else {
+        juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
+            "Erreur de connexion", "Nom d'utilisateur ou mot de passe incorrect.");
+    }
 }
 
 void LoginPageComponent::paint(juce::Graphics &g) {
