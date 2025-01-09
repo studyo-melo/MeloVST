@@ -39,8 +39,11 @@ void MainPageComponent::resized() {
 }
 
 void MainPageComponent::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
-    const auto channels = event.buffer.getNumChannels();
-    mainText.setText(juce::String(channels), juce::dontSendNotification);
+    for (int channel = 0; channel < event.totalNumInputChannels; ++channel)
+    {
+        auto* channelData = event.buffer.getWritePointer (channel);
+        mainText.setText(juce::String(*channelData), juce::dontSendNotification);
+    }
 }
 
 void MainPageComponent::paint(juce::Graphics &g) {

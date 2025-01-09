@@ -20,9 +20,8 @@ public:
         listeners.removeFirstMatchingValue(listener);
     }
 
-    void notifyAudioBlockProcessed(juce::AudioBuffer<float>& buffer)
+    void notifyAudioBlockProcessed(const AudioBlockProcessedEvent event)
     {
-        AudioBlockProcessedEvent event{ buffer };
         for (auto* listener : listeners)
         {
             listener->onAudioBlockProcessedEvent(event);
@@ -31,7 +30,7 @@ public:
 
     void notifyLogin(const juce::String& accessToken)
     {
-        LoginEvent event{ accessToken };
+        const LoginEvent event{ accessToken };
         for (auto* listener : listeners)
         {
             listener->onLoginEvent(event);
@@ -40,9 +39,8 @@ public:
 
     void notifyLogout()
     {
-        LogoutEvent event;
-        for (auto* listener : listeners)
-        {
+        for (auto* listener : listeners) {
+            constexpr LogoutEvent event;
             listener->onLogoutEvent(event);
         }
     }

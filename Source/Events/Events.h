@@ -3,6 +3,8 @@
 
 struct AudioBlockProcessedEvent {
     juce::AudioBuffer<float>& buffer;
+    int totalNumInputChannels;
+    int totalNumOutputChannels;
 };
 
 struct LoginEvent {
