@@ -16,9 +16,24 @@ inline juce::String getApiRouteString(const ApiRoute route)
 {
     switch (route)
     {
-        case ApiRoute::PostLogin:      return "/auth/login";
+        case ApiRoute::PostLogin:             return "/auth/login";
         case ApiRoute::GetMyUserContext:      return "/user-contexts";
-        case ApiRoute::GetHealth:      return "/health";
-        default:                       return "";
+        case ApiRoute::GetHealth:             return "/health";
+        default:                              return "";
+    }
+}
+
+enum class WsRoute
+{
+    GetOngoingSession,
+};
+
+
+inline juce::String getWsRouteString(const WsRoute route, const juce::String& paramId = "")
+{
+    switch (route)
+    {
+        case WsRoute::GetOngoingSession:            return "/ongoing-session/" + paramId;
+        default:                                    return "";
     }
 }
