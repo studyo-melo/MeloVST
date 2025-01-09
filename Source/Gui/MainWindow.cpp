@@ -16,6 +16,8 @@ MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colo
         navigateToLoginPage();
     }
     else {
+        AuthService::getInstance().fetchUserContext();
+        juce::Logger::outputDebugString("Got my user context From Main Page: " + AuthService::getInstance().getUserContext()->user.firstname);
         navigateToMainPage();
     }
 

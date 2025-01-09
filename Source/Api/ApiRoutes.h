@@ -7,6 +7,7 @@
 enum class ApiRoute
 {
     PostLogin,
+    GetMyUserContext,
     GetHealth
 };
 
@@ -16,6 +17,7 @@ inline juce::String getApiRouteString(const ApiRoute route)
     switch (route)
     {
         case ApiRoute::PostLogin:      return "/auth/login";
+        case ApiRoute::GetMyUserContext:      return "/user-contexts";
         case ApiRoute::GetHealth:      return "/health";
         default:                       return "";
     }

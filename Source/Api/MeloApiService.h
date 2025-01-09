@@ -2,6 +2,7 @@
 
 #include "ApiRoutes.h"
 #include "../Utils/StringUtils.h"
+#include "../Utils/JuceLocalStorage.h"
 
 class MeloApiService
 {
@@ -15,7 +16,9 @@ public:
 private:
     template <typename RequestConfig>
     juce::String makeHttpRequest(ApiRoute route, RequestConfig configureRequest);
+
+    static juce::URL::InputStreamOptions buildOptions();
     juce::String buildApiUrl(ApiRoute route);
-    MeloApiService() {};
+    MeloApiService() {}
     MeloApiService& operator=(const MeloApiService&) = delete;
 };

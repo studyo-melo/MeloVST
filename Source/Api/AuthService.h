@@ -4,6 +4,7 @@
 #include "MeloApiService.h"
 #include "../Utils/StringUtils.h"
 #include "../Utils/JuceLocalStorage.h"
+#include "../Models/UserContext.h"
 
 class AuthService
 {
@@ -11,9 +12,12 @@ public:
     juce::String login(const juce::String& email, const juce::String& password);
     void logout();
     static AuthService& getInstance();
+    std::optional<UserContext> getUserContext() const;
+    std::optional<UserContext> fetchUserContext();
 
 private:
-    AuthService() {};
+    std::optional<UserContext> userContext;
+    AuthService() {}
     AuthService(const AuthService&) = delete;
     AuthService& operator=(const AuthService&) = delete;
 };

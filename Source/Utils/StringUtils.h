@@ -28,7 +28,7 @@ namespace StringUtils {
             for (const auto & it : jsonObject->getProperties())
             {
                 juce::String key = it.name.toString();
-                juce::String value = it.value.toString();
+                juce::var value = it.value;
                 keyPairArray.set(key, value);
             }
         }
@@ -38,5 +38,25 @@ namespace StringUtils {
         }
 
         return keyPairArray;
+    }
+
+    static juce::StringArray parseJsonStringToArray(const juce::String& jsonString)
+    {
+        juce::StringArray array;
+        const juce::var parsedJson = juce::JSON::parse(jsonString);
+
+        if (auto* jsonArray = parsedJson.getArray())
+        {
+            for (const auto& value : *jsonArray)
+            {
+                array.add(value.toString());
+            }
+        }
+        else
+        {
+            juce::Logger::writeToLog("Invalid JSON or not an array: " + jsonString);
+        }
+
+        return array;
     }
 }

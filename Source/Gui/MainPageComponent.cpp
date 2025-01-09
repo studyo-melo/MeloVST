@@ -7,7 +7,8 @@ MainPageComponent::MainPageComponent(std::function<void()> onLogout): onLogoutCa
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
 
-    title.setText(juce::String::fromUTF8("Bienvenue sur le plugin VST Melo"), juce::dontSendNotification);
+    auto userContext = AuthService::getInstance().getUserContext();
+    title.setText(juce::String::fromUTF8(("Bienvenue " + userContext->user.firstname).c_str()), juce::dontSendNotification);
     title.setJustificationType(juce::Justification::centred);
     title.setFont(30.0f);
 

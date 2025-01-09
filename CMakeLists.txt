@@ -51,6 +51,10 @@ set(SourceFiles
         Source/Api/MeloWebSocketService.h
         Source/Api/AuthService.cpp
         Source/Api/AuthService.h
+        Source/Models/User.h
+        Source/Models/Seller.h
+        Source/Models/Artist.h
+        Source/Models/UserContext.h
 )
 
 # Change these to your own preferences

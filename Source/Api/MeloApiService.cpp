@@ -25,7 +25,6 @@ juce::String MeloApiService::makePOSTRequest(const ApiRoute route, const juce::S
 }
 
 
-// Méthode HTTP générique
 template <typename RequestConfig>
 juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig configureRequest)
 {
@@ -35,26 +34,36 @@ juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig
     try
     {
         juce::URL url(apiUrl);
-        constexpr juce::URL::ParameterHandling parameterHandling{};
-        juce::URL::InputStreamOptions options{parameterHandling};
-
-        // Configure l'URL et les options via la lambda
+        juce::URL::InputStreamOptions options = buildOptions();
         configureRequest(url, options);
 
-        // Effectue la requête synchronisée
         const std::unique_ptr<juce::InputStream> stream(url.createInputStream(options));
         if (stream == nullptr)
         {
             throw std::runtime_error("Unable to create input stream");
         }
 
-        // Lis la réponse et la retourne
         return stream->readEntireStreamAsString();
     }
     catch (const std::exception& e)
     {
         return "Exception lors de la requête HTTP : " + juce::String(e.what());
     }
+}
+
+juce::URL::InputStreamOptions MeloApiService::buildOptions()
+{
+    const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
+    if (!accessToken.isEmpty()) {
+        constexpr juce::URL::ParameterHandling parameterHandling{};
+        juce::URL::InputStreamOptions options(parameterHandling);
+        return options.withExtraHeaders("Authorization: Bearer " + accessToken);
+        ;
+    }
+
+    constexpr juce::URL::ParameterHandling parameterHandling{};
+    juce::URL::InputStreamOptions options(parameterHandling);
+    return options;
 }
 
 // Méthode pour construire l'URL complète
