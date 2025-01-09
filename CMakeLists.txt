@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.24)
 project(MeloVST VERSION 0.0.1)
 
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 #set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
@@ -29,9 +29,19 @@ CPMAddPackage(
     GIT_TAG origin/master
 )
 
+CPMAddPackage(
+    NAME libdatachannel
+    GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
+    GIT_TAG origin/master
+)
+
+add_library(datachannel_static INTERFACE IMPORTED)
+target_link_libraries(datachannel_static INTERFACE datachannel)
+
 # Make sure you include any new source files here
 set(SourceFiles
         Source/Utils/StringUtils.h
+        Source/Utils/VectorUtils.h
         Source/Utils/Constants.h
         Source/Utils/JuceLocalStorage.h
         Source/MainApplication.cpp
@@ -51,6 +61,8 @@ set(SourceFiles
         Source/Api/MeloWebSocketService.h
         Source/Api/AuthService.cpp
         Source/Api/AuthService.h
+        Source/Api/MeloWebRTCServerService.h
+        Source/Api/MeloWebRTCServerService.cpp
         Source/Models/User.h
         Source/Models/Seller.h
         Source/Models/Artist.h
@@ -90,6 +102,11 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        datachannel
+)
+
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
@@ -107,4 +124,3 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
-

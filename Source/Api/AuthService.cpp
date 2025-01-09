@@ -5,7 +5,7 @@
 AuthService& AuthService::getInstance(){
     static AuthService instance;
     return instance;
-};
+}
 
 juce::String AuthService::login(const juce::String& email, const juce::String& password){
     juce::StringPairArray jsonBody;

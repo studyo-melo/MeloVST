@@ -20,6 +20,7 @@ MainPageComponent::MainPageComponent() {
     logoutButton.onClick = [this] { onLogoutButtonClick(); };
 
     EventManager::getInstance().addListener(this);
+    meloWebRTCServerService = MeloWebRTCServerService();
 }
 
 MainPageComponent::~MainPageComponent() {
@@ -42,6 +43,7 @@ void MainPageComponent::onAudioBlockProcessedEvent(const AudioBlockProcessedEven
     for (int channel = 0; channel < event.totalNumInputChannels; ++channel)
     {
         auto* channelData = event.buffer.getWritePointer (channel);
+        meloWebRTCServerService.sendAudioData(channelData, event.buffer.getNumSamples());
         mainText.setText(juce::String(*channelData), juce::dontSendNotification);
     }
 }
@@ -51,5 +53,5 @@ void MainPageComponent::paint(juce::Graphics &g) {
 }
 
 void MainPageComponent::onLogoutButtonClick() {
-    AuthService::getInstance().logout();
+    AuthService::logout();
 }
