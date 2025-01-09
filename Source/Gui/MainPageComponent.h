@@ -7,19 +7,22 @@
 #pragma once
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../Api/AuthService.h"
+#include "../Events/EventListener.h"
+#include "../Events/EventManager.h"
 
-class MainPageComponent final : public juce::Component
+class MainPageComponent final : public juce::Component, public EventListener
 {
 public:
     explicit MainPageComponent();
-    ~MainPageComponent() override = default;
+    ~MainPageComponent() override;
 
-    void onLogoutButtonClick() const;
+    static void onLogoutButtonClick();
+    void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
 
     void resized() override;
     void paint(juce::Graphics &g) override;
 
 private:
-    juce::Label title;
+    juce::Label title, mainText;
     juce::TextButton logoutButton;
 };
