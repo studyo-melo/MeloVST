@@ -30,10 +30,7 @@ void MainWindow::closeButtonPressed()
 
 void MainWindow::paint(juce::Graphics& g)
 {
-    g.fillAll (juce::Colours::red);
-    g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hella World!", juce::Component::getLocalBounds(), juce::Justification::centred, 1);
+    g.fillAll (juce::Colours::transparentBlack);
 }
 
 void MainWindow::resized()
@@ -46,6 +43,7 @@ void MainWindow::resized()
 
 void MainWindow::navigateToLoginPage()
 {
+    juce::Logger::outputDebugString("Navigating to Login Page");
     currentPage = std::make_unique<LoginPageComponent>([this]() { navigateToMainPage(); });
     addAndMakeVisible(currentPage.get());
     resized(); // Réorganise la disposition
@@ -53,6 +51,7 @@ void MainWindow::navigateToLoginPage()
 
 void MainWindow::navigateToMainPage()
 {
+    juce::Logger::outputDebugString("Navigating to Main Page");
     currentPage = std::make_unique<MainPageComponent>([this]() { navigateToLoginPage(); });
     addAndMakeVisible(currentPage.get());
     resized(); // Réorganise la disposition
