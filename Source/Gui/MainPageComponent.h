@@ -20,6 +20,7 @@ public:
     void paint(juce::Graphics &g) override;
 
 private:
+    juce::Label title;
     std::function<void()> onLogoutCallback;
     juce::TextButton logoutButton;
 };

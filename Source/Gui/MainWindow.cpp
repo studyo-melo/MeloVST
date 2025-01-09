@@ -6,6 +6,7 @@
 MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colours::lightgrey, DocumentWindow::allButtons)
 {
     setUsingNativeTitleBar(true);
+    setContentOwned(new juce::Label("label", "Hello, World!"), true);
     setResizable(true, true);
     setSize(600, 400);
 
@@ -21,7 +22,9 @@ MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colo
     Component::setVisible (true);
 }
 
-MainWindow::~MainWindow() = default;
+MainWindow::~MainWindow() {
+    setMenuBar(nullptr);
+}
 
 void MainWindow::closeButtonPressed()
 {
