@@ -3,7 +3,7 @@
 //
 #include "MainPageComponent.h"
 
-MainPageComponent::MainPageComponent(std::function<void()> onLogout): onLogoutCallback(std::move(onLogout)) {
+MainPageComponent::MainPageComponent() {
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
 
@@ -32,5 +32,4 @@ void MainPageComponent::paint(juce::Graphics &g) {
 
 void MainPageComponent::onLogoutButtonClick() const {
     AuthService::getInstance().logout();
-    onLogoutCallback();
 }

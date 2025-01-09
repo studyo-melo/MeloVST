@@ -11,7 +11,7 @@
 class MainPageComponent final : public juce::Component
 {
 public:
-    explicit MainPageComponent(std::function<void()> onLogout);
+    explicit MainPageComponent();
     ~MainPageComponent() override = default;
 
     void onLogoutButtonClick() const;
@@ -21,6 +21,5 @@ public:
 
 private:
     juce::Label title;
-    std::function<void()> onLogoutCallback;
     juce::TextButton logoutButton;
 };

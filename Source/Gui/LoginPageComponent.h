@@ -8,14 +8,13 @@
 class LoginPageComponent final : public juce::Component
 {
 public:
-    explicit LoginPageComponent(std::function<void()> onLogin);
+    explicit LoginPageComponent();
     ~LoginPageComponent() override;
     void onLoginButtonClick();
     void resized() override;
     void paint(juce::Graphics &g) override;
 
 private:
-    std::function<void()> onLoginCallback;
     juce::Label usernameLabel, passwordLabel, title, errorLabel, enterInfosLabel;
     juce::TextEditor usernameField, passwordField;
     juce::TextButton loginButton;

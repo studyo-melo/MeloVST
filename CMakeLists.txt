@@ -55,6 +55,9 @@ set(SourceFiles
         Source/Models/Seller.h
         Source/Models/Artist.h
         Source/Models/UserContext.h
+        Source/Events/EventListener.h
+        Source/Events/EventManager.h
+        Source/Events/Events.h
 )
 
 # Change these to your own preferences

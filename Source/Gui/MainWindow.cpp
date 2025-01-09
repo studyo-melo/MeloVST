@@ -22,10 +22,11 @@ MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colo
     }
 
     Component::setVisible (true);
+    EventManager::getInstance().addListener(this);
 }
 
 MainWindow::~MainWindow() {
-    setMenuBar(nullptr);
+    EventManager::getInstance().removeListener(this);
 }
 
 void MainWindow::closeButtonPressed()
@@ -46,10 +47,18 @@ void MainWindow::resized()
         currentPage->setBounds(area);
 }
 
+void MainWindow::onLoginEvent(const LoginEvent& event) {
+    navigateToMainPage();
+}
+
+void MainWindow::onLogoutEvent(const LogoutEvent& event) {
+    navigateToLoginPage();
+}
+
 void MainWindow::navigateToLoginPage()
 {
     juce::Logger::outputDebugString("Navigating to Login Page");
-    currentPage = std::make_unique<LoginPageComponent>([this]() { navigateToMainPage(); });
+    currentPage = std::make_unique<LoginPageComponent>();
     addAndMakeVisible(currentPage.get());
     resized(); // Réorganise la disposition
 }
@@ -57,7 +66,7 @@ void MainWindow::navigateToLoginPage()
 void MainWindow::navigateToMainPage()
 {
     juce::Logger::outputDebugString("Navigating to Main Page");
-    currentPage = std::make_unique<MainPageComponent>([this]() { navigateToLoginPage(); });
+    currentPage = std::make_unique<MainPageComponent>();
     addAndMakeVisible(currentPage.get());
     resized(); // Réorganise la disposition
 }

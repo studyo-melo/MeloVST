@@ -47,7 +47,8 @@ juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig
     }
     catch (const std::exception& e)
     {
-        return "Exception lors de la requête HTTP : " + juce::String(e.what());
+        juce::Logger::outputDebugString("Exception lors de la requête HTTP : " + juce::String(e.what()));
+        return "";
     }
 }
 

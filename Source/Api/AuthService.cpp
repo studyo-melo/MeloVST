@@ -1,5 +1,7 @@
 #include "AuthService.h"
 
+#include "../Events/EventManager.h"
+
 AuthService& AuthService::getInstance(){
     static AuthService instance;
     return instance;
@@ -11,10 +13,14 @@ juce::String AuthService::login(const juce::String& email, const juce::String& p
     jsonBody.set("password", password);
 
     auto res = MeloApiService::getInstance().makePOSTRequest(ApiRoute::PostLogin, jsonBody);
+    if (res.isEmpty()) {
+        return res;
+    }
     auto accessToken = StringUtils::parseJsonStringToKeyPair(res).getValue("access_token", "");
     juce::Logger::outputDebugString("Réponse de la requête : " + accessToken);
     JuceLocalStorage::getInstance().saveValue("access_token", accessToken);
     fetchUserContext();
+    EventManager::getInstance().notifyLogin(accessToken);
     return accessToken;
 }
 
@@ -26,6 +32,7 @@ std::optional<UserContext> AuthService::fetchUserContext() {
 
 void AuthService::logout(){
     JuceLocalStorage::getInstance().removeValue("access_token");
+    EventManager::getInstance().notifyLogout();
 }
 
 std::optional<UserContext> AuthService::getUserContext() const{

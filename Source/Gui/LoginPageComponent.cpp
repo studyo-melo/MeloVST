@@ -4,7 +4,7 @@
 #include "LoginPageComponent.h"
 #include "../Api/MeloApiService.h"
 
-LoginPageComponent::LoginPageComponent(std::function<void()> onLogin): onLoginCallback(std::move(onLogin)) {
+LoginPageComponent::LoginPageComponent() {
     addAndMakeVisible(title);
     addAndMakeVisible(usernameLabel);
     addAndMakeVisible(usernameField);
@@ -69,10 +69,7 @@ void LoginPageComponent::resized() {
 
 void LoginPageComponent::onLoginButtonClick() {
     const auto res = AuthService::getInstance().login(usernameField.getText(), passwordField.getText());
-    if (!res.isEmpty()) {
-        onLoginCallback();
-    }
-    else {
+    if (res.isEmpty()) {
         errorLabel.setVisible(true);
     }
 }

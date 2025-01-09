@@ -6,8 +6,10 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "LoginPageComponent.h"
 #include "MainPageComponent.h"
+#include "../Events/EventListener.h"
+#include "../Events/EventManager.h"
 
-class MainWindow final : public juce::DocumentWindow
+class MainWindow final : public juce::DocumentWindow, public EventListener
 {
 public:
     explicit MainWindow (const juce::String& name);
@@ -16,6 +18,8 @@ public:
     void closeButtonPressed() override;
     void paint (juce::Graphics&) override;
     void resized() override;
+    void onLoginEvent(const LoginEvent &event) override;
+    void onLogoutEvent(const LogoutEvent &event) override;
 
 private:
    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)

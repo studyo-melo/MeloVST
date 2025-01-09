@@ -10,7 +10,8 @@ class AuthService
 {
 public:
     juce::String login(const juce::String& email, const juce::String& password);
-    void logout();
+
+    static void logout();
     static AuthService& getInstance();
     std::optional<UserContext> getUserContext() const;
     std::optional<UserContext> fetchUserContext();
