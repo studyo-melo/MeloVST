@@ -11,7 +11,7 @@ enum class ApiRoute
 };
 
 // Fonction pour obtenir le nom de la route sous forme de chaîne
-inline juce::String getApiRouteString(ApiRoute route)
+inline juce::String getApiRouteString(const ApiRoute route)
 {
     switch (route)
     {

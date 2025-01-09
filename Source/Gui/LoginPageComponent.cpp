@@ -5,9 +5,9 @@
 #include "../Api/MeloApiService.h"
 
 LoginPageComponent::LoginPageComponent(std::function<void()> onLogin): onLoginCallback(std::move(onLogin)) {
-    addAndMakeVisible(title);
     title.setText("Bienvenue sur la Page de Login", juce::dontSendNotification);
     title.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(title);
     // Créer le champ de texte pour le nom d'utilisateur
     addAndMakeVisible(usernameLabel);
     usernameLabel.setText("Nom d'utilisateur:", juce::dontSendNotification);
@@ -32,7 +32,7 @@ LoginPageComponent::~LoginPageComponent() = default;
 
 void LoginPageComponent::resized() {
     auto area = getLocalBounds().reduced(20);  // Ajouter un peu de padding
-    int fieldHeight = 40;
+    constexpr int fieldHeight = 40;
 
     usernameLabel.setBounds(area.removeFromTop(fieldHeight));
     usernameField.setBounds(area.removeFromTop(fieldHeight));
@@ -44,7 +44,7 @@ void LoginPageComponent::resized() {
 }
 
 void LoginPageComponent::onLoginButtonClick() const {
-    auto res = AuthService::getInstance().login(usernameField.getText(), passwordField.getText());
+    const auto res = AuthService::getInstance().login(usernameField.getText(), passwordField.getText());
     if (!res.isEmpty()) {
         onLoginCallback();
     }

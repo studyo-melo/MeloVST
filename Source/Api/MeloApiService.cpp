@@ -8,7 +8,7 @@ MeloApiService &MeloApiService::getInstance() {
 // Méthode GET
 juce::String MeloApiService::makeGETRequest(const ApiRoute route)
 {
-    return makeHttpRequest(route, [](juce::URL& url, juce::URL::InputStreamOptions& options) {
+    return makeHttpRequest(route, [](juce::URL& url, const juce::URL::InputStreamOptions& options) {
         options.withHttpRequestCmd("GET");
         // Pas besoin de modifier l'URL pour GET
     });
@@ -17,7 +17,7 @@ juce::String MeloApiService::makeGETRequest(const ApiRoute route)
 // Méthode POST
 juce::String MeloApiService::makePOSTRequest(const ApiRoute route, const juce::StringPairArray& body)
 {
-    return makeHttpRequest(route, [&body](juce::URL& url, juce::URL::InputStreamOptions& options) {
+    return makeHttpRequest(route, [&body](juce::URL& url, const juce::URL::InputStreamOptions& options) {
         options.withHttpRequestCmd("POST");
         const auto postData = StringUtils::convertStringPairArrayToPOSTData(body);
         url = url.withPOSTData(postData);
@@ -35,14 +35,14 @@ juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig
     try
     {
         juce::URL url(apiUrl);
-        const juce::URL::ParameterHandling parameterHandling{};
+        constexpr juce::URL::ParameterHandling parameterHandling{};
         juce::URL::InputStreamOptions options{parameterHandling};
 
         // Configure l'URL et les options via la lambda
         configureRequest(url, options);
 
         // Effectue la requête synchronisée
-        std::unique_ptr<juce::InputStream> stream(url.createInputStream(options));
+        const std::unique_ptr<juce::InputStream> stream(url.createInputStream(options));
         if (stream == nullptr)
         {
             throw std::runtime_error("Unable to create input stream");

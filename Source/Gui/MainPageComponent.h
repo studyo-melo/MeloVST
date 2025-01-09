@@ -6,21 +6,20 @@
 //
 #pragma once
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "../Api/AuthService.h"
 
-class MainPageComponent: public juce::Component
+class MainPageComponent final : public juce::Component
 {
 public:
-    MainPageComponent() {
-        addAndMakeVisible(label);
-        label.setText("Bienvenue sur la Main Page", juce::dontSendNotification);
-        label.setJustificationType(juce::Justification::centred);
-    }
+    explicit MainPageComponent(std::function<void()> onLogout);
     ~MainPageComponent() override = default;
 
-    void resized() override {
-        label.setBounds(getLocalBounds());
-    }
+    void onLogoutButtonClick() const;
+
+    void resized() override;
+    void paint(juce::Graphics &g) override;
 
 private:
-    juce::Label label;
+    std::function<void()> onLogoutCallback;
+    juce::TextButton logoutButton;
 };

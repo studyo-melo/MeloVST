@@ -10,5 +10,5 @@ namespace Constants
 //    static const juce::String websocketUrl = "ws://localhost:8080";
 
     static const juce::String appName = "MeloVST";
-    static const int timeoutDuration = 3000; // en millisecondes
+    static constexpr int timeoutDuration = 3000; // en millisecondes
 }

@@ -8,7 +8,7 @@ namespace StringUtils {
 
         for (const auto& key : parameters.getAllKeys())
         {
-            auto value = parameters[key];
+            const auto& value = parameters[key];
             parameterStrings.add(juce::URL::addEscapeChars(key, true) + "=" + juce::URL::addEscapeChars(value, true));
         }
 
@@ -20,7 +20,7 @@ namespace StringUtils {
         juce::StringPairArray keyPairArray;
 
         // Parse la chaîne JSON en un objet var
-        juce::var parsedJson = juce::JSON::parse(jsonString);
+        const juce::var parsedJson = juce::JSON::parse(jsonString);
 
         if (auto* jsonObject = parsedJson.getDynamicObject())
         {

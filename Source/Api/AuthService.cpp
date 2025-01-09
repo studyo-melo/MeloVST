@@ -18,4 +18,5 @@ juce::String AuthService::login(const juce::String& email, const juce::String& p
 }
 
 void AuthService::logout(){
+    JuceLocalStorage::getInstance().removeValue("access_token");
 }

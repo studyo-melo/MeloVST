@@ -5,7 +5,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../Api/AuthService.h"
 
-class LoginPageComponent: public juce::Component
+class LoginPageComponent final : public juce::Component
 {
 public:
     explicit LoginPageComponent(std::function<void()> onLogin);

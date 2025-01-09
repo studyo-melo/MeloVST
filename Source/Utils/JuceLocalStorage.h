@@ -1,3 +1,5 @@
+#pragma once
+
 #include <juce_core/juce_core.h>
 #include <memory>
 #include "Constants.h"
@@ -11,8 +13,7 @@ public:
         return instance;
     }
 
-    void saveValue(const juce::String& key, const juce::String& value)
-    {
+    void saveValue(const juce::String& key, const juce::String& value) const {
         propertiesFile->setValue(key, value);
         propertiesFile->saveIfNeeded();
         juce::Logger::writeToLog("Value saved for key: " + key);
@@ -32,8 +33,7 @@ public:
         return value;
     }
 
-    void removeValue(const juce::String& key)
-    {
+    void removeValue(const juce::String& key) const {
         propertiesFile->removeValue(key);
         propertiesFile->saveIfNeeded();
         juce::Logger::writeToLog("Value removed for key: " + key);

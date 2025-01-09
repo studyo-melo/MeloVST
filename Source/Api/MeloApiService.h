@@ -10,12 +10,12 @@ public:
     juce::String makeGETRequest(ApiRoute route);
     juce::String makePOSTRequest(ApiRoute route, const juce::StringPairArray& body);
     static MeloApiService& getInstance();
+    MeloApiService(const MeloApiService&) = delete;
 
 private:
     template <typename RequestConfig>
     juce::String makeHttpRequest(ApiRoute route, RequestConfig configureRequest);
-    static juce::String buildApiUrl(ApiRoute route);
+    juce::String buildApiUrl(ApiRoute route);
     MeloApiService() {};
-    MeloApiService(const MeloApiService&) = delete;
     MeloApiService& operator=(const MeloApiService&) = delete;
 };

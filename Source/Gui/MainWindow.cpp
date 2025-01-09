@@ -9,17 +9,16 @@ MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colo
     setResizable(true, true);
     setSize(600, 400);
 
-    auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
+    const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
     juce::Logger::outputDebugString("Access Token From Main Page: " + accessToken);
-    navigateToLoginPage();
-    // if (accessToken.isEmpty()) {
-        // navigateToLoginPage();
-    // }
-    // else {
-        // navigateToMainPage();
-    // }
+    if (accessToken.isEmpty()) {
+        navigateToLoginPage();
+    }
+    else {
+        navigateToMainPage();
+    }
 
-    setVisible (true);
+    Component::setVisible (true);
 }
 
 MainWindow::~MainWindow() = default;
@@ -39,7 +38,7 @@ void MainWindow::paint(juce::Graphics& g)
 
 void MainWindow::resized()
 {
-    auto area = getLocalBounds();
+    const auto area = getLocalBounds();
 
     if (currentPage != nullptr)
         currentPage->setBounds(area);
@@ -54,7 +53,7 @@ void MainWindow::navigateToLoginPage()
 
 void MainWindow::navigateToMainPage()
 {
-    currentPage = std::make_unique<MainPageComponent>();
+    currentPage = std::make_unique<MainPageComponent>([this]() { navigateToLoginPage(); });
     addAndMakeVisible(currentPage.get());
     resized(); // Réorganise la disposition
 }
