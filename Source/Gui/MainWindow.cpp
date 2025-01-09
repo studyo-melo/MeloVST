@@ -31,7 +31,18 @@ MainWindow::~MainWindow() {
 
 void MainWindow::closeButtonPressed()
 {
-    juce::JUCEApplication::getInstance()->systemRequestedQuit();
+    const auto hostDescription = juce::String(juce::PluginHostType().getHostDescription());
+    juce::Logger::outputDebugString("Got hostDescription: " + hostDescription);
+    if (hostDescription.equalsIgnoreCase("Unknown")) // Si c'est une application autonome
+    {
+        juce::Logger::outputDebugString("Exiting main program");
+        juce::JUCEApplication::getInstance()->systemRequestedQuit();
+    }
+    else // Si c'est un plugin
+    {
+        // Fermez uniquement la fenêtre du plugin
+        setVisible(false);
+    }
 }
 
 void MainWindow::paint(juce::Graphics& g)

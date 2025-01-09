@@ -17,8 +17,8 @@ struct UserContext
 
         UserContext userContext;
         userContext.user = User::fromJsonString(juce::JSON::toString(keyPair.getProperty("user", "{}")));
-        userContext.seller = Seller::fromJsonString(juce::JSON::toString(keyPair.getProperty("user", "{}")));
-        userContext.artist = Artist::fromJsonString(juce::JSON::toString(keyPair.getProperty("user", "{}")));
+        userContext.seller = Seller::fromJsonString(juce::JSON::toString(keyPair.getProperty("seller", "{}")));
+        userContext.artist = Artist::fromJsonString(juce::JSON::toString(keyPair.getProperty("artist", "{}")));
         return userContext;
     }
 };
