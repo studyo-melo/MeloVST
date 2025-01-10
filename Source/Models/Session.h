@@ -25,7 +25,6 @@ public:
   UserContext reservedByArtist;
 
   static PopulatedSession fromJsonString(const juce::String& jsonString) {
-    auto json = juce::JSON::parse(jsonString);
     auto keyPair = StringUtils::parseJsonStringToKeyPair(jsonString);
     PopulatedSession session;
     session._id = keyPair.getValue("_id", "").toStdString();
@@ -38,16 +37,16 @@ public:
     session.stripePaymentId = keyPair.getValue("stripePaymentId", "").toStdString();
     session.status = keyPair.getValue("status", "").toStdString();
     session.isTest = keyPair.getValue("isTest", "false").toStdString() == "true";
-    session.reservedByArtist = UserContext::fromJsonString(juce::JSON::toString(json.getProperty("reservedByArtist", "{}")));
+    session.reservedByArtist = UserContext::fromJsonString(juce::JSON::toString(keyPair.getValue("reservedByArtist", "{}")));
     return session;
   }
 
   static juce::Array<PopulatedSession> parseArrayFromJsonString(const juce::String& jsonString) {
-    juce::Logger::outputDebugString("Réponse de la requête : " + jsonString);
     auto json = juce::JSON::parse(jsonString);
     auto array = json.getArray();
     juce::Array<PopulatedSession> sessions;
     for (int i = 0; i < array->size(); i++) {
+      // juce::Logger::outputDebugString("Session : " + juce::JSON::toString(array[i]));
       sessions.add(fromJsonString(juce::JSON::toString(array[i])));
     }
     return sessions;

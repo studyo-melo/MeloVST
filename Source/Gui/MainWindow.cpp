@@ -11,13 +11,11 @@ MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colo
     setSize(600, 400);
 
     const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
-    juce::Logger::outputDebugString("Access Token From Main Page: " + accessToken);
     if (accessToken.isEmpty()) {
         navigateToLoginPage();
     }
     else {
         AuthService::getInstance().fetchUserContext();
-        juce::Logger::outputDebugString("Got my user context From Main Page: " + AuthService::getInstance().getUserContext()->user.firstname);
         navigateToMainPage();
     }
 
@@ -32,15 +30,13 @@ MainWindow::~MainWindow() {
 void MainWindow::closeButtonPressed()
 {
     const auto hostDescription = juce::String(juce::PluginHostType().getHostDescription());
-    juce::Logger::outputDebugString("Got hostDescription: " + hostDescription);
-    if (hostDescription.equalsIgnoreCase("Unknown")) // Si c'est une application autonome
+    if (hostDescription.equalsIgnoreCase("Unknown"))
     {
         juce::Logger::outputDebugString("Exiting main program");
         juce::JUCEApplication::getInstance()->systemRequestedQuit();
     }
-    else // Si c'est un plugin
+    else
     {
-        // Fermez uniquement la fenêtre du plugin
         setVisible(false);
     }
 }
@@ -68,16 +64,14 @@ void MainWindow::onLogoutEvent(const LogoutEvent& event) {
 
 void MainWindow::navigateToLoginPage()
 {
-    juce::Logger::outputDebugString("Navigating to Login Page");
     currentPage = std::make_unique<LoginPageComponent>();
     addAndMakeVisible(currentPage.get());
-    resized(); // Réorganise la disposition
+    resized();
 }
 
 void MainWindow::navigateToMainPage()
 {
-    juce::Logger::outputDebugString("Navigating to Main Page");
     currentPage = std::make_unique<MainPageComponent>();
     addAndMakeVisible(currentPage.get());
-    resized(); // Réorganise la disposition
+    resized();
 }

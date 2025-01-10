@@ -16,7 +16,7 @@ public:
     void saveValue(const juce::String& key, const juce::String& value) const {
         propertiesFile->setValue(key, value);
         propertiesFile->saveIfNeeded();
-        juce::Logger::writeToLog("Value saved for key: " + key);
+        juce::Logger::outputDebugString("Value saved for key: " + key);
     }
 
     juce::String loadValue(const juce::String& key) const
@@ -24,11 +24,11 @@ public:
         juce::String value = propertiesFile->getValue(key, {});
         if (value.isNotEmpty())
         {
-            juce::Logger::writeToLog("Value loaded for key: " + key + " - " + value);
+            juce::Logger::outputDebugString("Value loaded for key: " + key + " - " + value);
         }
         else
         {
-            juce::Logger::writeToLog("No value found for key: " + key);
+            juce::Logger::outputDebugString("No value found for key: " + key);
         }
         return value;
     }
@@ -36,7 +36,7 @@ public:
     void removeValue(const juce::String& key) const {
         propertiesFile->removeValue(key);
         propertiesFile->saveIfNeeded();
-        juce::Logger::writeToLog("Value removed for key: " + key);
+        juce::Logger::outputDebugString("Value removed for key: " + key);
     }
 
 private:

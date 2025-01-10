@@ -18,7 +18,7 @@ namespace StringUtils {
     static juce::StringPairArray parseJsonStringToKeyPair(const juce::String& jsonString)
     {
         juce::StringPairArray keyPairArray;
-
+        juce::Logger::outputDebugString("Parsing JSON: " + jsonString);
         // Parse la chaîne JSON en un objet var
         const juce::var parsedJson = juce::JSON::parse(jsonString);
 
@@ -27,9 +27,16 @@ namespace StringUtils {
             // Parcours des propriétés avec begin() et end()
             for (const auto & it : jsonObject->getProperties())
             {
-                juce::String key = it.name.toString();
-                juce::var value = it.value;
-                keyPairArray.set(key, value);
+                if (it.value.isObject()) {
+                    juce::String key = it.name.toString();
+                    juce::var value = juce::JSON::toString(it.value);
+                    keyPairArray.set(key, value);
+                }
+                else {
+                    juce::String key = it.name.toString();
+                    juce::var value = it.value;
+                    keyPairArray.set(key, value);
+                }
             }
         }
         else
