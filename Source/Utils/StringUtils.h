@@ -18,13 +18,10 @@ namespace StringUtils {
     static juce::StringPairArray parseJsonStringToKeyPair(const juce::String& jsonString)
     {
         juce::StringPairArray keyPairArray;
-        juce::Logger::outputDebugString("Parsing JSON: " + jsonString);
-        // Parse la chaîne JSON en un objet var
         const juce::var parsedJson = juce::JSON::parse(jsonString);
 
         if (auto* jsonObject = parsedJson.getDynamicObject())
         {
-            // Parcours des propriétés avec begin() et end()
             for (const auto & it : jsonObject->getProperties())
             {
                 if (it.value.isObject()) {
@@ -41,7 +38,7 @@ namespace StringUtils {
         }
         else
         {
-            juce::Logger::writeToLog("Invalid JSON or not an object: " + jsonString);
+            juce::Logger::outputDebugString("Invalid JSON or not an object: " + jsonString);
         }
 
         return keyPairArray;
@@ -61,7 +58,7 @@ namespace StringUtils {
         }
         else
         {
-            juce::Logger::writeToLog("Invalid JSON or not an array: " + jsonString);
+            juce::Logger::outputDebugString("Invalid JSON or not an array: " + jsonString);
         }
 
         return array;

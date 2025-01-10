@@ -23,21 +23,22 @@ class PopulatedSession : public Session
 {
 public:
   UserContext reservedByArtist;
+  UserContext seller;
 
-  static PopulatedSession fromJsonString(const juce::String& jsonString) {
-    auto keyPair = StringUtils::parseJsonStringToKeyPair(jsonString);
+  static PopulatedSession fromJSON(const juce::var& json) {
     PopulatedSession session;
-    session._id = keyPair.getValue("_id", "").toStdString();
-    session.sellerProductId = keyPair.getValue("sellerProductId", "").toStdString();
-    session.reservedByArtistId = keyPair.getValue("reservedByArtistId", "").toStdString();
-    session.bookingId = keyPair.getValue("bookingId", "").toStdString();
-    session.sellerId = keyPair.getValue("sellerId", "").toStdString();
-    session.startDate = keyPair.getValue("startDate", "").toStdString();
-    session.endDate = keyPair.getValue("endDate", "").toStdString();
-    session.stripePaymentId = keyPair.getValue("stripePaymentId", "").toStdString();
-    session.status = keyPair.getValue("status", "").toStdString();
-    session.isTest = keyPair.getValue("isTest", "false").toStdString() == "true";
-    session.reservedByArtist = UserContext::fromJsonString(juce::JSON::toString(keyPair.getValue("reservedByArtist", "{}")));
+    session._id = json.getProperty("_id", "").toString().toStdString();
+    session.sellerProductId = json.getProperty("sellerProductId", "").toString().toStdString();
+    session.reservedByArtistId = json.getProperty("reservedByArtistId", "").toString().toStdString();
+    session.bookingId = json.getProperty("bookingId", "").toString().toStdString();
+    session.sellerId = json.getProperty("sellerId", "").toString().toStdString();
+    session.startDate = json.getProperty("startDate", "").toString().toStdString();
+    session.endDate = json.getProperty("endDate", "").toString().toStdString();
+    session.stripePaymentId = json.getProperty("stripePaymentId", "").toString().toStdString();
+    session.status = json.getProperty("status", "").toString().toStdString();
+    session.isTest = json.getProperty("isTest", "false").toString().toStdString() == "true";
+    session.reservedByArtist = UserContext::fromJsonString(juce::JSON::toString(json.getProperty("reservedByArtist", "{}")));
+    session.seller = UserContext::fromJsonString(juce::JSON::toString(json.getProperty("seller", "{}")));
     return session;
   }
 
@@ -46,8 +47,7 @@ public:
     auto array = json.getArray();
     juce::Array<PopulatedSession> sessions;
     for (int i = 0; i < array->size(); i++) {
-      // juce::Logger::outputDebugString("Session : " + juce::JSON::toString(array[i]));
-      sessions.add(fromJsonString(juce::JSON::toString(array[i])));
+      sessions.add(fromJSON(array->getReference(i)));
     }
     return sessions;
   }
