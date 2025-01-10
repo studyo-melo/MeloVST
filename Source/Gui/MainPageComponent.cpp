@@ -3,8 +3,7 @@
 //
 #include "MainPageComponent.h"
 
-
-MainPageComponent::MainPageComponent(): meloWebSocketService(MeloWebSocketService()), meloWebRTCServerService(MeloWebRTCServerService()) {
+MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServerService()), meloWebSocketService(MeloWebSocketService()) {
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
     addAndMakeVisible(mainText);
@@ -20,7 +19,7 @@ MainPageComponent::MainPageComponent(): meloWebSocketService(MeloWebSocketServic
 
     connectButton.setButtonText(juce::String::fromUTF8(("Send Message")));
     connectButton.onClick = [this] {
-        meloWebSocketService.sendMessage("Hello from the client");
+        meloWebSocketService.sendMessage(R"({"type": "message", "content": "Hello, world!", "session_id": ")" + currentOngoingSession._id + R"("})");
     };
 
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
@@ -33,7 +32,9 @@ MainPageComponent::MainPageComponent(): meloWebSocketService(MeloWebSocketServic
         if (ongoingSessions.size() > 0) {
             currentOngoingSession = ongoingSessions[0];
             mainText.setText("Vous avez une session en cours :" + currentOngoingSession.seller.user.userAlias, juce::dontSendNotification);
-            meloWebSocketService.connectToServer(getWsRouteString(WsRoute::GetOngoingSession, currentOngoingSession._id));
+            meloWebSocketService.connectToServer(getWsRouteString(WsRoute::GetOngoingSession));
+        } else {
+            mainText.setText("Vous n'avez pas de session en cours.", juce::dontSendNotification);
         }
     }
 

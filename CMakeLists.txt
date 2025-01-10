@@ -35,8 +35,19 @@ CPMAddPackage(
     GIT_TAG origin/master
 )
 
-add_library(datachannel_static INTERFACE IMPORTED)
-target_link_libraries(datachannel_static INTERFACE datachannel)
+CPMAddPackage(
+        NAME ixwebsocket
+        GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
+        GIT_TAG origin/master
+)
+
+
+add_library(
+        datachannel_static INTERFACE IMPORTED
+)
+target_link_libraries(
+        datachannel_static INTERFACE datachannel
+)
 
 # Make sure you include any new source files here
 set(SourceFiles
@@ -103,13 +114,13 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        datachannel
-)
 
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        datachannel
+        ixwebsocket
+        datachannel_static INTERFACE datachannel
         PUBLIC
         juce::juce_analytics
         juce::juce_audio_basics

@@ -31,11 +31,11 @@ enum class WsRoute
 };
 
 
-inline juce::String getWsRouteString(const WsRoute route, const juce::String& paramId = "")
+inline juce::String getWsRouteString(const WsRoute route)
 {
     switch (route)
     {
-        case WsRoute::GetOngoingSession:            return "/ongoing-session/" + paramId;
+        case WsRoute::GetOngoingSession:            return "/ongoing-session";
         default:                                    return "";
     }
 }
