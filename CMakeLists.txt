@@ -64,6 +64,7 @@ set(SourceFiles
         Source/Api/MeloWebRTCServerService.h
         Source/Api/MeloWebRTCServerService.cpp
         Source/Models/User.h
+        Source/Models/Session.h
         Source/Models/Seller.h
         Source/Models/Artist.h
         Source/Models/UserContext.h

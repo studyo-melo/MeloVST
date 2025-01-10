@@ -10,6 +10,12 @@ MeloWebRTCServerService::MeloWebRTCServerService() {
     // Créez un transport peer-to-peer
     peerConnection = std::make_shared<rtc::PeerConnection>(config);
 
+    peerConnection->onLocalDescription([](rtc::Description sdp) {
+        // Send the SDP to the remote peer
+        // MY_SEND_DESCRIPTION_TO_REMOTE(std::string(sdp));
+    });
+
+
     // Configurez les callbacks
     peerConnection->onTrack([this](std::shared_ptr<rtc::Track> track) {
         std::cout << "Track received: " << track << std::endl;
@@ -31,21 +37,23 @@ MeloWebRTCServerService::MeloWebRTCServerService() {
         });
     });
         // Créer un canal de données pour transmettre l'audio
-    dataChannel = peerConnection->createDataChannel("audio");
+    dataChannel = peerConnection->createDataChannel("secure-audio");
+    // peerConnection->setRemoteDescription("toto")
     peerConnection->setLocalDescription(rtc::Description::Type::Offer);
 
 }
 
 void MeloWebRTCServerService::sendAudioData(const float* data, int size) const {
-        if (!dataChannel || !dataChannel->isOpen()) {
-             std::cerr << "Data channel is not open!" << std::endl;
-             return;
-         }
-         // Convertir les données audio en format binaire
-         rtc::binary binaryData = VectorUtils::convertFloatToBinary(data, size);
+    if (!dataChannel || !dataChannel->isOpen()) {
+         std::cerr << "Data channel is not open!" << std::endl;
+         return;
+    }
+    juce::Logger::outputDebugString("Sending audio data");
+    // Convertir les données audio en format binaire
+    rtc::binary binaryData = VectorUtils::convertFloatToBinary(data, size);
 
-         // Envoyer les données via le canal de données
-         dataChannel->send(binaryData);
+    // Envoyer les données via le canal de données
+    dataChannel->send(binaryData);
 }
 
 void MeloWebRTCServerService::handleAnswer(const std::string& sdp) const {

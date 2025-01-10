@@ -44,12 +44,37 @@ juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig
         }
 
         auto res = stream->readEntireStreamAsString();
-        if (juce::JSON::parse(res)["error"].toString().isNotEmpty()) {
+        auto jsonResponse = juce::JSON::parse(res);
+        if (!jsonResponse.isObject())
+        {
+            juce::Logger::outputDebugString("Réponse non valide : " + res);
+            return "";
+        }
+
+        if (jsonResponse["error"].toString().isNotEmpty()) {
             const juce::String message = juce::JSON::parse(res)["error"].toString();
             juce::Logger::outputDebugString("Exception lors de la requête HTTP : " + juce::String(res));
-            throw std::runtime_error("Error from server: " + message.toStdString());
+            return "";
         }
-        return res;
+
+        const juce::var& statusCodeVar = jsonResponse["statusCode"];
+        switch (int statusCode = static_cast<int>(statusCodeVar))
+        {
+            case 500:
+            case 400:
+            case 401:
+            case 402:
+            case 403:
+            case 404:
+            case 405:
+            {
+                juce::String message = jsonResponse["error"].toString();
+                juce::Logger::outputDebugString("Exception lors de la requête HTTP : " + res);
+                return "";
+            }
+            default:
+                return res;
+        }
     }
     catch (const std::exception& e)
     {

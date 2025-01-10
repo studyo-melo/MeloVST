@@ -21,6 +21,11 @@ MainPageComponent::MainPageComponent() {
 
     EventManager::getInstance().addListener(this);
     meloWebRTCServerService = MeloWebRTCServerService();
+    auto res = MeloApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions);
+    ongoingSessions = PopulatedSession::parseArrayFromJsonString(res);
+    if (ongoingSessions.size() > 0) {
+        mainText.setText("Vous avez une session en cours :" + ongoingSessions[0].startDate, juce::dontSendNotification);
+    }
 }
 
 MainPageComponent::~MainPageComponent() {
@@ -43,8 +48,8 @@ void MainPageComponent::onAudioBlockProcessedEvent(const AudioBlockProcessedEven
     for (int channel = 0; channel < event.totalNumInputChannels; ++channel)
     {
         auto* channelData = event.buffer.getWritePointer (channel);
-        meloWebRTCServerService.sendAudioData(channelData, event.buffer.getNumSamples());
-        mainText.setText(juce::String(*channelData), juce::dontSendNotification);
+        // meloWebRTCServerService.sendAudioData(channelData, event.buffer.getNumSamples());
+        // mainText.setText(juce::String(*channelData), juce::dontSendNotification);
     }
 }
 

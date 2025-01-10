@@ -10,6 +10,7 @@
 #include "../Events/EventListener.h"
 #include "../Events/EventManager.h"
 #include "../Api/MeloWebRTCServerService.h"
+#include "../Models/Session.h"
 
 class MainPageComponent final : public juce::Component, public EventListener
 {
@@ -27,4 +28,5 @@ private:
     juce::Label title, mainText;
     juce::TextButton logoutButton;
     MeloWebRTCServerService meloWebRTCServerService;
+    juce::Array<PopulatedSession> ongoingSessions;
 };

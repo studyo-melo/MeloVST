@@ -6,13 +6,14 @@
 #include "Seller.h"
 #include "../Utils/StringUtils.h"
 
-struct UserContext
+class UserContext
 {
+public:
     std::optional<Artist> artist;
     std::optional<Seller> seller;
     User user;
 
-    UserContext fromJsonString(const juce::String& jsonString) {
+    static UserContext fromJsonString(const juce::String& jsonString) {
         const auto keyPair = juce::JSON::parse(jsonString);
 
         UserContext userContext;
