@@ -10,12 +10,14 @@ public:
     static void reportCrash(const std::string& message) {
         nlohmann::json jsonBody = {
             {"message", message},
-            {"platformType", "juce_send"},
+            {"platform", "juce_send"},
             {"stackTrace", message},
             {"screenName", "MainApp"},
-            { "userId", AuthService::getInstance().getUserContext().value().user._id }
         };
-        auto res = MeloApiService::getInstance().makePOSTRequest(ApiRoute::PostLogin, jsonBody);
+        if (AuthService::getInstance().getUserContext().has_value() ) {
+            jsonBody["userId"] = AuthService::getInstance().getUserContext().value().user._id;
+        }
+        auto res = MeloApiService::getInstance().makePOSTRequest(ApiRoute::CreateCrashReport, jsonBody);
     }
 
     static void customTerminateHandler() {

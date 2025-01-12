@@ -18,8 +18,10 @@ juce::String MeloApiService::makeGETRequest(const ApiRoute route)
 juce::String MeloApiService::makePOSTRequest(const ApiRoute route, const nlohmann::json& body)
 {
     return makeHttpRequest(route, [&body](juce::URL& url, const juce::URL::InputStreamOptions& options) {
-        options.withHttpRequestCmd("POST");
-        url = url.withPOSTData(body.dump());
+        options.withHttpRequestCmd("POST")
+              .withExtraHeaders("Content-Type: application/json\r\n");
+        url = url.withPOSTData(StringUtils::convertJsonToPOSTData(body));
+       // Configurer les en-têtes nécessaires pour une requête POST JSON
     });
 }
 
