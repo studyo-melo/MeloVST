@@ -55,6 +55,7 @@ set(SourceFiles
         Source/Utils/VectorUtils.h
         Source/Utils/Constants.h
         Source/Utils/JuceLocalStorage.h
+        Source/Utils/json.hpp
         Source/MainApplication.cpp
         Source/MainApplication.h
         Source/MainAudioProcessor.cpp

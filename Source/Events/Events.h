@@ -1,6 +1,8 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 
+#include "../Models/Session.h"
+
 struct AudioBlockProcessedEvent {
     juce::AudioBuffer<float>& buffer;
     int totalNumInputChannels;
@@ -12,3 +14,11 @@ struct LoginEvent {
 };
 
 struct LogoutEvent {};
+struct OngoingSessionChangedEvent {
+    PopulatedSession ongoingSession;
+};
+
+struct MessageWsReceivedEvent {
+    std::string type;
+    nlohmann::json data;
+};

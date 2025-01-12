@@ -19,20 +19,21 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
 
     connectButton.setButtonText(juce::String::fromUTF8(("Send Message")));
     connectButton.onClick = [this] {
-        auto userConnectedEvent = new SellerConnectedEvent(currentOngoingSession.seller.user._id, currentOngoingSession._id, currentOngoingSession.reservedByArtist.user._id);
-        meloWebSocketService.sendMessage(userConnectedEvent->createMessage());
+        // auto userConnectedEvent = new SellerConnectedEvent(currentOngoingSession.seller.user._id, currentOngoingSession._id, currentOngoingSession.reservedByArtist.user._id);
+        // meloWebSocketService.sendMessage(userConnectedEvent->createMessage());
+        meloWebRTCServerService.setOffer();
     };
 
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
     logoutButton.onClick = [this] { onLogoutButtonClick(); };
 
-    EventManager::getInstance().addListener(this);
     auto res = MeloApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions);
     if (res.isNotEmpty()) {
         ongoingSessions = PopulatedSession::parseArrayFromJsonString(res);
         if (ongoingSessions.size() > 0) {
             currentOngoingSession = ongoingSessions[0];
-            mainText.setText("Vous avez une session en cours :" + currentOngoingSession.seller.user.userAlias, juce::dontSendNotification);
+            mainText.setText("Vous avez une session en cours avec " + currentOngoingSession.reservedByArtist.user.userAlias, juce::dontSendNotification);
+            EventManager::getInstance().notifyOngoingSessionChanged(OngoingSessionChangedEvent(currentOngoingSession));
             meloWebSocketService.connectToServer();
         } else {
             mainText.setText("Vous n'avez pas de session en cours.", juce::dontSendNotification);
@@ -43,7 +44,6 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
 
 MainPageComponent::~MainPageComponent() {
     logoutButton.onClick = nullptr;
-    EventManager::getInstance().removeListener(this);
 }
 
 void MainPageComponent::resized() {
@@ -56,15 +56,6 @@ void MainPageComponent::resized() {
     pageFlexbox.items.add(juce::FlexItem(connectButton).withFlex(1).withMargin(juce::FlexItem::Margin(30, 0, 0, 0)));
     pageFlexbox.items.add(juce::FlexItem(mainText).withFlex(1).withMargin(juce::FlexItem::Margin(30, 0, 0, 0)));
     pageFlexbox.performLayout(getLocalBounds());
-}
-
-void MainPageComponent::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
-    for (int channel = 0; channel < event.totalNumInputChannels; ++channel)
-    {
-        auto* channelData = event.buffer.getWritePointer (channel);
-        // meloWebRTCServerService.sendAudioData(channelData, event.buffer.getNumSamples());
-        // mainText.setText(juce::String(*channelData), juce::dontSendNotification);
-    }
 }
 
 void MainPageComponent::paint(juce::Graphics &g) {

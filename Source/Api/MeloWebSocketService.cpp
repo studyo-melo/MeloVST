@@ -1,5 +1,6 @@
 #include "MeloWebSocketService.h"
 
+#include "../Events/EventManager.h"
 #include "../Utils/JuceLocalStorage.h"
 
 MeloWebSocketService::MeloWebSocketService(const juce::String &wsRoute): webSocket(ix::WebSocket()), wsRoute(wsRoute) {
@@ -12,7 +13,6 @@ MeloWebSocketService::MeloWebSocketService(const juce::String &wsRoute): webSock
     webSocket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
     switch (msg->type) {
         case ix::WebSocketMessageType::Message:
-            juce::Logger::outputDebugString(juce::String::fromUTF8(("Message reçu : " + msg->str).c_str()));
             break;
         case ix::WebSocketMessageType::Open:
             juce::Logger::outputDebugString("Connexion WebSocket ouverte.");
@@ -41,14 +41,16 @@ void MeloWebSocketService::connectToServer() {
     webSocket.setUrl(url);
 
     webSocket.setOnMessageCallback([this](const ix::WebSocketMessagePtr &msg) {
-        juce::Logger::outputDebugString("Message reçu.");
         switch (msg->type) {
             case ix::WebSocketMessageType::Open:
                 juce::Logger::outputDebugString("WebSocket ouvert : " + juce::String(msg->openInfo.uri));
                 break;
-            case ix::WebSocketMessageType::Message:
-                juce::Logger::outputDebugString("Message reçu : " + juce::String(msg->str));
+            case ix::WebSocketMessageType::Message: {
+                auto receivedMessage = nlohmann::json::parse(msg->str);
+                juce::Logger::outputDebugString("Message de type " + to_string(receivedMessage["type"]) + " reçu.");
+                EventManager::getInstance().notifyOnWsMessageReceived(MessageWsReceivedEvent{receivedMessage["type"], receivedMessage["data"]});
                 break;
+            }
             case ix::WebSocketMessageType::Error:
                 juce::Logger::outputDebugString("Erreur WebSocket : " + juce::String(msg->errorInfo.reason));
                 break;
@@ -76,7 +78,7 @@ void MeloWebSocketService::sendMessage(const std::string &message, int retryCoun
             break;
         case ix::ReadyState::Open:
             webSocket.sendText(message);
-            std::cout << "Message envoyé : " << message << std::endl;
+            juce::Logger::outputDebugString("Message de type " + to_string(nlohmann::json::parse(message)["event"]) + " Envoyé");
             break;
         case ix::ReadyState::Closed:
             connectToServer();

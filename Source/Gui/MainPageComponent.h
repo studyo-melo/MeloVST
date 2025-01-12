@@ -12,14 +12,13 @@
 #include "../Api/MeloWebSocketService.h"
 #include "../SocketEvents/SocketEvents.h"
 
-class MainPageComponent final : public juce::Component, public EventListener
+class MainPageComponent final : public juce::Component
 {
 public:
     explicit MainPageComponent();
     ~MainPageComponent() override;
 
     static void onLogoutButtonClick();
-    void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
 
     void resized() override;
     void paint(juce::Graphics &g) override;

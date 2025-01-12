@@ -1,6 +1,8 @@
 #pragma once
 #include <juce_core/juce_core.h>
 
+#include "json.hpp"
+
 namespace StringUtils {
     static juce::String convertStringPairArrayToPOSTData(const juce::StringPairArray& parameters)
     {
@@ -64,9 +66,12 @@ namespace StringUtils {
         return array;
     }
 
-    std::string createWsMessage(const std::string& type, const auto& data)
+    inline std::string createWsMessage(const std::string& type, nlohmann::json data)
     {
-        // Convertir en JSON pour WebSocket
-        return "{\"event\":\"" + type + "\",\"data\":" + data + "}";
+        const nlohmann::json jsonMessage = {
+            {"event", type},
+            {"data", data}
+        };
+        return jsonMessage.dump();
     }
 }

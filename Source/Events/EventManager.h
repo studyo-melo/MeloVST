@@ -28,6 +28,22 @@ public:
         }
     }
 
+    void notifyOngoingSessionChanged(const OngoingSessionChangedEvent &event)
+    {
+        for (auto* listener : listeners)
+        {
+            listener->onOngoingSessionChanged(event);
+        }
+    }
+
+    void notifyOnWsMessageReceived(const MessageWsReceivedEvent &event)
+    {
+        for (auto* listener : listeners)
+        {
+            listener->onWsMessageReceived(event);
+        }
+    }
+
     void notifyLogin(const juce::String& accessToken)
     {
         const LoginEvent event{ accessToken };
