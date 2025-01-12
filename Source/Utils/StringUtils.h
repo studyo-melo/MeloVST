@@ -63,4 +63,10 @@ namespace StringUtils {
 
         return array;
     }
+
+    std::string createWsMessage(const std::string& type, const auto& data)
+    {
+        // Convertir en JSON pour WebSocket
+        return "{\"event\":\"" + type + "\",\"data\":" + data + "}";
+    }
 }

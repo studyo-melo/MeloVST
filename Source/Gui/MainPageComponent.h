@@ -10,6 +10,7 @@
 #include "../Api/MeloWebSocketService.h"
 #include "../Models/Session.h"
 #include "../Api/MeloWebSocketService.h"
+#include "../SocketEvents/SocketEvents.h"
 
 class MainPageComponent final : public juce::Component, public EventListener
 {

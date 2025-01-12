@@ -8,12 +8,15 @@
 class MeloWebSocketService
 {
 public:
-    MeloWebSocketService();
+    MeloWebSocketService(const juce::String& wsRoute);
     ~MeloWebSocketService();
 
-    void connectToServer(const juce::String& wsRoute);
-    void sendMessage(const std::string& message);
+    void connectToServer();
+    void sendMessage(const std::string& message, int retryCounter = 0);
+
+    static std::string createMessage(const std::string& type, const auto& data);
 
 private:
+    juce::String wsRoute;
     ix::WebSocket webSocket;
 };
