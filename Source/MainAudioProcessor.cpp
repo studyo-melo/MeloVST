@@ -150,8 +150,8 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         juce::ignoreUnused (channelData);
         // ..do something to the data...
     }
-
     EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{buffer, totalNumInputChannels, totalNumOutputChannels});
+
 }
 
 //==============================================================================

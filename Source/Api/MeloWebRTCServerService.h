@@ -21,10 +21,12 @@ public:
     void setOffer() const;
     void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) override;
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
+    void handleAudioData(const AudioBlockProcessedEvent &event) const;
     void onWsMessageReceived(const MessageWsReceivedEvent &event) override;
 
 private:
     std::shared_ptr<rtc::PeerConnection> peerConnection;
+    std::shared_ptr<rtc::Track> audioTrack;
     std::shared_ptr<rtc::DataChannel> dataChannel;
     MeloWebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;

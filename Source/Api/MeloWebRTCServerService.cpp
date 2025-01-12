@@ -1,5 +1,7 @@
 #include "MeloWebRTCServerService.h"
 
+#include "../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecCustomTransform.h"
+
 MeloWebRTCServerService::MeloWebRTCServerService(): meloWebSocketService(MeloWebSocketService(getWsRouteString(WsRoute::GetOngoingSessionRTC))) {
     EventManager::getInstance().addListener(this);
 }
@@ -19,6 +21,11 @@ void MeloWebRTCServerService::setupConnection() {
     config.iceServers.emplace_back("stun:stun.l.google.com:19302");
 
     peerConnection = std::make_shared<rtc::PeerConnection>(config);
+    rtc::Description::Audio newAudioTrack("audio", rtc::Description::Direction::SendOnly);
+    newAudioTrack.addOpusCodec(111);
+    newAudioTrack.addSSRC(12345678, "audioStream");
+    audioTrack = peerConnection->addTrack(static_cast<rtc::Description::Media>(newAudioTrack));
+
     peerConnection->onLocalDescription([this](rtc::Description sdp) {
         if (ongoingSession.has_value()) {
             const auto offerEvent = new RTCOfferSentEvent(sdp, ongoingSession.value());
@@ -34,30 +41,6 @@ void MeloWebRTCServerService::setupConnection() {
     });
 
     dataChannel = peerConnection->createDataChannel("secure-audio");
-    // peerConnection->setLocalDescription(rtc::Description::Type::Offer);
-
-    // Configurez les callbacks
-    // peerConnection->onTrack([this](std::shared_ptr<rtc::Track> track) {
-    //     std::cout << "Track received: " << track << std::endl;
-    //
-    //     // Gérer l'audio ici (par ex., streamer vers l'application React)
-    // });
-
-    // peerConnection->onDataChannel([this](std::shared_ptr<rtc::DataChannel> channel) {
-    //     std::cout << "Data channel opened: " << channel->label() << std::endl;
-    //     dataChannel = channel;
-    //
-    //     // Gérer les messages reçus (par exemple, commandes ou contrôle)
-    //     dataChannel->onMessage(
-    //     [](const rtc::binary& data) {
-    //         std::cout << "Received binary data: " << data.size() << " bytes" << std::endl;
-    //     },
-    //     [](const std::string& data) {
-    //         std::cout << "Received text data: " << data << std::endl;
-    //     });
-    // });
-    // Créer un canal de données pour transmettre l'audio
-
 }
 
 void MeloWebRTCServerService::setOffer() const {
@@ -75,25 +58,26 @@ void MeloWebRTCServerService::onOngoingSessionChanged(const OngoingSessionChange
 };
 
 void MeloWebRTCServerService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent& event) {
-    if (!dataChannel) {
+    if (!dataChannel || !dataChannel->isOpen()) {
         return;
     }
-    dataChannel->onOpen([event, this]() {
-        for (int channel = 0; channel < event.totalNumInputChannels; ++channel)
-        {
-            auto* channelData = event.buffer.getWritePointer (channel);
-            if (!dataChannel || !dataChannel->isOpen()) {
-            std::cerr << "Data channel is not open!" << std::endl;
-            }
-            juce::Logger::outputDebugString("Sending audio data");
-            // Convertir les données audio en format binaire
-            rtc::binary binaryData = VectorUtils::convertFloatToBinary(channelData, event.buffer.getNumSamples());
+    handleAudioData(event);
+};
 
-            // Envoyer les données via le canal de données
-            dataChannel->send(binaryData);
+void MeloWebRTCServerService::handleAudioData(const AudioBlockProcessedEvent &event) const {
+    for (int channel = 0; channel < event.totalNumInputChannels; ++channel)
+    {
+        auto* channelData = event.buffer.getWritePointer (channel);
+        if (!dataChannel || !dataChannel->isOpen()) {
+        std::cerr << "Data channel is not open!" << std::endl;
         }
-    });
+        juce::Logger::outputDebugString("Sending audio data");
+        // Convertir les données audio en format binaire
+        rtc::binary binaryData = VectorUtils::convertFloatToBinary(channelData, event.buffer.getNumSamples());
 
+        // Envoyer les données via le canal de données
+        dataChannel->send(binaryData);
+    }
 };
 
 

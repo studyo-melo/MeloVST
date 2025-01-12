@@ -56,6 +56,7 @@ set(SourceFiles
         Source/Utils/Constants.h
         Source/Utils/JuceLocalStorage.h
         Source/Utils/json.hpp
+        Source/Debug/DebugAudioCallback.h
         Source/MainApplication.cpp
         Source/MainApplication.h
         Source/MainAudioProcessor.cpp
