@@ -15,12 +15,11 @@ juce::String MeloApiService::makeGETRequest(const ApiRoute route)
 }
 
 // Méthode POST
-juce::String MeloApiService::makePOSTRequest(const ApiRoute route, const juce::StringPairArray& body)
+juce::String MeloApiService::makePOSTRequest(const ApiRoute route, const nlohmann::json& body)
 {
     return makeHttpRequest(route, [&body](juce::URL& url, const juce::URL::InputStreamOptions& options) {
         options.withHttpRequestCmd("POST");
-        const auto postData = StringUtils::convertStringPairArrayToPOSTData(body);
-        url = url.withPOSTData(postData);
+        url = url.withPOSTData(body.dump());
     });
 }
 

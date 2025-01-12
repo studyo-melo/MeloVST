@@ -2,6 +2,11 @@
 
 #include "MainAudioProcessor.h"
 #include "Gui/MainWindow.h"
+#include "MainAudioProcessor.h"
+#include "Gui/MainWindow.h"
+#include "Debug/DebugAudioCallback.h"
+#include "CrashHandler.h"
+#include "juce_audio_utils/juce_audio_utils.h"
 #include <memory>
 
 //==============================================================================

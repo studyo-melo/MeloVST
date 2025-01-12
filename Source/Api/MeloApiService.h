@@ -9,7 +9,7 @@ class MeloApiService
 public:
     // Méthode pour obtenir les données via HTTPS
     juce::String makeGETRequest(ApiRoute route);
-    juce::String makePOSTRequest(ApiRoute route, const juce::StringPairArray& body);
+    juce::String makePOSTRequest(ApiRoute route, const nlohmann::json& body);
     static MeloApiService& getInstance();
     MeloApiService(const MeloApiService&) = delete;
 

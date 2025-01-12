@@ -1,14 +1,11 @@
-#include "MainAudioProcessor.h"
 #include "MainApplication.h"
-#include "Gui/MainWindow.h"
-#include "juce_audio_utils/juce_audio_utils.h"
-#include "Debug/DebugAudioCallback.h"
-//==============================================================================
+
 MainApplication::MainApplication (MainAudioProcessor& p):
     AudioProcessorEditor(&p),
     mainWindowInstance(std::make_unique<MainWindow>("Main Window")),
     mainWindow(*mainWindowInstance), processorRef(p)
 {
+    std::set_terminate(CrashHandler::customTerminateHandler);
     juce::ignoreUnused(processorRef);
     if constexpr (Constants::debug == true) {
         juce::AudioDeviceManager deviceManager;
@@ -22,7 +19,6 @@ MainApplication::MainApplication (MainAudioProcessor& p):
 
 MainApplication::~MainApplication() = default;
 
-//==============================================================================
 void MainApplication::paint (juce::Graphics& g)
 {
     mainWindow.paint(g);

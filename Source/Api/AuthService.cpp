@@ -8,9 +8,10 @@ AuthService &AuthService::getInstance() {
 }
 
 juce::String AuthService::login(const juce::String &email, const juce::String &password) {
-    juce::StringPairArray jsonBody;
-    jsonBody.set("email", email);
-    jsonBody.set("password", password);
+    nlohmann::json jsonBody = {
+        {"email",    email.toStdString()},
+        {"password", password.toStdString()}
+    };
 
     try {
         auto res = MeloApiService::getInstance().makePOSTRequest(ApiRoute::PostLogin, jsonBody);

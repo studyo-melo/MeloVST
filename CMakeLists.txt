@@ -59,6 +59,7 @@ set(SourceFiles
         Source/Debug/DebugAudioCallback.h
         Source/MainApplication.cpp
         Source/MainApplication.h
+        Source/CrashHandler.h
         Source/MainAudioProcessor.cpp
         Source/MainAudioProcessor.h
         Source/Gui/MainWindow.cpp
