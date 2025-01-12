@@ -12,9 +12,8 @@ public:
     ~MeloWebSocketService();
 
     void connectToServer();
+    void disconnectToServer();
     void sendMessage(const std::string& message, int retryCounter = 0);
-
-    static std::string createMessage(const std::string& type, const auto& data);
 
 private:
     juce::String wsRoute;

@@ -2,9 +2,13 @@
 
 #include "../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecCustomTransform.h"
 
-MeloWebRTCServerService::MeloWebRTCServerService(): meloWebSocketService(MeloWebSocketService(getWsRouteString(WsRoute::GetOngoingSessionRTC))) {
+MeloWebRTCServerService::MeloWebRTCServerService():
+    meloWebSocketService(MeloWebSocketService(getWsRouteString(WsRoute::GetOngoingSessionRTC))),
+    reconnectTimer([this]() { attemptReconnect(); })
+{
     EventManager::getInstance().addListener(this);
 }
+
 MeloWebRTCServerService::~MeloWebRTCServerService() {
     EventManager::getInstance().removeListener(this);
     if (peerConnection) {
@@ -21,10 +25,10 @@ void MeloWebRTCServerService::setupConnection() {
     config.iceServers.emplace_back("stun:stun.l.google.com:19302");
 
     peerConnection = std::make_shared<rtc::PeerConnection>(config);
-    rtc::Description::Audio newAudioTrack("audio", rtc::Description::Direction::SendOnly);
-    newAudioTrack.addOpusCodec(111);
-    newAudioTrack.addSSRC(12345678, "audioStream");
-    audioTrack = peerConnection->addTrack(static_cast<rtc::Description::Media>(newAudioTrack));
+    // rtc::Description::Audio newAudioTrack("audio", rtc::Description::Direction::SendOnly);
+    // newAudioTrack.addOpusCodec(111);
+    // newAudioTrack.addSSRC(12345678, "audioStream");
+    // audioTrack = peerConnection->addTrack(static_cast<rtc::Description::Media>(newAudioTrack));
 
     peerConnection->onLocalDescription([this](rtc::Description sdp) {
         if (ongoingSession.has_value()) {
@@ -37,6 +41,25 @@ void MeloWebRTCServerService::setupConnection() {
         if (ongoingSession.has_value()) {
             const auto candidateEvent = new RTCIceCandidateSentEvent(candidate, ongoingSession.value());
             meloWebSocketService.sendMessage(candidateEvent->createMessage());
+        }
+    });
+
+    peerConnection->onIceStateChange([this](rtc::PeerConnection::IceState state) {
+        switch (state) {
+            case rtc::PeerConnection::IceState::New:
+                juce::Logger::outputDebugString("ICE state changed to: New");
+                break;
+            case rtc::PeerConnection::IceState::Disconnected:
+            case rtc::PeerConnection::IceState::Failed:
+            case rtc::PeerConnection::IceState::Closed:
+                reconnectTimer.callAfterDelay(reconnectDelayMs, [this]() { attemptReconnect(); });
+                break;
+            case rtc::PeerConnection::IceState::Connected: {
+                reconnectAttempts = 0;
+                juce::Logger::outputDebugString("ICE state changed to: Connected");
+                break;
+            }
+
         }
     });
 
@@ -72,10 +95,8 @@ void MeloWebRTCServerService::handleAudioData(const AudioBlockProcessedEvent &ev
         std::cerr << "Data channel is not open!" << std::endl;
         }
         juce::Logger::outputDebugString("Sending audio data");
-        // Convertir les données audio en format binaire
         rtc::binary binaryData = VectorUtils::convertFloatToBinary(channelData, event.buffer.getNumSamples());
 
-        // Envoyer les données via le canal de données
         dataChannel->send(binaryData);
     }
 };
@@ -87,15 +108,42 @@ void MeloWebRTCServerService::onWsMessageReceived(const MessageWsReceivedEvent &
     }
 
     else if (event.type == "candidate") {
-        // Gérer le candidat ICE reçu du WebSocket
         std::string candidate = event.data["candidate"];
         std::string sdpMid = event.data["sdpMid"];
         // int sdpMLineIndex = event.data["sdpMLineIndex"];
 
-        // Créer le candidat ICE
         rtc::Candidate iceCandidate(rtc::Candidate(candidate, sdpMid));
-
-        // Ajouter le candidat à la connexion
         peerConnection->addRemoteCandidate(iceCandidate);
     }
+}
+
+
+void MeloWebRTCServerService::attemptReconnect() {
+    if (reconnectAttempts >= maxReconnectAttempts) {
+        juce::Logger::outputDebugString("Max reconnect attempts reached. Giving up.");
+        return;
+    }
+
+    juce::Logger::outputDebugString("Attempting to reconnect...");
+    reconnectAttempts++;
+
+    resetConnection();
+
+    reconnectTimer.callAfterDelay(reconnectDelayMs, [this]() {
+        if (!peerConnection || peerConnection->state() == rtc::PeerConnection::State::Closed) {
+            attemptReconnect();
+        } else {
+            juce::Logger::outputDebugString("Reconnection successful.");
+            reconnectAttempts = 0;
+        }
+    });
+}
+
+void MeloWebRTCServerService::resetConnection() {
+    if (peerConnection) {
+        peerConnection->close();
+        peerConnection.reset();
+    }
+
+    setupConnection();
 }

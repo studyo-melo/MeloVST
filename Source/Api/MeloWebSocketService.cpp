@@ -10,24 +10,25 @@ MeloWebSocketService::MeloWebSocketService(const juce::String &wsRoute): webSock
         webSocket.setExtraHeaders({{"Authorization", "Bearer " + accessToken.toStdString()}});
     }
 
-    webSocket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
-    switch (msg->type) {
-        case ix::WebSocketMessageType::Message:
-            break;
-        case ix::WebSocketMessageType::Open:
-            juce::Logger::outputDebugString("Connexion WebSocket ouverte.");
-            break;
-        case ix::WebSocketMessageType::Close:
-            juce::Logger::outputDebugString("Connexion WebSocket fermée.");
-            break;
-        case ix::WebSocketMessageType::Error:
-            juce::Logger::outputDebugString(juce::String::fromUTF8(("Erreur WebSocket : " + msg->errorInfo.reason).c_str()));
-            break;
-        // Vous pouvez ajouter d'autres cas si nécessaire
-        default:
-            break;
-    }
-});
+    webSocket.setOnMessageCallback([this](const ix::WebSocketMessagePtr &msg) {
+        switch (msg->type) {
+            case ix::WebSocketMessageType::Message:
+                break;
+            case ix::WebSocketMessageType::Open:
+                juce::Logger::outputDebugString("Connexion WebSocket ouverte.");
+                break;
+            case ix::WebSocketMessageType::Close:
+                juce::Logger::outputDebugString("Connexion WebSocket fermée.");
+                break;
+            case ix::WebSocketMessageType::Error:
+                juce::Logger::outputDebugString(
+                    juce::String::fromUTF8(("Erreur WebSocket : " + msg->errorInfo.reason).c_str()));
+                break;
+            // Vous pouvez ajouter d'autres cas si nécessaire
+            default:
+                break;
+        }
+    });
 };
 
 MeloWebSocketService::~MeloWebSocketService() {
@@ -48,7 +49,9 @@ void MeloWebSocketService::connectToServer() {
             case ix::WebSocketMessageType::Message: {
                 auto receivedMessage = nlohmann::json::parse(msg->str);
                 juce::Logger::outputDebugString("Message de type " + to_string(receivedMessage["type"]) + " reçu.");
-                EventManager::getInstance().notifyOnWsMessageReceived(MessageWsReceivedEvent{receivedMessage["type"], receivedMessage["data"]});
+                EventManager::getInstance().notifyOnWsMessageReceived(MessageWsReceivedEvent{
+                    receivedMessage["type"], receivedMessage["data"]
+                });
                 break;
             }
             case ix::WebSocketMessageType::Error:
@@ -67,6 +70,10 @@ void MeloWebSocketService::connectToServer() {
     webSocket.start();
 }
 
+void MeloWebSocketService::disconnectToServer() {
+    webSocket.stop();
+}
+
 void MeloWebSocketService::sendMessage(const std::string &message, int retryCounter) {
     if (retryCounter > 3) {
         std::cerr << "Tentatives d'envoi de message épuisées." << std::endl;
@@ -78,7 +85,8 @@ void MeloWebSocketService::sendMessage(const std::string &message, int retryCoun
             break;
         case ix::ReadyState::Open:
             webSocket.sendText(message);
-            juce::Logger::outputDebugString("Message de type " + to_string(nlohmann::json::parse(message)["event"]) + " Envoyé");
+            juce::Logger::outputDebugString(
+                "Message de type " + to_string(nlohmann::json::parse(message)["event"]) + " Envoyé");
             break;
         case ix::ReadyState::Closed:
             connectToServer();

@@ -11,6 +11,7 @@
 #include "../SocketEvents/SocketEvents.h"
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
+#include "ReconnectTimer.h"
 
 class MeloWebRTCServerService final: EventListener {
 public:
@@ -30,4 +31,13 @@ private:
     std::shared_ptr<rtc::DataChannel> dataChannel;
     MeloWebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
+
+
+    int reconnectAttempts = 0;
+    const int maxReconnectAttempts = 5;
+    const int reconnectDelayMs = 2000; // Délai entre les tentatives en millisecondes
+
+    ReconnectTimer reconnectTimer; // Utilisation de juce::Timer pour gérer les délais
+    void attemptReconnect();
+    void resetConnection();
 };

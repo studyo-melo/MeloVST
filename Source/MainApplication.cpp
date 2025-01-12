@@ -14,7 +14,6 @@ MainApplication::MainApplication (MainAudioProcessor& p):
         deviceManager.initialise(0, 2, nullptr, true); // 0 entrées, 2 sorties
         deviceManager.addAudioCallback(&audioCallback);
     }
-
 }
 
 MainApplication::~MainApplication() = default;
