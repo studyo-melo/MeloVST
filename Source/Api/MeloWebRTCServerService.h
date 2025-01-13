@@ -17,13 +17,14 @@ class MeloWebRTCServerService final: EventListener {
 public:
     MeloWebRTCServerService();
     ~MeloWebRTCServerService() override;
-    void handleAnswer(const std::string& sdp) const;
+    void handleAnswer(const std::string& sdp);
     void setupConnection();
     void setOffer() const;
     void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) override;
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
-    void handleAudioData(const AudioBlockProcessedEvent &event) const;
+    void handleAudioData(const AudioBlockProcessedEvent &event);
     void onWsMessageReceived(const MessageWsReceivedEvent &event) override;
+    void monitorAnswer();
 
 private:
     std::shared_ptr<rtc::PeerConnection> peerConnection;
@@ -31,13 +32,29 @@ private:
     std::shared_ptr<rtc::DataChannel> dataChannel;
     MeloWebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
+    std::thread audioThread;
+    std::queue<std::vector<int16_t>> audioQueue;
+    std::mutex queueMutex;
+    std::condition_variable queueCondition;
+    bool stopThread;
+
+    void pushAudioBuffer(const juce::AudioBuffer<float>& buffer);
+    void stopAudioThread();
+    void startAudioThread();
 
 
+
+    bool answerReceived = false;
+    const int maxResendAttempts = 100;
+    int resendAttempts = 0;
+    int resendIntervalMs = 10000;
+    std::optional<ReconnectTimer> answerTimer;
+
+    // Ice Reconnection
     int reconnectAttempts = 0;
     const int maxReconnectAttempts = 5;
-    const int reconnectDelayMs = 2000; // Délai entre les tentatives en millisecondes
-
-    ReconnectTimer reconnectTimer; // Utilisation de juce::Timer pour gérer les délais
+    const int reconnectDelayMs = 2000;
+    ReconnectTimer reconnectTimer;
     void attemptReconnect();
     void resetConnection();
 };
