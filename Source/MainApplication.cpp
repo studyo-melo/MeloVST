@@ -7,12 +7,14 @@ MainApplication::MainApplication (MainAudioProcessor& p):
 {
     std::set_terminate(CrashHandler::customTerminateHandler);
     juce::ignoreUnused(processorRef);
-    if constexpr (Constants::debug == true) {
-        juce::AudioDeviceManager deviceManager;
-        DebugAudioCallback audioCallback = DebugAudioCallback();
 
-        deviceManager.initialise(0, 2, nullptr, true); // 0 entrées, 2 sorties
-        deviceManager.addAudioCallback(&audioCallback);
+     const auto hostDescription = juce::String(juce::PluginHostType().getHostDescription());
+     if (hostDescription.equalsIgnoreCase("Unknown")) {
+         juce::AudioDeviceManager deviceManager;
+         DebugAudioCallback audioCallback = DebugAudioCallback();
+
+         deviceManager.initialise(0, 2, nullptr, true); // 0 entrées, 2 sorties
+         deviceManager.addAudioCallback(&audioCallback);
     }
 }
 

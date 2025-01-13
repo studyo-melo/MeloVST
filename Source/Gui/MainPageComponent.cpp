@@ -19,9 +19,7 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
 
     connectButton.setButtonText(juce::String::fromUTF8(("Send Message")));
     connectButton.onClick = [this] {
-        // auto userConnectedEvent = new SellerConnectedEvent(currentOngoingSession.seller.user._id, currentOngoingSession._id, currentOngoingSession.reservedByArtist.user._id);
-        // meloWebSocketService.sendMessage(userConnectedEvent->createMessage());
-        meloWebRTCServerService.setOffer();
+        meloWebRTCServerService.setupConnection();
     };
 
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
