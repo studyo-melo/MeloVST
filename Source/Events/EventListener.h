@@ -11,4 +11,5 @@ public:
     virtual void onLogoutEvent(const LogoutEvent& event) {}
     virtual void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) {}
     virtual void onWsMessageReceived(const MessageWsReceivedEvent& event) {}
+    virtual void onRTCStateChanged(const RTCStateChangeEvent& event) {}
 };

@@ -12,19 +12,20 @@
 #include "../Api/MeloWebSocketService.h"
 #include "../SocketEvents/SocketEvents.h"
 
-class MainPageComponent final : public juce::Component
+class MainPageComponent final : public juce::Component, EventListener
 {
 public:
     explicit MainPageComponent();
     ~MainPageComponent() override;
 
     static void onLogoutButtonClick();
+    void onRTCStateChanged(const RTCStateChangeEvent &event) override;
 
     void resized() override;
     void paint(juce::Graphics &g) override;
 
 private:
-    juce::Label title, mainText;
+    juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText;
     juce::TextButton logoutButton, connectButton;
     MeloWebRTCServerService meloWebRTCServerService;
     MeloWebSocketService meloWebSocketService;

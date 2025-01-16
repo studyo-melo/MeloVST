@@ -19,14 +19,20 @@ public:
     ~MeloWebRTCServerService() override;
     void handleAnswer(const std::string& sdp);
     void setupConnection();
+    void disconnect();
+    bool isConnected() const;
     void setOffer() const;
     void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) override;
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
     void handleAudioData(const AudioBlockProcessedEvent &event);
     void onWsMessageReceived(const MessageWsReceivedEvent &event) override;
+    void notifyRTCStateChanged() const;
     void monitorAnswer();
+    juce::String getSignalingStateLabel() const;
+    juce::String getIceCandidateStateLabel() const;
 
 private:
+    std::vector<rtc::Candidate> pendingCandidates;
     std::shared_ptr<rtc::PeerConnection> peerConnection;
     std::shared_ptr<rtc::Track> audioTrack;
     std::shared_ptr<rtc::DataChannel> dataChannel;
@@ -41,6 +47,7 @@ private:
     void pushAudioBuffer(const juce::AudioBuffer<float>& buffer);
     void stopAudioThread();
     void startAudioThread();
+    void sendCandidateToRemote(const rtc::Candidate& candidate);
 
 
 

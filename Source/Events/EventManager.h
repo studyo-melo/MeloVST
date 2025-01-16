@@ -44,6 +44,14 @@ public:
         }
     }
 
+    void notifyOnRTCStateChanged(const RTCStateChangeEvent &event)
+    {
+        for (auto* listener : listeners)
+        {
+            listener->onRTCStateChanged(event);
+        }
+    }
+
     void notifyLogin(const juce::String& accessToken)
     {
         const LoginEvent event{ accessToken };

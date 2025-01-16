@@ -3,23 +3,39 @@
 //
 #include "MainPageComponent.h"
 
-MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServerService()), meloWebSocketService(MeloWebSocketService(getWsRouteString(WsRoute::GetOngoingSession))) {
+MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServerService()),
+                                        meloWebSocketService(
+                                            MeloWebSocketService(getWsRouteString(WsRoute::GetOngoingSession))) {
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
     addAndMakeVisible(mainText);
     addAndMakeVisible(connectButton);
+    addAndMakeVisible(RTCStateText);
+    addAndMakeVisible(RTCSignalingStateText);
+    addAndMakeVisible(RTCIceCandidateStateText);
 
     auto userContext = AuthService::getInstance().getUserContext();
-    title.setText(juce::String::fromUTF8(("Bienvenue " + userContext->user.firstname).c_str()), juce::dontSendNotification);
+    title.setText(juce::String::fromUTF8(("Bienvenue " + userContext->user.firstname).c_str()),
+                  juce::dontSendNotification);
     title.setJustificationType(juce::Justification::centred);
     title.setFont(30.0f);
 
     mainText.setText(juce::String::fromUTF8(("L'audio s'affichera ici")), juce::dontSendNotification);
     mainText.setJustificationType(juce::Justification::centred);
 
-    connectButton.setButtonText(juce::String::fromUTF8(("Send Message")));
+    RTCStateText.setText(juce::String::fromUTF8(("Vous n'êtes pas connecté avec l'artiste")),
+                         juce::dontSendNotification);
+    RTCStateText.setJustificationType(juce::Justification::centred);
+    RTCIceCandidateStateText.setJustificationType(juce::Justification::centred);
+    RTCSignalingStateText.setJustificationType(juce::Justification::centred);
+
+    connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
     connectButton.onClick = [this] {
-        meloWebRTCServerService.setupConnection();
+        if (meloWebRTCServerService.isConnected()) {
+            meloWebRTCServerService.disconnect();
+        } else {
+            meloWebRTCServerService.setupConnection();
+        }
     };
 
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
@@ -30,7 +46,9 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
         ongoingSessions = PopulatedSession::parseArrayFromJsonString(res);
         if (ongoingSessions.size() > 0) {
             currentOngoingSession = ongoingSessions[0];
-            mainText.setText("Vous avez une session en cours avec " + currentOngoingSession.reservedByArtist.user.userAlias, juce::dontSendNotification);
+            mainText.setText(
+                "Vous avez une session en cours avec " + currentOngoingSession.reservedByArtist.user.userAlias,
+                juce::dontSendNotification);
             EventManager::getInstance().notifyOngoingSessionChanged(OngoingSessionChangedEvent(currentOngoingSession));
             meloWebSocketService.connectToServer();
         } else {
@@ -38,21 +56,80 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
         }
     }
 
+    EventManager::getInstance().addListener(this);
+}
+
+void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
+    switch (event.state) {
+        case rtc::PeerConnection::State::Connected: {
+            connectButton.setButtonText(juce::String::fromUTF8("Déconnecter la connexion avec l'artiste"));
+            RTCStateText.setText(juce::String::fromUTF8("Vous êtes connecté avec l'artiste."),
+                                 juce::dontSendNotification);
+            break;
+        }
+        case rtc::PeerConnection::State::Connecting: {
+            RTCStateText.setText("En cours de connexion avec l'artiste...", juce::dontSendNotification);
+            break;
+        }
+        case rtc::PeerConnection::State::Disconnected: {
+            connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
+            RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
+                                 juce::dontSendNotification);
+            break;
+        }
+        default: {
+            connectButton.setVisible(true);
+            RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
+                                 juce::dontSendNotification);
+            break;
+        }
+    }
+
+    RTCIceCandidateStateText.setText(meloWebRTCServerService.getIceCandidateStateLabel(), juce::dontSendNotification);
+    RTCSignalingStateText.setText(meloWebRTCServerService.getSignalingStateLabel(),
+                                  juce::dontSendNotification);
 }
 
 MainPageComponent::~MainPageComponent() {
     logoutButton.onClick = nullptr;
+    EventManager::getInstance().removeListener(this);
 }
 
 void MainPageComponent::resized() {
+    juce::FlexBox stateFlexbox;
+    stateFlexbox.flexDirection = juce::FlexBox::Direction::column;
+    stateFlexbox.justifyContent = juce::FlexBox::JustifyContent::center;
+    stateFlexbox.items.add(
+        juce::FlexItem(RTCStateText).withFlex(0).withHeight(20).withMargin(juce::FlexItem::Margin(0, 0, 0, 0)));
+    stateFlexbox.items.add(
+        juce::FlexItem(RTCSignalingStateText).withFlex(0).withHeight(20).withMargin(
+            juce::FlexItem::Margin(0, 0, 0, 0)));
+    stateFlexbox.items.add(
+        juce::FlexItem(RTCIceCandidateStateText).withFlex(0).withHeight(20).withMargin(
+            juce::FlexItem::Margin(0, 0, 0, 0)));
+
+    juce::FlexBox titleFlexbox;
+    titleFlexbox.flexDirection = juce::FlexBox::Direction::column;
+    titleFlexbox.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+    titleFlexbox.items.add(
+        juce::FlexItem(logoutButton)
+        .withFlex(0).withHeight(30).withWidth(70)
+        .withMargin(juce::FlexItem::Margin(5, 5, 0, 0))
+        .withAlignSelf(juce::FlexItem::AlignSelf::flexEnd)
+    );
+    titleFlexbox.items.add(juce::FlexItem(title).withFlex(1).withMargin(juce::FlexItem::Margin(10, 0, 0, 0)));
+    titleFlexbox.items.add(juce::FlexItem(mainText).withFlex(1).withMargin(juce::FlexItem::Margin(0, 0, 0, 0)));
+
     juce::FlexBox pageFlexbox;
     pageFlexbox.flexDirection = juce::FlexBox::Direction::column;
     pageFlexbox.justifyContent = juce::FlexBox::JustifyContent::flexStart;
     pageFlexbox.alignContent = juce::FlexBox::AlignContent::center;
-    pageFlexbox.items.add(juce::FlexItem(logoutButton).withFlex(0).withHeight(30).withWidth(70).withMargin(juce::FlexItem::Margin(5, 5, 0, 0)).withAlignSelf(juce::FlexItem::AlignSelf::flexEnd));
-    pageFlexbox.items.add(juce::FlexItem(title).withFlex(0).withHeight(30).withMargin(juce::FlexItem::Margin(30, 0, 30, 0)));
-    pageFlexbox.items.add(juce::FlexItem(connectButton).withFlex(1).withMargin(juce::FlexItem::Margin(30, 0, 0, 0)));
-    pageFlexbox.items.add(juce::FlexItem(mainText).withFlex(1).withMargin(juce::FlexItem::Margin(30, 0, 0, 0)));
+
+    pageFlexbox.items.add(juce::FlexItem(titleFlexbox).withFlex(1));
+    pageFlexbox.items.add(juce::FlexItem(stateFlexbox).withFlex(1));
+    pageFlexbox.items.add(
+        juce::FlexItem(connectButton).withHeight(30).withWidth(200).withAlignSelf(juce::FlexItem::AlignSelf::center).
+        withFlex(0).withMargin(juce::FlexItem::Margin(20, 0, 20, 0)));
     pageFlexbox.performLayout(getLocalBounds());
 }
 
