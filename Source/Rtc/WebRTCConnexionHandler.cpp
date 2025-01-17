@@ -1,44 +1,20 @@
-#include "WebRTCServerService.h"
+#include "WebRTCConnexionHandler.h"
 
-WebRTCServerService::WebRTCServerService(): meloWebSocketService(
+WebRTCConnexionHandler::WebRTCConnexionHandler(): meloWebSocketService(
                                                 WebSocketService(
                                                     getWsRouteString(WsRoute::GetOngoingSessionRTC))),
-                                            stopThread(false),
                                             reconnectTimer([this]() { attemptReconnect(); }) {
     EventManager::getInstance().addListener(this);
 }
 
-WebRTCServerService::~WebRTCServerService() {
+WebRTCConnexionHandler::~WebRTCConnexionHandler() {
     EventManager::getInstance().removeListener(this);
-    stopAudioThread();
     if (peerConnection) {
         peerConnection->close();
     }
 }
 
-void WebRTCServerService::pushAudioBuffer(const float* data, int numSamples) {
-    std::vector<int16_t> pcmData(numSamples);
-    for (int i = 0; i < numSamples; ++i)
-    {
-        pcmData[i] = static_cast<int16_t>(data[i] * 32767.0f); // Normaliser si nécessaire
-    }
-
-    // Ajouter les données PCM dans la queue thread-safe
-    {
-        std::unique_lock<std::mutex> lock(queueMutex);
-        audioQueue.push(std::move(pcmData));
-    }
-    queueCondition.notify_one();
-}
-
-void WebRTCServerService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
-    if (!audioTrack || !audioTrack->isOpen()) {
-        return;
-    }
-    pushAudioBuffer(event.data, event.numSamples);
-};
-
-void WebRTCServerService::setupConnection() {
+void WebRTCConnexionHandler::setupConnection() {
     rtc::InitLogger(rtc::LogLevel::Info);
     rtc::Configuration config;
     config.iceServers.emplace_back("stun:stun.l.google.com:19302");
@@ -47,8 +23,7 @@ void WebRTCServerService::setupConnection() {
 
     rtc::Description::Audio newAudioTrack{};
     newAudioTrack.addOpusCodec(111);
-    newAudioTrack.setBitrate(2048);
-    // newAudioTrack.setBitrate(64000);
+    newAudioTrack.setBitrate(64000);
     newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
 
     peerConnection->onLocalDescription([this](rtc::Description sdp) {
@@ -94,6 +69,9 @@ void WebRTCServerService::setupConnection() {
                 reconnectTimer.callAfterDelay(reconnectDelayMs, [this]() { attemptReconnect(); });
                 break;
             }
+            case rtc::PeerConnection::IceState::Checking:
+               break;
+            case rtc::PeerConnection::IceState::Completed:
             case rtc::PeerConnection::IceState::Connected: {
                 if (peerConnection->state() == rtc::PeerConnection::State::Connected) {
                     juce::Logger::outputDebugString("Already connected, skipping reconnection.");
@@ -101,7 +79,6 @@ void WebRTCServerService::setupConnection() {
                 }
                 reconnectAttempts = 0;
                 juce::Logger::outputDebugString("ICE state changed to: Connected");
-                startAudioThread();
                 break;
             }
             default:
@@ -113,71 +90,26 @@ void WebRTCServerService::setupConnection() {
     setOffer();
 }
 
-void WebRTCServerService::disconnect() const {
+void WebRTCConnexionHandler::disconnect() const {
     if (peerConnection) {
         peerConnection->close();
-        // peerConnection.reset();
-        // stopThread = false;
     }
 }
 
-void WebRTCServerService::resetConnection() {
+void WebRTCConnexionHandler::resetConnection() {
     disconnect();
     setupConnection();
 }
 
-void WebRTCServerService::startAudioThread() {
-    juce::Logger::outputDebugString("Starting audio thread");
-    stopAudioThread();
-    stopThread = false;
-    audioThread = std::thread([this]() {
-        sendAudioData();
-    });
-}
-
-void WebRTCServerService::sendAudioData() {
-    while (!stopThread) {
-        std::vector<int16_t> pcmData; {
-            std::unique_lock<std::mutex> lock(queueMutex);
-            queueCondition.wait(lock, [this]() { return !audioQueue.empty() || stopThread; });
-            if (stopThread) break;
-
-            pcmData = std::move(audioQueue.front());
-            audioQueue.pop();
-        }
-
-        juce::Logger::outputDebugString("Sending audio data");
-        if (audioTrack) {
-            try {
-                audioTrack->send(reinterpret_cast<const std::byte *>(pcmData.data()), pcmData.size() * sizeof(int16_t));
-            }
-            catch (const std::exception& e) {
-                juce::Logger::outputDebugString("Error sending audio data" + std::string(e.what()));
-            }
-        }
-    }
-}
-
-void WebRTCServerService::stopAudioThread() {
-    juce::Logger::outputDebugString("Stopping audio thread"); {
-        std::unique_lock<std::mutex> lock(queueMutex);
-        stopThread = true;
-    }
-    queueCondition.notify_all();
-    if (audioThread.joinable()) {
-        audioThread.join();
-    }
-}
-
-void WebRTCServerService::notifyRTCStateChanged() const {
+void WebRTCConnexionHandler::notifyRTCStateChanged() const {
     juce::Logger::outputDebugString("RTC state changed, notifying listeners");
     EventManager::getInstance().notifyOnRTCStateChanged({
         peerConnection->state(), peerConnection->iceState(), peerConnection->signalingState()
     });
-};
+}
 
 
-void WebRTCServerService::onWsMessageReceived(const MessageWsReceivedEvent &event) {
+void WebRTCConnexionHandler::onWsMessageReceived(const MessageWsReceivedEvent &event) {
     if (!peerConnection) {
         return;
     }
@@ -200,7 +132,7 @@ void WebRTCServerService::onWsMessageReceived(const MessageWsReceivedEvent &even
     }
 }
 
-void WebRTCServerService::setOffer() {
+void WebRTCConnexionHandler::setOffer() {
     if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::Stable && peerConnection->state() ==
         rtc::PeerConnection::State::Connected) {
         return;
@@ -214,7 +146,7 @@ void WebRTCServerService::setOffer() {
     }
 }
 
-void WebRTCServerService::handleAnswer(const std::string &sdp) {
+void WebRTCConnexionHandler::handleAnswer(const std::string &sdp) {
     if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer) {
         return;
     }
@@ -235,12 +167,12 @@ void WebRTCServerService::handleAnswer(const std::string &sdp) {
     pendingCandidates.clear();
 }
 
-void WebRTCServerService::onOngoingSessionChanged(const OngoingSessionChangedEvent &event) {
+void WebRTCConnexionHandler::onOngoingSessionChanged(const OngoingSessionChangedEvent &event) {
     ongoingSession = event.ongoingSession;
     meloWebSocketService.connectToServer();
 }
 
-void WebRTCServerService::attemptReconnect() {
+void WebRTCConnexionHandler::attemptReconnect() {
     if (!ongoingSession.has_value()) {
         juce::Logger::outputDebugString("No ongoing session. Cannot reconnect.");
         return;
@@ -269,7 +201,7 @@ void WebRTCServerService::attemptReconnect() {
     });
 }
 
-void WebRTCServerService::monitorAnswer() {
+void WebRTCConnexionHandler::monitorAnswer() {
     if (!answerTimer.has_value()) {
         answerTimer.emplace(ReconnectTimer([this]() {
             if (answerReceived) {
@@ -295,21 +227,21 @@ void WebRTCServerService::monitorAnswer() {
     answerTimer->startTimer(resendIntervalMs);
 }
 
-bool WebRTCServerService::isConnected() const {
+bool WebRTCConnexionHandler::isConnected() const {
     if (!peerConnection) {
         return false;
     }
     return peerConnection->state() == rtc::PeerConnection::State::Connected;
 }
 
-bool WebRTCServerService::isConnecting() const {
+bool WebRTCConnexionHandler::isConnecting() const {
     if (!peerConnection) {
         return false;
     }
     return peerConnection->state() == rtc::PeerConnection::State::Connecting;
 }
 
-void WebRTCServerService::sendOfferToRemote(const rtc::Description &sdp) {
+void WebRTCConnexionHandler::sendOfferToRemote(const rtc::Description &sdp) {
     if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer
         || peerConnection->state() == rtc::PeerConnection::State::Connected) {
         return;
@@ -321,7 +253,7 @@ void WebRTCServerService::sendOfferToRemote(const rtc::Description &sdp) {
     }
 }
 
-void WebRTCServerService::sendCandidateToRemote(const rtc::Candidate &candidate) {
+void WebRTCConnexionHandler::sendCandidateToRemote(const rtc::Candidate &candidate) {
     if (!ongoingSession.has_value()) {
         return;
     }
@@ -329,7 +261,7 @@ void WebRTCServerService::sendCandidateToRemote(const rtc::Candidate &candidate)
     meloWebSocketService.sendMessage(candidateEvent->createMessage());
 }
 
-juce::String WebRTCServerService::getSignalingStateLabel() const {
+juce::String WebRTCConnexionHandler::getSignalingStateLabel() const {
     if (!peerConnection) {
         return juce::String::fromUTF8("Inconnu");
     }
@@ -349,7 +281,7 @@ juce::String WebRTCServerService::getSignalingStateLabel() const {
     }
 }
 
-juce::String WebRTCServerService::getIceCandidateStateLabel() const {
+juce::String WebRTCConnexionHandler::getIceCandidateStateLabel() const {
     if (!peerConnection) {
         return juce::String::fromUTF8("Inconnu");
     }

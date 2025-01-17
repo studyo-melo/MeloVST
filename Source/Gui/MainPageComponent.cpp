@@ -3,7 +3,7 @@
 //
 #include "MainPageComponent.h"
 
-MainPageComponent::MainPageComponent(): webRTCServerService(WebRTCServerService()),
+MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService()),
                                         webSocketService(
                                             WebSocketService(getWsRouteString(WsRoute::GetOngoingSession))) {
     setSize(600, 400);
@@ -31,7 +31,7 @@ MainPageComponent::MainPageComponent(): webRTCServerService(WebRTCServerService(
     RTCSignalingStateText.setJustificationType(juce::Justification::centred);
 
     connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
-    connectButton.onClick = [this, meloWebRTCServerService = &webRTCServerService] {
+    connectButton.onClick = [this, meloWebRTCServerService = &webRTCAudioService] {
         if (meloWebRTCServerService->isConnecting()) {
             juce::Logger::outputDebugString("Already connecting...");
             meloWebRTCServerService->disconnect();
@@ -92,8 +92,8 @@ void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
         }
     }
 
-    RTCIceCandidateStateText.setText(webRTCServerService.getIceCandidateStateLabel(), juce::dontSendNotification);
-    RTCSignalingStateText.setText(webRTCServerService.getSignalingStateLabel(),
+    RTCIceCandidateStateText.setText(webRTCAudioService.getIceCandidateStateLabel(), juce::dontSendNotification);
+    RTCSignalingStateText.setText(webRTCAudioService.getSignalingStateLabel(),
                                   juce::dontSendNotification);
     });
 }

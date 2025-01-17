@@ -77,8 +77,10 @@ set(SourceFiles
         Source/Socket/SocketRoutes.h
         Source/Api/AuthService.cpp
         Source/Api/AuthService.h
-        Source/Rtc/WebRTCServerService.h
-        Source/Rtc/WebRTCServerService.cpp
+        Source/Rtc/WebRTCAudioService.h
+        Source/Rtc/WebRTCAudioService.cpp
+        Source/Rtc/WebRTCConnexionHandler.cpp
+        Source/Rtc/WebRTCConnexionHandler.h
         Source/Rtc/ReconnectTimer.h
         Source/Models/User.h
         Source/Models/Session.h

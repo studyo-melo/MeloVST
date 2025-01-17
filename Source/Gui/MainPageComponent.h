@@ -6,7 +6,7 @@
 #include "../Api/AuthService.h"
 #include "../Events/EventListener.h"
 #include "../Events/EventManager.h"
-#include "../Rtc/WebRTCServerService.h"
+#include "../Rtc/WebRTCAudioService.h"
 #include "../Socket/WebSocketService.h"
 #include "../Api/ApiRoutes.h"
 #include "../Models/Session.h"
@@ -27,7 +27,7 @@ public:
 private:
     juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText;
     juce::TextButton logoutButton, connectButton;
-    WebRTCServerService webRTCServerService;
+    WebRTCAudioService webRTCAudioService;
     WebSocketService webSocketService;
     juce::Array<PopulatedSession> ongoingSessions;
     PopulatedSession currentOngoingSession;
