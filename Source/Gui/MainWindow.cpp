@@ -72,6 +72,7 @@ void MainWindow::navigateToLoginPage()
 void MainWindow::navigateToMainPage()
 {
     currentPage = std::make_unique<MainPageComponent>();
-    addAndMakeVisible(currentPage.get());
+    setContentOwned(currentPage.get(), true);
+    // setContentOwned(currentPage.get());
     resized();
 }

@@ -32,8 +32,8 @@ juce::String AuthService::login(const juce::String &email, const juce::String &p
 
 std::optional<UserContext> AuthService::fetchUserContext() {
     auto myUserContext = MeloApiService::getInstance().makeGETRequest(ApiRoute::GetMyUserContext);
-    juce::Logger::outputDebugString("Réponse de la requête myUserContext : " + myUserContext);
     if (myUserContext.isEmpty()) {
+        juce::Logger::outputDebugString("Aucun UserContext trouvé");
         logout();
         return std::nullopt;
     }

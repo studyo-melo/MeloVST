@@ -54,7 +54,7 @@ void MeloWebRTCServerService::setupConnection() {
     peerConnection = std::make_shared<rtc::PeerConnection>(config);
 
     rtc::Description::Audio newAudioTrack{};
-    // newAudioTrack.addOpusCodec(111);
+    newAudioTrack.addOpusCodec(111);
     newAudioTrack.setBitrate(64000);
     newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
 
@@ -181,6 +181,9 @@ void MeloWebRTCServerService::notifyRTCStateChanged() const {
 
 
 void MeloWebRTCServerService::onWsMessageReceived(const MessageWsReceivedEvent &event) {
+    if (!peerConnection) {
+        return;
+    }
     if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer) {
         return;
     }

@@ -2,7 +2,7 @@
 
 MainApplication::MainApplication (MainAudioProcessor& p):
     AudioProcessorEditor(&p),
-    mainWindowInstance(std::make_unique<MainWindow>("Main Window")),
+    mainWindowInstance(std::make_unique<MainWindow>("Melo")),
     mainWindow(*mainWindowInstance), processorRef(p)
 {
     std::set_terminate(CrashHandler::customTerminateHandler);

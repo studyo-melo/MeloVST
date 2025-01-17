@@ -6,6 +6,7 @@
 MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServerService()),
                                         meloWebSocketService(
                                             MeloWebSocketService(getWsRouteString(WsRoute::GetOngoingSession))) {
+    setSize(600, 400);
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
     addAndMakeVisible(mainText);
@@ -65,6 +66,7 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
 }
 
 void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
+    juce::MessageManager::callAsync([this, event] {
     switch (event.state) {
         case rtc::PeerConnection::State::Connected: {
             connectButton.setButtonText(juce::String::fromUTF8("Déconnecter la connexion avec l'artiste"));
@@ -93,6 +95,7 @@ void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
     RTCIceCandidateStateText.setText(meloWebRTCServerService.getIceCandidateStateLabel(), juce::dontSendNotification);
     RTCSignalingStateText.setText(meloWebRTCServerService.getSignalingStateLabel(),
                                   juce::dontSendNotification);
+    });
 }
 
 MainPageComponent::~MainPageComponent() {

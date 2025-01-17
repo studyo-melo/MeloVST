@@ -17,6 +17,14 @@ MainAudioProcessor::MainAudioProcessor()
 MainAudioProcessor::~MainAudioProcessor()
 = default;
 
+const juce::String MainAudioProcessor::getProgramName (int index)
+{
+    if (index == 0) return "MeloVST Send";
+    if (index == 1) return "MeloVST Receive";
+    return {};
+}
+
+
 //==============================================================================
 const juce::String MainAudioProcessor::getName() const
 {
@@ -69,12 +77,6 @@ int MainAudioProcessor::getCurrentProgram()
 void MainAudioProcessor::setCurrentProgram (int index)
 {
     juce::ignoreUnused (index);
-}
-
-const juce::String MainAudioProcessor::getProgramName (int index)
-{
-    juce::ignoreUnused (index);
-    return {};
 }
 
 void MainAudioProcessor::changeProgramName (int index, const juce::String& newName)

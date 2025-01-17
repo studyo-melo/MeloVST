@@ -5,6 +5,7 @@
 #include "../Api/MeloApiService.h"
 
 LoginPageComponent::LoginPageComponent() {
+    setSize(600, 400);
     addAndMakeVisible(title);
     addAndMakeVisible(usernameLabel);
     addAndMakeVisible(usernameField);
