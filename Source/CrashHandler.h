@@ -2,7 +2,7 @@
 #include <exception>
 #include <iostream>
 #include <juce_core/juce_core.h>
-#include "Api/MeloApiService.h"
+#include "Api/ApiService.h"
 #include "Api/AuthService.h"
 
 class CrashHandler {
@@ -17,7 +17,7 @@ public:
         if (AuthService::getInstance().getUserContext().has_value() ) {
             jsonBody["userId"] = AuthService::getInstance().getUserContext().value().user._id;
         }
-        auto res = MeloApiService::getInstance().makePOSTRequest(ApiRoute::CreateCrashReport, jsonBody);
+        auto res = ApiService::getInstance().makePOSTRequest(ApiRoute::CreateCrashReport, jsonBody);
     }
 
     static void customTerminateHandler() {

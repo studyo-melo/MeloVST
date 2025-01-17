@@ -2,14 +2,14 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_core/juce_core.h>
 #include <ixwebsocket/ixWebsocket.h>
-#include "ApiRoutes.h"
+#include "SocketRoutes.h"
 #include "../Utils/Constants.h"
 
-class MeloWebSocketService
+class WebSocketService
 {
 public:
-    MeloWebSocketService(const juce::String& wsRoute);
-    ~MeloWebSocketService();
+    WebSocketService(const juce::String& wsRoute);
+    ~WebSocketService();
 
     void connectToServer();
     void disconnectToServer();

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <juce_core/juce_core.h>
-#include "MeloApiService.h"
+#include "ApiService.h"
 #include "../Utils/StringUtils.h"
 #include "../Utils/JuceLocalStorage.h"
 #include "../Models/UserContext.h"

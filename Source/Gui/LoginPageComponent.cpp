@@ -2,7 +2,7 @@
 // Created by Padoa on 08/01/2025.
 //
 #include "LoginPageComponent.h"
-#include "../Api/MeloApiService.h"
+#include "../Api/ApiService.h"
 
 LoginPageComponent::LoginPageComponent() {
     setSize(600, 400);

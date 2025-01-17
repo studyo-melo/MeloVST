@@ -5,18 +5,18 @@
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 
-#include "MeloWebSocketService.h"
+#include "../Socket/WebSocketService.h"
 #include "../Events/EventListener.h"
 #include "../Models/Session.h"
-#include "../SocketEvents/SocketEvents.h"
+#include "../Socket/SocketEvents.h"
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
 #include "ReconnectTimer.h"
 
-class MeloWebRTCServerService final: EventListener {
+class WebRTCServerService final: EventListener {
 public:
-    MeloWebRTCServerService();
-    ~MeloWebRTCServerService() override;
+    WebRTCServerService();
+    ~WebRTCServerService() override;
     void handleAnswer(const std::string& sdp);
     void setupConnection();
     void disconnect() const;
@@ -37,7 +37,7 @@ private:
     std::shared_ptr<rtc::PeerConnection> peerConnection;
     std::shared_ptr<rtc::Track> audioTrack;
     std::shared_ptr<rtc::DataChannel> dataChannel;
-    MeloWebSocketService meloWebSocketService;
+    WebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
     std::thread audioThread;
     std::queue<std::vector<int16_t>> audioQueue;

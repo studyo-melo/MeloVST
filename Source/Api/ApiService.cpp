@@ -1,12 +1,12 @@
-#include "MeloApiService.h"
+#include "ApiService.h"
 
-MeloApiService &MeloApiService::getInstance() {
-    static MeloApiService instance;
+ApiService &ApiService::getInstance() {
+    static ApiService instance;
     return instance;
 }
 
 // Méthode GET
-juce::String MeloApiService::makeGETRequest(const ApiRoute route)
+juce::String ApiService::makeGETRequest(const ApiRoute route)
 {
     return makeHttpRequest(route, [](juce::URL& url, const juce::URL::InputStreamOptions& options) {
         options.withHttpRequestCmd("GET");
@@ -15,7 +15,7 @@ juce::String MeloApiService::makeGETRequest(const ApiRoute route)
 }
 
 // Méthode POST
-juce::String MeloApiService::makePOSTRequest(const ApiRoute route, const nlohmann::json& body)
+juce::String ApiService::makePOSTRequest(const ApiRoute route, const nlohmann::json& body)
 {
     return makeHttpRequest(route, [&body](juce::URL& url, const juce::URL::InputStreamOptions& options) {
         options.withHttpRequestCmd("POST")
@@ -27,7 +27,7 @@ juce::String MeloApiService::makePOSTRequest(const ApiRoute route, const nlohman
 
 
 template <typename RequestConfig>
-juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig configureRequest)
+juce::String ApiService::makeHttpRequest(const ApiRoute route, RequestConfig configureRequest)
 {
     juce::String apiUrl = buildApiUrl(route);
     juce::Logger::outputDebugString("Making HTTP request to " + apiUrl);
@@ -84,7 +84,7 @@ juce::String MeloApiService::makeHttpRequest(const ApiRoute route, RequestConfig
     }
 }
 
-juce::URL::InputStreamOptions MeloApiService::buildOptions()
+juce::URL::InputStreamOptions ApiService::buildOptions()
 {
     const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
     if (!accessToken.isEmpty()) {
@@ -100,7 +100,7 @@ juce::URL::InputStreamOptions MeloApiService::buildOptions()
 }
 
 // Méthode pour construire l'URL complète
-juce::String MeloApiService::buildApiUrl(const ApiRoute route)
+juce::String ApiService::buildApiUrl(const ApiRoute route)
 {
     return Constants::apiUrl + getApiRouteString(route);
 }

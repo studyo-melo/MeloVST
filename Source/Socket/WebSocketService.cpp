@@ -1,9 +1,9 @@
-#include "MeloWebSocketService.h"
+#include "WebSocketService.h"
 
 #include "../Events/EventManager.h"
 #include "../Utils/JuceLocalStorage.h"
 
-MeloWebSocketService::MeloWebSocketService(const juce::String &wsRoute): webSocket(ix::WebSocket()), wsRoute(wsRoute) {
+WebSocketService::WebSocketService(const juce::String &wsRoute): webSocket(ix::WebSocket()), wsRoute(wsRoute) {
     juce::Logger::outputDebugString(juce::String::fromUTF8("WebSocket initialisé."));
     auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
     if (accessToken.isNotEmpty()) {
@@ -31,11 +31,11 @@ MeloWebSocketService::MeloWebSocketService(const juce::String &wsRoute): webSock
     });
 };
 
-MeloWebSocketService::~MeloWebSocketService() {
+WebSocketService::~WebSocketService() {
     webSocket.stop();
 }
 
-void MeloWebSocketService::connectToServer() {
+void WebSocketService::connectToServer() {
     auto url = juce::String(Constants::websocketUrl + wsRoute).toStdString();
     juce::Logger::outputDebugString("Connecting to WebSocket server at " + url);
 
@@ -70,11 +70,11 @@ void MeloWebSocketService::connectToServer() {
     webSocket.start();
 }
 
-void MeloWebSocketService::disconnectToServer() {
+void WebSocketService::disconnectToServer() {
     webSocket.stop();
 }
 
-void MeloWebSocketService::sendMessage(const std::string &message, int retryCounter) {
+void WebSocketService::sendMessage(const std::string &message, int retryCounter) {
     if (retryCounter > 3) {
         std::cerr << "Tentatives d'envoi de message épuisées." << std::endl;
         return;

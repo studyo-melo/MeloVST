@@ -4,14 +4,14 @@
 #include "../Utils/StringUtils.h"
 #include "../Utils/JuceLocalStorage.h"
 
-class MeloApiService
+class ApiService
 {
 public:
     // Méthode pour obtenir les données via HTTPS
     juce::String makeGETRequest(ApiRoute route);
     juce::String makePOSTRequest(ApiRoute route, const nlohmann::json& body);
-    static MeloApiService& getInstance();
-    MeloApiService(const MeloApiService&) = delete;
+    static ApiService& getInstance();
+    ApiService(const ApiService&) = delete;
 
 private:
     template <typename RequestConfig>
@@ -19,6 +19,6 @@ private:
 
     static juce::URL::InputStreamOptions buildOptions();
     juce::String buildApiUrl(ApiRoute route);
-    MeloApiService() {}
-    MeloApiService& operator=(const MeloApiService&) = delete;
+    ApiService() {}
+    ApiService& operator=(const ApiService&) = delete;
 };

@@ -69,16 +69,18 @@ set(SourceFiles
         Source/Gui/LoginPageComponent.cpp
         Source/Gui/LoginPageComponent.h
         Source/Api/ApiRoutes.h
-        Source/Api/MeloApiService.cpp
-        Source/Api/MeloApiService.h
-        Source/Api/MeloWebSocketService.cpp
-        Source/Api/MeloWebSocketService.h
+        Source/Api/ApiService.cpp
+        Source/Api/ApiService.h
+        Source/Socket/WebSocketService.cpp
+        Source/Socket/WebSocketService.h
+        Source/Socket/SocketEvents.h
+        Source/Socket/SocketRoutes.h
         Source/Api/AuthService.cpp
         Source/Api/AuthService.h
-        Source/Api/MeloWebRTCServerService.h
-        Source/Api/MeloWebRTCServerService.cpp
+        Source/Rtc/WebRTCServerService.h
+        Source/Rtc/WebRTCServerService.cpp
+        Source/Rtc/ReconnectTimer.h
         Source/Models/User.h
-        Source/SocketEvents/SocketEvents.h
         Source/Models/Session.h
         Source/Models/Seller.h
         Source/Models/Artist.h

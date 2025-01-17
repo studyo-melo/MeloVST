@@ -1,14 +1,14 @@
-#include "MeloWebRTCServerService.h"
+#include "WebRTCServerService.h"
 
-MeloWebRTCServerService::MeloWebRTCServerService(): meloWebSocketService(
-                                                        MeloWebSocketService(
-                                                            getWsRouteString(WsRoute::GetOngoingSessionRTC))),
-                                                    stopThread(false),
-                                                    reconnectTimer([this]() { attemptReconnect(); }) {
+WebRTCServerService::WebRTCServerService(): meloWebSocketService(
+                                                WebSocketService(
+                                                    getWsRouteString(WsRoute::GetOngoingSessionRTC))),
+                                            stopThread(false),
+                                            reconnectTimer([this]() { attemptReconnect(); }) {
     EventManager::getInstance().addListener(this);
 }
 
-MeloWebRTCServerService::~MeloWebRTCServerService() {
+WebRTCServerService::~WebRTCServerService() {
     EventManager::getInstance().removeListener(this);
     stopAudioThread();
     if (peerConnection) {
@@ -16,7 +16,7 @@ MeloWebRTCServerService::~MeloWebRTCServerService() {
     }
 }
 
-void MeloWebRTCServerService::pushAudioBuffer(const float* data, int numSamples) {
+void WebRTCServerService::pushAudioBuffer(const float* data, int numSamples) {
     std::vector<int16_t> pcmData(numSamples);
     for (int i = 0; i < numSamples; ++i)
     {
@@ -31,14 +31,14 @@ void MeloWebRTCServerService::pushAudioBuffer(const float* data, int numSamples)
     queueCondition.notify_one();
 }
 
-void MeloWebRTCServerService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
+void WebRTCServerService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
     if (!audioTrack || !audioTrack->isOpen()) {
         return;
     }
     pushAudioBuffer(event.data, event.numSamples);
 };
 
-void MeloWebRTCServerService::setupConnection() {
+void WebRTCServerService::setupConnection() {
     rtc::InitLogger(rtc::LogLevel::Info);
     rtc::Configuration config;
     config.iceServers.emplace_back("stun:stun.l.google.com:19302");
@@ -113,7 +113,7 @@ void MeloWebRTCServerService::setupConnection() {
     setOffer();
 }
 
-void MeloWebRTCServerService::disconnect() const {
+void WebRTCServerService::disconnect() const {
     if (peerConnection) {
         peerConnection->close();
         // peerConnection.reset();
@@ -121,12 +121,12 @@ void MeloWebRTCServerService::disconnect() const {
     }
 }
 
-void MeloWebRTCServerService::resetConnection() {
+void WebRTCServerService::resetConnection() {
     disconnect();
     setupConnection();
 }
 
-void MeloWebRTCServerService::startAudioThread() {
+void WebRTCServerService::startAudioThread() {
     juce::Logger::outputDebugString("Starting audio thread");
     stopAudioThread();
     stopThread = false;
@@ -135,7 +135,7 @@ void MeloWebRTCServerService::startAudioThread() {
     });
 }
 
-void MeloWebRTCServerService::sendAudioData() {
+void WebRTCServerService::sendAudioData() {
     while (!stopThread) {
         std::vector<int16_t> pcmData; {
             std::unique_lock<std::mutex> lock(queueMutex);
@@ -158,7 +158,7 @@ void MeloWebRTCServerService::sendAudioData() {
     }
 }
 
-void MeloWebRTCServerService::stopAudioThread() {
+void WebRTCServerService::stopAudioThread() {
     juce::Logger::outputDebugString("Stopping audio thread"); {
         std::unique_lock<std::mutex> lock(queueMutex);
         stopThread = true;
@@ -169,7 +169,7 @@ void MeloWebRTCServerService::stopAudioThread() {
     }
 }
 
-void MeloWebRTCServerService::notifyRTCStateChanged() const {
+void WebRTCServerService::notifyRTCStateChanged() const {
     juce::Logger::outputDebugString("RTC state changed, notifying listeners");
     EventManager::getInstance().notifyOnRTCStateChanged({
         peerConnection->state(), peerConnection->iceState(), peerConnection->signalingState()
@@ -177,7 +177,7 @@ void MeloWebRTCServerService::notifyRTCStateChanged() const {
 };
 
 
-void MeloWebRTCServerService::onWsMessageReceived(const MessageWsReceivedEvent &event) {
+void WebRTCServerService::onWsMessageReceived(const MessageWsReceivedEvent &event) {
     if (!peerConnection) {
         return;
     }
@@ -200,7 +200,7 @@ void MeloWebRTCServerService::onWsMessageReceived(const MessageWsReceivedEvent &
     }
 }
 
-void MeloWebRTCServerService::setOffer() {
+void WebRTCServerService::setOffer() {
     if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::Stable && peerConnection->state() ==
         rtc::PeerConnection::State::Connected) {
         return;
@@ -214,7 +214,7 @@ void MeloWebRTCServerService::setOffer() {
     }
 }
 
-void MeloWebRTCServerService::handleAnswer(const std::string &sdp) {
+void WebRTCServerService::handleAnswer(const std::string &sdp) {
     if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer) {
         return;
     }
@@ -235,12 +235,12 @@ void MeloWebRTCServerService::handleAnswer(const std::string &sdp) {
     pendingCandidates.clear();
 }
 
-void MeloWebRTCServerService::onOngoingSessionChanged(const OngoingSessionChangedEvent &event) {
+void WebRTCServerService::onOngoingSessionChanged(const OngoingSessionChangedEvent &event) {
     ongoingSession = event.ongoingSession;
     meloWebSocketService.connectToServer();
 }
 
-void MeloWebRTCServerService::attemptReconnect() {
+void WebRTCServerService::attemptReconnect() {
     if (!ongoingSession.has_value()) {
         juce::Logger::outputDebugString("No ongoing session. Cannot reconnect.");
         return;
@@ -269,7 +269,7 @@ void MeloWebRTCServerService::attemptReconnect() {
     });
 }
 
-void MeloWebRTCServerService::monitorAnswer() {
+void WebRTCServerService::monitorAnswer() {
     if (!answerTimer.has_value()) {
         answerTimer.emplace(ReconnectTimer([this]() {
             if (answerReceived) {
@@ -295,21 +295,21 @@ void MeloWebRTCServerService::monitorAnswer() {
     answerTimer->startTimer(resendIntervalMs);
 }
 
-bool MeloWebRTCServerService::isConnected() const {
+bool WebRTCServerService::isConnected() const {
     if (!peerConnection) {
         return false;
     }
     return peerConnection->state() == rtc::PeerConnection::State::Connected;
 }
 
-bool MeloWebRTCServerService::isConnecting() const {
+bool WebRTCServerService::isConnecting() const {
     if (!peerConnection) {
         return false;
     }
     return peerConnection->state() == rtc::PeerConnection::State::Connecting;
 }
 
-void MeloWebRTCServerService::sendOfferToRemote(const rtc::Description &sdp) {
+void WebRTCServerService::sendOfferToRemote(const rtc::Description &sdp) {
     if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer
         || peerConnection->state() == rtc::PeerConnection::State::Connected) {
         return;
@@ -321,7 +321,7 @@ void MeloWebRTCServerService::sendOfferToRemote(const rtc::Description &sdp) {
     }
 }
 
-void MeloWebRTCServerService::sendCandidateToRemote(const rtc::Candidate &candidate) {
+void WebRTCServerService::sendCandidateToRemote(const rtc::Candidate &candidate) {
     if (!ongoingSession.has_value()) {
         return;
     }
@@ -329,7 +329,7 @@ void MeloWebRTCServerService::sendCandidateToRemote(const rtc::Candidate &candid
     meloWebSocketService.sendMessage(candidateEvent->createMessage());
 }
 
-juce::String MeloWebRTCServerService::getSignalingStateLabel() const {
+juce::String WebRTCServerService::getSignalingStateLabel() const {
     if (!peerConnection) {
         return juce::String::fromUTF8("Inconnu");
     }
@@ -349,7 +349,7 @@ juce::String MeloWebRTCServerService::getSignalingStateLabel() const {
     }
 }
 
-juce::String MeloWebRTCServerService::getIceCandidateStateLabel() const {
+juce::String WebRTCServerService::getIceCandidateStateLabel() const {
     if (!peerConnection) {
         return juce::String::fromUTF8("Inconnu");
     }

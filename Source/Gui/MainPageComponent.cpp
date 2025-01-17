@@ -3,9 +3,9 @@
 //
 #include "MainPageComponent.h"
 
-MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServerService()),
-                                        meloWebSocketService(
-                                            MeloWebSocketService(getWsRouteString(WsRoute::GetOngoingSession))) {
+MainPageComponent::MainPageComponent(): webRTCServerService(WebRTCServerService()),
+                                        webSocketService(
+                                            WebSocketService(getWsRouteString(WsRoute::GetOngoingSession))) {
     setSize(600, 400);
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
@@ -31,7 +31,7 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
     RTCSignalingStateText.setJustificationType(juce::Justification::centred);
 
     connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
-    connectButton.onClick = [this, meloWebRTCServerService = &meloWebRTCServerService] {
+    connectButton.onClick = [this, meloWebRTCServerService = &webRTCServerService] {
         if (meloWebRTCServerService->isConnecting()) {
             juce::Logger::outputDebugString("Already connecting...");
             meloWebRTCServerService->disconnect();
@@ -47,7 +47,7 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
     logoutButton.onClick = [this] { onLogoutButtonClick(); };
 
-    auto res = MeloApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions);
+    auto res = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions);
     if (res.isNotEmpty()) {
         ongoingSessions = PopulatedSession::parseArrayFromJsonString(res);
         if (ongoingSessions.size() > 0) {
@@ -56,7 +56,7 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
                 "Vous avez une session en cours avec " + currentOngoingSession.reservedByArtist.user.userAlias,
                 juce::dontSendNotification);
             EventManager::getInstance().notifyOngoingSessionChanged(OngoingSessionChangedEvent(currentOngoingSession));
-            meloWebSocketService.connectToServer();
+            webSocketService.connectToServer();
         } else {
             mainText.setText("Vous n'avez pas de session en cours.", juce::dontSendNotification);
         }
@@ -92,8 +92,8 @@ void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
         }
     }
 
-    RTCIceCandidateStateText.setText(meloWebRTCServerService.getIceCandidateStateLabel(), juce::dontSendNotification);
-    RTCSignalingStateText.setText(meloWebRTCServerService.getSignalingStateLabel(),
+    RTCIceCandidateStateText.setText(webRTCServerService.getIceCandidateStateLabel(), juce::dontSendNotification);
+    RTCSignalingStateText.setText(webRTCServerService.getSignalingStateLabel(),
                                   juce::dontSendNotification);
     });
 }

@@ -6,11 +6,11 @@
 #include "../Api/AuthService.h"
 #include "../Events/EventListener.h"
 #include "../Events/EventManager.h"
-#include "../Api/MeloWebRTCServerService.h"
-#include "../Api/MeloWebSocketService.h"
+#include "../Rtc/WebRTCServerService.h"
+#include "../Socket/WebSocketService.h"
+#include "../Api/ApiRoutes.h"
 #include "../Models/Session.h"
-#include "../Api/MeloWebSocketService.h"
-#include "../SocketEvents/SocketEvents.h"
+#include "../Socket/SocketEvents.h"
 
 class MainPageComponent final : public juce::Component, EventListener
 {
@@ -27,8 +27,8 @@ public:
 private:
     juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText;
     juce::TextButton logoutButton, connectButton;
-    MeloWebRTCServerService meloWebRTCServerService;
-    MeloWebSocketService meloWebSocketService;
+    WebRTCServerService webRTCServerService;
+    WebSocketService webSocketService;
     juce::Array<PopulatedSession> ongoingSessions;
     PopulatedSession currentOngoingSession;
 };

@@ -14,7 +14,7 @@ juce::String AuthService::login(const juce::String &email, const juce::String &p
     };
 
     try {
-        auto res = MeloApiService::getInstance().makePOSTRequest(ApiRoute::PostLogin, jsonBody);
+        auto res = ApiService::getInstance().makePOSTRequest(ApiRoute::PostLogin, jsonBody);
         if (res.isEmpty()) {
             return res;
         }
@@ -31,7 +31,7 @@ juce::String AuthService::login(const juce::String &email, const juce::String &p
 }
 
 std::optional<UserContext> AuthService::fetchUserContext() {
-    auto myUserContext = MeloApiService::getInstance().makeGETRequest(ApiRoute::GetMyUserContext);
+    auto myUserContext = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyUserContext);
     if (myUserContext.isEmpty()) {
         juce::Logger::outputDebugString("Aucun UserContext trouvé");
         logout();
