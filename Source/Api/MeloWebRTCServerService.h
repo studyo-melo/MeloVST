@@ -21,7 +21,7 @@ public:
     void setupConnection();
     void disconnect();
     bool isConnected() const;
-    void setOffer() const;
+    void setOffer();
     void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) override;
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
     void handleAudioData(const AudioBlockProcessedEvent &event);
@@ -48,8 +48,7 @@ private:
     void stopAudioThread();
     void startAudioThread();
     void sendCandidateToRemote(const rtc::Candidate& candidate);
-
-
+    void sendOfferToRemote(const rtc::Description &sdp);
 
     bool answerReceived = false;
     const int maxResendAttempts = 100;

@@ -32,8 +32,10 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
     connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
     connectButton.onClick = [this] {
         if (meloWebRTCServerService.isConnected()) {
+            juce::Logger::outputDebugString("Disconnecting from artist...");
             meloWebRTCServerService.disconnect();
         } else {
+            juce::Logger::outputDebugString("Connecting from artist...");
             meloWebRTCServerService.setupConnection();
         }
     };

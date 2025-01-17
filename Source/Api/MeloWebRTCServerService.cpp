@@ -59,14 +59,8 @@ void MeloWebRTCServerService::setupConnection() {
     newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
 
     peerConnection->onLocalDescription([this](rtc::Description sdp) {
-        if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer || peerConnection->
-            state() == rtc::PeerConnection::State::Connected) {
-            return;
-        }
-        if (ongoingSession.has_value()) {
-            const auto offerEvent = new RTCOfferSentEvent(sdp, ongoingSession.value());
-            meloWebSocketService.sendMessage(offerEvent->createMessage());
-            monitorAnswer();
+        if (!peerConnection->remoteDescription()) {
+            sendOfferToRemote(sdp);
         }
     });
 
@@ -141,6 +135,8 @@ void MeloWebRTCServerService::resetConnection() {
 
 void MeloWebRTCServerService::startAudioThread() {
     juce::Logger::outputDebugString("Starting audio thread");
+    stopAudioThread();
+    stopThread = false;
     audioThread = std::thread([this]() {
         while (!stopThread) {
             std::vector<int16_t> pcmData; {
@@ -204,12 +200,17 @@ void MeloWebRTCServerService::onWsMessageReceived(const MessageWsReceivedEvent &
     }
 }
 
-void MeloWebRTCServerService::setOffer() const {
+void MeloWebRTCServerService::setOffer() {
     if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::Stable && peerConnection->state() ==
         rtc::PeerConnection::State::Connected) {
         return;
     }
-    peerConnection->setLocalDescription(rtc::Description::Type::Offer);
+    if (peerConnection->localDescription().has_value()) {
+        sendOfferToRemote(peerConnection->localDescription().value());
+    }
+    else {
+        peerConnection->setLocalDescription(rtc::Description::Type::Offer);
+    }
 }
 
 void MeloWebRTCServerService::handleAnswer(const std::string &sdp) {
@@ -298,6 +299,18 @@ bool MeloWebRTCServerService::isConnected() const {
         return false;
     }
     return peerConnection->state() == rtc::PeerConnection::State::Connected;
+}
+
+void MeloWebRTCServerService::sendOfferToRemote(const rtc::Description &sdp) {
+    if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer
+        || peerConnection->state() == rtc::PeerConnection::State::Connected) {
+        return;
+    }
+    if (ongoingSession.has_value()) {
+        const auto offerEvent = new RTCOfferSentEvent(sdp, ongoingSession.value());
+        meloWebSocketService.sendMessage(offerEvent->createMessage());
+        monitorAnswer();
+    }
 }
 
 void MeloWebRTCServerService::sendCandidateToRemote(const rtc::Candidate &candidate) {

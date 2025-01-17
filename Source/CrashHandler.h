@@ -28,6 +28,7 @@ public:
         } catch (...) {
             reportCrash("Unknown exception occurred");
         }
+        juce::Logger::outputDebugString("Crash report sent");
 
         // Appeler le gestionnaire par défaut après votre rapport
         std::abort();
