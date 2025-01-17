@@ -5,9 +5,8 @@
 #include <rtc/rtc.hpp>
 
 struct AudioBlockProcessedEvent {
-    juce::AudioBuffer<float>& buffer;
-    int totalNumInputChannels;
-    int totalNumOutputChannels;
+    const float* data;
+    int numSamples;
 };
 
 struct LoginEvent {

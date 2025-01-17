@@ -131,28 +131,32 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
+    constexpr int sampleRate = 48000; // Fréquence d'échantillonnage en Hz
+    constexpr int packetDurationMs = 120; // Durée du paquet en ms
+    constexpr int numSamplesPerPacket = (sampleRate * packetDurationMs) / 1000; // Nombre d'échantillons par paquet
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
+        auto* channelData = buffer.getWritePointer(channel);
+        int numSamples = buffer.getNumSamples();
+        int samplesProcessed = 0;
+
+        while (samplesProcessed < numSamples)
+        {
+            int samplesToSend = std::min(numSamplesPerPacket, numSamples - samplesProcessed);
+
+            // Créer un buffer temporaire pour les échantillons à envoyer
+            std::vector<float> tempBuffer(channelData + samplesProcessed, channelData + samplesProcessed + samplesToSend);
+
+            // Envoyer les données audio (convertir au format requis si nécessaire)
+            EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{tempBuffer.data(), samplesToSend});
+
+            samplesProcessed += samplesToSend;
+        }
     }
-    EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{buffer, totalNumInputChannels, totalNumOutputChannels});
 
 }
 

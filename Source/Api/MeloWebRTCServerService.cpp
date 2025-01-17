@@ -16,15 +16,11 @@ MeloWebRTCServerService::~MeloWebRTCServerService() {
     }
 }
 
-void MeloWebRTCServerService::pushAudioBuffer(const juce::AudioBuffer<float> &buffer) {
-    // Convertit le buffer audio de JUCE en PCM 16 bits mono/stéréo
-    std::vector<int16_t> pcmData(buffer.getNumSamples() * buffer.getNumChannels());
-    for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
-        const float *channelData = buffer.getReadPointer(channel);
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
-            int16_t pcmSample = static_cast<int16_t>(juce::jlimit<float>(-1.0f, 1.0f, channelData[sample]) * 32767);
-            pcmData[sample * buffer.getNumChannels() + channel] = pcmSample;
-        }
+void MeloWebRTCServerService::pushAudioBuffer(const float* data, int numSamples) {
+    std::vector<int16_t> pcmData(numSamples);
+    for (int i = 0; i < numSamples; ++i)
+    {
+        pcmData[i] = static_cast<int16_t>(data[i] * 32767.0f); // Normaliser si nécessaire
     }
 
     // Ajouter les données PCM dans la queue thread-safe
@@ -35,15 +31,11 @@ void MeloWebRTCServerService::pushAudioBuffer(const juce::AudioBuffer<float> &bu
     queueCondition.notify_one();
 }
 
-void MeloWebRTCServerService::handleAudioData(const AudioBlockProcessedEvent &event) {
-    pushAudioBuffer(event.buffer);
-};
-
 void MeloWebRTCServerService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
     if (!audioTrack || !audioTrack->isOpen()) {
         return;
     }
-    handleAudioData(event);
+    pushAudioBuffer(event.data, event.numSamples);
 };
 
 void MeloWebRTCServerService::setupConnection() {
@@ -55,7 +47,8 @@ void MeloWebRTCServerService::setupConnection() {
 
     rtc::Description::Audio newAudioTrack{};
     newAudioTrack.addOpusCodec(111);
-    newAudioTrack.setBitrate(64000);
+    newAudioTrack.setBitrate(2048);
+    // newAudioTrack.setBitrate(64000);
     newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
 
     peerConnection->onLocalDescription([this](rtc::Description sdp) {
@@ -138,27 +131,31 @@ void MeloWebRTCServerService::startAudioThread() {
     stopAudioThread();
     stopThread = false;
     audioThread = std::thread([this]() {
-        while (!stopThread) {
-            std::vector<int16_t> pcmData; {
-                std::unique_lock<std::mutex> lock(queueMutex);
-                queueCondition.wait(lock, [this]() { return !audioQueue.empty() || stopThread; });
-                if (stopThread) break;
+        sendAudioData();
+    });
+}
 
-                pcmData = std::move(audioQueue.front());
-                audioQueue.pop();
+void MeloWebRTCServerService::sendAudioData() {
+    while (!stopThread) {
+        std::vector<int16_t> pcmData; {
+            std::unique_lock<std::mutex> lock(queueMutex);
+            queueCondition.wait(lock, [this]() { return !audioQueue.empty() || stopThread; });
+            if (stopThread) break;
+
+            pcmData = std::move(audioQueue.front());
+            audioQueue.pop();
+        }
+
+        juce::Logger::outputDebugString("Sending audio data");
+        if (audioTrack) {
+            try {
+                audioTrack->send(reinterpret_cast<const std::byte *>(pcmData.data()), pcmData.size() * sizeof(int16_t));
             }
-
-            juce::Logger::outputDebugString("Sending audio data");
-            if (audioTrack) {
-                try {
-                    // audioTrack->send(reinterpret_cast<const std::byte *>(pcmData.data()), pcmData.size() * sizeof(int16_t));
-                }
-                catch (const std::exception& e) {
-                    juce::Logger::outputDebugString("Error sending audio data" + std::string(e.what()));
-                }
+            catch (const std::exception& e) {
+                juce::Logger::outputDebugString("Error sending audio data" + std::string(e.what()));
             }
         }
-    });
+    }
 }
 
 void MeloWebRTCServerService::stopAudioThread() {

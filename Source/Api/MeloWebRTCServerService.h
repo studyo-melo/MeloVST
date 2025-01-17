@@ -25,7 +25,7 @@ public:
     void setOffer();
     void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) override;
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
-    void handleAudioData(const AudioBlockProcessedEvent &event);
+    void sendAudioData();
     void onWsMessageReceived(const MessageWsReceivedEvent &event) override;
     void notifyRTCStateChanged() const;
     void monitorAnswer();
@@ -45,7 +45,7 @@ private:
     std::condition_variable queueCondition;
     bool stopThread;
 
-    void pushAudioBuffer(const juce::AudioBuffer<float>& buffer);
+    void pushAudioBuffer(const float* data, int numSamples);
     void stopAudioThread();
     void startAudioThread();
     void sendCandidateToRemote(const rtc::Candidate& candidate);
