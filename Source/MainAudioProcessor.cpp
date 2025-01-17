@@ -127,37 +127,9 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 {
     juce::ignoreUnused (midiMessages);
 
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    constexpr int sampleRate = 48000; // Fréquence d'échantillonnage en Hz
-    constexpr int packetDurationMs = 120; // Durée du paquet en ms
-    constexpr int numSamplesPerPacket = (sampleRate * packetDurationMs) / 1000; // Nombre d'échantillons par paquet
-
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer(channel);
-        int numSamples = buffer.getNumSamples();
-        int samplesProcessed = 0;
-
-        while (samplesProcessed < numSamples)
-        {
-            int samplesToSend = std::min(numSamplesPerPacket, numSamples - samplesProcessed);
-
-            // Créer un buffer temporaire pour les échantillons à envoyer
-            std::vector<float> tempBuffer(channelData + samplesProcessed, channelData + samplesProcessed + samplesToSend);
-
-            // Envoyer les données audio (convertir au format requis si nécessaire)
-            EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{tempBuffer.data(), samplesToSend});
-
-            samplesProcessed += samplesToSend;
-        }
-    }
-
+    auto* pcmData = buffer.getReadPointer(0); // Accéder au canal 0
+    int numSamples = buffer.getNumSamples();
+    EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{pcmData, numSamples});
 }
 
 //==============================================================================

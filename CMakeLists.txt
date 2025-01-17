@@ -41,6 +41,13 @@ CPMAddPackage(
         GIT_TAG origin/master
 )
 
+CPMAddPackage(
+        NAME libopus
+        GIT_REPOSITORY https://github.com/xiph/opus.git
+        GIT_TAG origin/main
+)
+
+include_directories(${libopus_SOURCE_DIR}/include)
 
 add_library(
         datachannel_static INTERFACE IMPORTED
@@ -82,6 +89,7 @@ set(SourceFiles
         Source/Rtc/WebRTCConnexionHandler.cpp
         Source/Rtc/WebRTCConnexionHandler.h
         Source/Rtc/ReconnectTimer.h
+        Source/Rtc/OpusEncoderWrapper.h
         Source/Models/User.h
         Source/Models/Session.h
         Source/Models/Seller.h
@@ -126,6 +134,7 @@ target_compile_definitions(${PROJECT_NAME}
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
+        opus
         datachannel
         ixwebsocket
         datachannel_static INTERFACE datachannel

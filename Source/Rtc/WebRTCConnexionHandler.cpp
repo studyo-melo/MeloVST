@@ -23,7 +23,7 @@ void WebRTCConnexionHandler::setupConnection() {
 
     rtc::Description::Audio newAudioTrack{};
     newAudioTrack.addOpusCodec(111);
-    newAudioTrack.setBitrate(64000);
+    newAudioTrack.setBitrate(64000); // Débit binaire en bits par seconde
     newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
 
     peerConnection->onLocalDescription([this](rtc::Description sdp) {

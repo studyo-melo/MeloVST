@@ -5,6 +5,7 @@
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 
+#include "OpusEncoderWrapper.h"
 #include "../Socket/WebSocketService.h"
 #include "../Events/EventListener.h"
 #include "../Models/Session.h"
@@ -16,10 +17,11 @@
 
 class WebRTCAudioService : public WebRTCConnexionHandler {
 public:
-    WebRTCAudioService() = default;
+    WebRTCAudioService();
     ~WebRTCAudioService();
 
 private:
+    OpusEncoderWrapper opusEncoder;
     // Audio Thread
     std::thread audioThread;
     std::queue<std::vector<int16_t>> audioQueue;
