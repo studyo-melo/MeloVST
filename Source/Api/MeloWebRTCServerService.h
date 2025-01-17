@@ -19,8 +19,9 @@ public:
     ~MeloWebRTCServerService() override;
     void handleAnswer(const std::string& sdp);
     void setupConnection();
-    void disconnect();
+    void disconnect() const;
     bool isConnected() const;
+    bool isConnecting() const;
     void setOffer();
     void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) override;
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;

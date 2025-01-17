@@ -30,13 +30,16 @@ MainPageComponent::MainPageComponent(): meloWebRTCServerService(MeloWebRTCServer
     RTCSignalingStateText.setJustificationType(juce::Justification::centred);
 
     connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
-    connectButton.onClick = [this] {
-        if (meloWebRTCServerService.isConnected()) {
+    connectButton.onClick = [this, meloWebRTCServerService = &meloWebRTCServerService] {
+        if (meloWebRTCServerService->isConnecting()) {
+            juce::Logger::outputDebugString("Already connecting...");
+            meloWebRTCServerService->disconnect();
+        } else if (meloWebRTCServerService->isConnected()) {
             juce::Logger::outputDebugString("Disconnecting from artist...");
-            meloWebRTCServerService.disconnect();
+            meloWebRTCServerService->disconnect();
         } else {
             juce::Logger::outputDebugString("Connecting from artist...");
-            meloWebRTCServerService.setupConnection();
+            meloWebRTCServerService->setupConnection();
         }
     };
 

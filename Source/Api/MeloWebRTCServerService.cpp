@@ -54,7 +54,7 @@ void MeloWebRTCServerService::setupConnection() {
     peerConnection = std::make_shared<rtc::PeerConnection>(config);
 
     rtc::Description::Audio newAudioTrack{};
-    newAudioTrack.addOpusCodec(111);
+    // newAudioTrack.addOpusCodec(111);
     newAudioTrack.setBitrate(64000);
     newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
 
@@ -120,10 +120,10 @@ void MeloWebRTCServerService::setupConnection() {
     setOffer();
 }
 
-void MeloWebRTCServerService::disconnect() {
+void MeloWebRTCServerService::disconnect() const {
     if (peerConnection) {
         peerConnection->close();
-        peerConnection.reset();
+        // peerConnection.reset();
         // stopThread = false;
     }
 }
@@ -151,7 +151,7 @@ void MeloWebRTCServerService::startAudioThread() {
             juce::Logger::outputDebugString("Sending audio data");
             if (audioTrack) {
                 try {
-                    audioTrack->send(reinterpret_cast<const std::byte *>(pcmData.data()), pcmData.size() * sizeof(int16_t));
+                    // audioTrack->send(reinterpret_cast<const std::byte *>(pcmData.data()), pcmData.size() * sizeof(int16_t));
                 }
                 catch (const std::exception& e) {
                     juce::Logger::outputDebugString("Error sending audio data" + std::string(e.what()));
@@ -209,6 +209,7 @@ void MeloWebRTCServerService::setOffer() {
         sendOfferToRemote(peerConnection->localDescription().value());
     }
     else {
+        peerConnection->localDescription().reset();
         peerConnection->setLocalDescription(rtc::Description::Type::Offer);
     }
 }
@@ -299,6 +300,13 @@ bool MeloWebRTCServerService::isConnected() const {
         return false;
     }
     return peerConnection->state() == rtc::PeerConnection::State::Connected;
+}
+
+bool MeloWebRTCServerService::isConnecting() const {
+    if (!peerConnection) {
+        return false;
+    }
+    return peerConnection->state() == rtc::PeerConnection::State::Connecting;
 }
 
 void MeloWebRTCServerService::sendOfferToRemote(const rtc::Description &sdp) {
