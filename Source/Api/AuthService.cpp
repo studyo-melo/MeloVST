@@ -29,7 +29,6 @@ juce::String AuthService::login(const juce::String &email, const juce::String &p
         return "";
     }
 }
-
 std::optional<UserContext> AuthService::fetchUserContext() {
     auto myUserContext = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyUserContext);
     if (myUserContext.isEmpty()) {

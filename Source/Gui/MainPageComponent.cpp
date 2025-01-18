@@ -55,10 +55,12 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService())
             mainText.setText(
                 "Vous avez une session en cours avec " + currentOngoingSession.reservedByArtist.user.userAlias,
                 juce::dontSendNotification);
+            mainText.setColour(juce::Label::textColourId, juce::Colours::green);
             EventManager::getInstance().notifyOngoingSessionChanged(OngoingSessionChangedEvent(currentOngoingSession));
             webSocketService.connectToServer();
         } else {
             mainText.setText("Vous n'avez pas de session en cours.", juce::dontSendNotification);
+            mainText.setColour(juce::Label::textColourId, juce::Colours::red);
         }
     }
 

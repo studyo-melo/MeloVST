@@ -35,4 +35,6 @@ private:
     void onRTCStateChanged(const RTCStateChangeEvent &event);
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event);
     void sendAudioData();
+
+    static void debugPacket(const std::vector<uint8_t> &encodedData);
 };

@@ -62,17 +62,19 @@ void WebRTCAudioService::sendAudioData() {
             std::vector<int16_t> frame(pcmData.begin() + offset, pcmData.begin() + frameEnd);
 
             // Convertir la trame int16_t en float
-            std::vector<float> floatFrame(frame.size());
+            std::vector<float> floatFrame(frameSize * 2); // 2 canaux, donc multiplier par 2
             for (size_t i = 0; i < frame.size(); ++i) {
-                floatFrame[i] = static_cast<float>(frame[i]) / 32767.0f; // Normaliser en [-1.0, 1.0]
+                floatFrame[i] = static_cast<float>(frame[i]) / 32768.0f; // Notez 32768.0f au lieu de 32767.0f
             }
 
-            // Encoder la trame avec Opus
             std::vector<uint8_t> encodedData;
             try {
-                encodedData = opusEncoder.encode(floatFrame.data(), frameSize); // Utilise floatFrame.data()
+                encodedData = opusEncoder.encode(floatFrame.data(), frameSize);
                 if (encodedData.size() > maxPacketSize) {
                     juce::Logger::outputDebugString("Encoded packet exceeds maximum size!");
+                    continue;
+                }
+                if (encodedData.size() < 12) {
                     continue;
                 }
             } catch (const std::exception &e) {
@@ -83,12 +85,51 @@ void WebRTCAudioService::sendAudioData() {
             // Envoyer le paquet encodé via le canal WebRTC
             if (audioTrack) {
                 try {
+                    juce::Logger::outputDebugString("Sending audio data: " + std::to_string(encodedData.size()) + " bytes");
+                    debugPacket(encodedData);
                     audioTrack->send(reinterpret_cast<const std::byte *>(encodedData.data()), encodedData.size());
                 } catch (const std::exception &e) {
                     juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));
                 }
             }
         }
+    }
+}
+
+void WebRTCAudioService::debugPacket(const std::vector<uint8_t> &encodedData) {
+    typedef struct {
+        unsigned char cc : 4;      /* CSRC count             */
+        unsigned char x : 1;       /* header extension flag  */
+        unsigned char p : 1;       /* padding flag           */
+        unsigned char version : 2; /* protocol version       */
+        unsigned char pt : 7;      /* payload type           */
+        unsigned char m : 1;       /* marker bit             */
+        uint16_t seq;              /* sequence number        */
+        uint32_t ts;               /* timestamp              */
+        uint32_t ssrc;             /* synchronization source */
+    } srtp_hdr_t;
+
+    try {
+        auto data = reinterpret_cast<const std::byte *>(encodedData.data());
+        auto bin = rtc::binary(data,data + encodedData.size()); // message_variant
+        auto message = rtc::make_message(std::move(bin));
+
+        int size = int(message->size());
+        auto message2 = rtc::make_message(size + 16+128, message);
+        void* message2Data = message2->data();
+        auto hdr = (srtp_hdr_t *)message2Data;
+        std::cout << ("RTP Header:") << std::endl;
+        std::cout << ("Version:") << hdr->version << std::endl;
+        std::cout << ("CC:") << hdr->cc << std::endl;
+        std::cout << ("X:") << hdr->x << std::endl;
+        std::cout << ("Padding:") << hdr->p << std::endl;
+        std::cout << ("Payload type:") << hdr->pt << std::endl;
+        std::cout << ("Sequence Number:") << hdr->seq << std::endl;
+        std::cout << ("Timestamp:") << hdr->ts << std::endl;
+        std::cout << ("SSRC:") << hdr->ssrc << std::endl;
+    }
+    catch (std::exception &e) {
+        std::cout << ("Error decoding RTP header: ") << e.what() << std::endl;
     }
 }
 
