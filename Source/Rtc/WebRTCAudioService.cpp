@@ -1,7 +1,14 @@
 #include "WebRTCAudioService.h"
 
-WebRTCAudioService::WebRTCAudioService()
-    : opusEncoder(48000, 2, 64000) { // Configuration : 48 kHz, stéréo, 64 kbps
+int SAMPLE_RATE = 48000;
+int CHANNELS = 2;
+int BITRATE = 64000;
+WebRTCAudioService::WebRTCAudioService():
+    opusEncoder(SAMPLE_RATE, CHANNELS, BITRATE),
+    opusDecoder(SAMPLE_RATE, CHANNELS),
+    stopThread(false)
+{
+
 }
 
 WebRTCAudioService::~WebRTCAudioService() {
@@ -84,14 +91,13 @@ void WebRTCAudioService::sendAudioData() {
                 continue;
             }
 
-            // Envoyer le paquet encodé via le canal WebRTC
             if (audioTrack) {
                 try {
                     juce::Logger::outputDebugString("Sending audio data: " + std::to_string(encodedData.size()) + " bytes");
                     debugPacket(encodedData);
-                    rtc::InitLogger(rtc::LogLevel::Info);
-                    rtc::InitLogger(rtc::LogLevel::Warning);
-                    rtc::InitLogger(rtc::LogLevel::Debug);
+                    std::vector<float> pcmDataLocal = opusDecoder.decode(encodedData);
+
+                    writeWavFile("output.wav", pcmDataLocal, SAMPLE_RATE, CHANNELS);
                     audioTrack->send(reinterpret_cast<const std::byte *>(encodedData.data()), encodedData.size());
                 } catch (const std::exception &e) {
                     juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));

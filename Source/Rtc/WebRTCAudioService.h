@@ -6,6 +6,7 @@
 #include <juce_core/juce_core.h>
 
 #include "OpusEncoderWrapper.h"
+#include "OpusDecoderWrapper.h"
 #include "../Socket/WebSocketService.h"
 #include "../Events/EventListener.h"
 #include "../Models/Session.h"
@@ -22,6 +23,7 @@ public:
 
 private:
     OpusEncoderWrapper opusEncoder;
+    OpusDecoderWrapper opusDecoder;
     // Audio Thread
     std::thread audioThread;
     std::queue<std::vector<int16_t>> audioQueue;
