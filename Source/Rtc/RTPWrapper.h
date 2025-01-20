@@ -3,8 +3,8 @@
 
 // Constants
 const int RTP_VERSION = 2; // Version RTP
-// const int PAYLOAD_TYPE = 111;  // Opus Payload Type
-const int PAYLOAD_TYPE = 127; // Opus Payload Type
+const int PAYLOAD_TYPE = 111;  // Opus Payload Type
+// const int PAYLOAD_TYPE = 127; // Opus Payload Type
 
 struct RTPHeader {
     uint8_t v_p_x_cc; // Version (2 bits), Padding (1 bit), Extension (1 bit), CSRC Count (4 bits)
@@ -46,4 +46,44 @@ public:
 
         return packet;
     }
+
+    static std::vector<uint8_t> removeRTPHeader(const std::vector<uint8_t>& rtpPacket) {
+      // Vérifier que le paquet est assez grand pour contenir un en-tête RTP
+      if (rtpPacket.size() < 12) {
+          throw std::runtime_error("Invalid RTP packet: too small to contain a header");
+      }
+
+      // Décoder les champs de l'en-tête RTP
+      const uint8_t v_p_x_cc = rtpPacket[0];
+      const uint8_t version = (v_p_x_cc >> 6) & 0x03;
+
+      // Vérifier la version RTP (doit être 2)
+      if (version != 2) {
+          throw std::runtime_error("Invalid RTP packet: unsupported version");
+      }
+
+      // Compter les CSRC
+      const uint8_t csrcCount = v_p_x_cc & 0x0F;
+      size_t headerSize = 12 + (csrcCount * 4); // Taille minimale = 12 octets, plus 4 octets par CSRC
+
+      // Vérifier s'il y a une extension RTP
+      const uint8_t extensionFlag = (v_p_x_cc >> 4) & 0x01;
+      if (extensionFlag) {
+          if (rtpPacket.size() < headerSize + 4) {
+              throw std::runtime_error("Invalid RTP packet: not enough data for extension header");
+          }
+          // Lire la longueur de l'extension
+          const uint16_t extensionLength = ntohs(*reinterpret_cast<const uint16_t*>(&rtpPacket[headerSize + 2]));
+          headerSize += 4 + (extensionLength * 4);
+      }
+
+      // Vérifier la taille totale du paquet
+      if (rtpPacket.size() <= headerSize) {
+          throw std::runtime_error("Invalid RTP packet: no payload data");
+      }
+
+      // Retourner uniquement le payload (sans l'en-tête RTP)
+      return std::vector<uint8_t>(rtpPacket.begin() + headerSize, rtpPacket.end());
+  }
+
 };

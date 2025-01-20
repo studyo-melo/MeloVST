@@ -3,12 +3,34 @@
 int SAMPLE_RATE = 48000;
 int CHANNELS = 2;
 int BITRATE = 64000;
+
+std::string generateTimestampedFilename(const std::string& baseName, const std::string& extension) {
+    // Obtenir l'heure actuelle
+    auto now = std::chrono::system_clock::now();
+    auto timeT = std::chrono::system_clock::to_time_t(now);
+    auto localTime = *std::localtime(&timeT);
+
+    // Formater l'horodatage
+    std::ostringstream oss;
+    oss << baseName << "_"
+        << std::put_time(&localTime, "%Y-%m-%d_%H-%M-%S") // Format : Année-Mois-Jour_Heure-Minute-Seconde
+        << "." << extension;
+
+    return oss.str();
+}
+const std::string wavFilename = generateTimestampedFilename("output", "wav");
+
 WebRTCAudioService::WebRTCAudioService():
     opusEncoder(SAMPLE_RATE, CHANNELS, BITRATE),
     opusDecoder(SAMPLE_RATE, CHANNELS),
     stopThread(false)
 {
-
+    try {
+        initializeWavFile(wavFilename, SAMPLE_RATE, CHANNELS);
+    } catch (const std::exception &e) {
+        juce::Logger::outputDebugString("Error initializing WAV file: " + std::string(e.what()));
+        return;
+    }
 }
 
 WebRTCAudioService::~WebRTCAudioService() {
@@ -21,8 +43,6 @@ void WebRTCAudioService::pushAudioBuffer(const float* data, int numSamples) {
     for (int i = 0; i < numSamples; ++i) {
         pcmData[i] = static_cast<int16_t>(std::clamp(data[i], -1.0f, 1.0f) * 32767.0f);
     }
-
-    // Ajouter les données PCM à la file d'attente thread-safe
     {
         std::unique_lock<std::mutex> lock(queueMutex);
         audioQueue.push(std::move(pcmData));
@@ -45,7 +65,6 @@ void WebRTCAudioService::startAudioThread() {
         sendAudioData();
     });
 }
-
 void WebRTCAudioService::sendAudioData() {
     const int frameSize = 960; // Taille de trame pour 20ms @ 48kHz (960 échantillons par canal)
     const int maxPacketSize = 520; // Taille maximale du paquet RTP (en octets)
@@ -94,71 +113,19 @@ void WebRTCAudioService::sendAudioData() {
             if (audioTrack) {
                 try {
                     juce::Logger::outputDebugString("Sending audio data: " + std::to_string(encodedData.size()) + " bytes");
-                    debugPacket(encodedData);
-                    std::vector<float> pcmDataLocal = opusDecoder.decode(encodedData);
 
-                    writeWavFile("output.wav", pcmDataLocal, SAMPLE_RATE, CHANNELS);
+                    // Décoder les données pour les ajouter au fichier WAV
+                    std::vector<float> pcmDataLocal = opusDecoder.decode(encodedData);
+                    // Ajouter les données décodées au fichier WAV
+                    appendWavData(wavFilename, pcmDataLocal);
+
+                    // Envoyer les données via WebRTC
                     audioTrack->send(reinterpret_cast<const std::byte *>(encodedData.data()), encodedData.size());
                 } catch (const std::exception &e) {
                     juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));
                 }
             }
         }
-    }
-}
-
-void WebRTCAudioService::debugPacket(const std::vector<uint8_t> &encodedData) {
-    typedef struct {
-        unsigned char cc : 4;      /* CSRC count             */
-        unsigned char x : 1;       /* header extension flag  */
-        unsigned char p : 1;       /* padding flag           */
-        unsigned char version : 2; /* protocol version       */
-        unsigned char pt : 7;      /* payload type           */
-        unsigned char m : 1;       /* marker bit             */
-        uint16_t seq;              /* sequence number        */
-        uint32_t ts;               /* timestamp              */
-        uint32_t ssrc;             /* synchronization source */
-    } srtp_hdr_t;
-
-    try {
-        auto data = reinterpret_cast<const std::byte *>(encodedData.data());
-        auto bin = rtc::binary(data,data + encodedData.size()); // message_variant
-        auto message = rtc::make_message(std::move(bin));
-
-        int size = int(message->size());
-        auto message2 = rtc::make_message(size + 16+128, message);
-        void* message2Data = message2->data();
-        auto hdr = (srtp_hdr_t *)message2Data;
-        std::cout << "RTP Header:" << std::endl;
-        std::cout << "  Version: " << static_cast<int>(hdr->version)
-                  << " (0x" << std::hex << static_cast<int>(hdr->version) << std::dec << ")" << std::endl;
-
-        std::cout << "  CC: " << static_cast<int>(hdr->cc)
-                  << " (0x" << std::hex << static_cast<int>(hdr->cc) << std::dec << ")" << std::endl;
-
-        std::cout << "  X: " << static_cast<int>(hdr->x)
-                  << " (0x" << std::hex << static_cast<int>(hdr->x) << std::dec << ")" << std::endl;
-
-        std::cout << "  Padding: " << static_cast<int>(hdr->p)
-                  << " (0x" << std::hex << static_cast<int>(hdr->p) << std::dec << ")" << std::endl;
-
-        std::cout << "  Payload Type: " << static_cast<int>(hdr->pt)
-                  << " (0x" << std::hex << static_cast<int>(hdr->pt) << std::dec << ")" << std::endl;
-
-        std::cout << "  Marker (M): " << static_cast<int>(hdr->m)
-                  << " (0x" << std::hex << static_cast<int>(hdr->m) << std::dec << ")" << std::endl;
-
-        std::cout << "  Sequence Number: " << hdr->seq
-                  << " (0x" << std::hex << hdr->seq << std::dec << ")" << std::endl;
-
-        std::cout << "  Timestamp: " << hdr->ts
-                  << " (0x" << std::hex << hdr->ts << std::dec << ")" << std::endl;
-
-        std::cout << "  SSRC: " << hdr->ssrc
-                  << " (0x" << std::hex << hdr->ssrc << std::dec << ")" << std::endl;
-    }
-    catch (std::exception &e) {
-        std::cout << ("Error decoding RTP header: ") << e.what() << std::endl;
     }
 }
 
@@ -172,6 +139,11 @@ void WebRTCAudioService::stopAudioThread() {
     queueCondition.notify_all();
     if (audioThread.joinable()) {
         audioThread.join();
+    }
+    try {
+        finalizeWavFile(wavFilename);
+    } catch (const std::exception &e) {
+        juce::Logger::outputDebugString("Error finalizing WAV file: " + std::string(e.what()));
     }
 }
 
