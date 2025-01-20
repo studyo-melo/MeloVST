@@ -106,3 +106,37 @@ private:
         }
     }
 };
+
+// const int frameSize = 960; // Taille de trame pour 20ms @ 48kHz (960 échantillons par canal)
+// const int maxPacketSize = 520; // Taille maximale du paquet RTP (en octets)
+//
+// Diviser les données PCM en trames de taille appropriée
+// for (size_t offset = 0; offset < pcmData.size(); offset += frameSize * 2) {
+//     auto frameEnd = std::min(offset + frameSize * 2, pcmData.size());
+//     std::vector<int16_t> frame(pcmData.begin() + offset, pcmData.begin() + frameEnd);
+//     if (frame.size() < frameSize * 2) {
+//         frame.resize(frameSize * 2, 0);
+//     }
+//
+//     std::vector<float> floatFrame(frameSize * 2);
+//     for (size_t i = 0; i < frame.size(); ++i) {
+//         floatFrame[i] = static_cast<float>(frame[i]) / 32768.0f;
+//     }
+//
+//     std::vector<uint8_t> encodedData;
+//     try {
+//         encodedData = opusEncoder.encode(floatFrame.data(), frameSize);
+//         if (encodedData.size() > maxPacketSize) {
+//             juce::Logger::outputDebugString("Encoded packet exceeds maximum size!");
+//             continue;
+//         }
+//         if (encodedData.size() < 64) {
+//             continue;
+//         }
+//     } catch (const std::exception &e) {
+//         juce::Logger::outputDebugString("Error encoding audio frame: " + std::string(e.what()));
+//         continue;
+//     }
+//
+//
+// }

@@ -127,9 +127,17 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 {
     juce::ignoreUnused (midiMessages);
 
-    auto* pcmData = buffer.getReadPointer(0); // Accéder au canal 0
-    int numSamples = buffer.getNumSamples();
-    EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{pcmData, numSamples});
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
+
+    juce::Logger::outputDebugString("Processing audio block: " + std::to_string(numSamples) + " samples, " + std::to_string(numChannels) + " channels");
+    // Copie des données PCM
+    std::vector<float> pcmData;
+    for (int channel = 0; channel < numChannels; ++channel) {
+        const float* channelData = buffer.getReadPointer(channel);
+        pcmData.insert(pcmData.end(), channelData, channelData + numSamples);
+    }
+    EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{pcmData, numChannels, numSamples, getSampleRate()});
 }
 
 //==============================================================================

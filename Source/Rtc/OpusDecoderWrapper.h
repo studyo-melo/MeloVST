@@ -117,11 +117,12 @@ inline void appendWavData(const std::string& filename, const std::vector<float>&
 
     std::ofstream wavFile(filepath, std::ios::binary | std::ios::app);
     if (!wavFile) {
-        throw std::runtime_error("Failed to open WAV file for appending.");
+        throw std::runtime_error("Impossible d'ouvrir le fichier WAV pour ajout.");
     }
 
-    // Ajouter les données audio
+    // Ajouter les données audio (conversion float -> PCM int16_t)
     for (float sample : pcmData) {
+        // Convertir en PCM 16 bits (échelle [-32768, 32767])
         int16_t intSample = static_cast<int16_t>(std::clamp(sample * 32767.0f, -32768.0f, 32767.0f));
         wavFile.write(reinterpret_cast<const char*>(&intSample), sizeof(int16_t));
     }

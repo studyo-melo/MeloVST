@@ -5,8 +5,10 @@
 #include <rtc/rtc.hpp>
 
 struct AudioBlockProcessedEvent {
-    const float* data;
+    const std::vector<float> data;
+    int numChannels;
     int numSamples;
+    double sampleRate;
 };
 
 struct LoginEvent {

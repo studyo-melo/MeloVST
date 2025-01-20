@@ -27,12 +27,12 @@ private:
     OpusDecoderWrapper opusDecoder;
     // Audio Thread
     std::thread audioThread;
-    std::queue<std::vector<int16_t>> audioQueue;
+    std::queue<std::vector<float>> audioQueue;
     std::mutex queueMutex;
     std::condition_variable queueCondition;
-    bool stopThread;
+    bool audioThreadRunning = false;
+    bool stopThread = false;
 
-    void pushAudioBuffer(const float* data, int numSamples);
     void stopAudioThread();
     void startAudioThread();
     void onRTCStateChanged(const RTCStateChangeEvent &event);
