@@ -62,20 +62,25 @@ private:
 #include <algorithm>
 #include <cstdint>
 
-inline void initializeWavFile(const std::string& filename, int sampleRate, int channels) {
+inline std::string getFilePath(const std::string& filename) {
     const char* homeDir = getenv("HOME");
     if (!homeDir) {
         throw std::runtime_error("Impossible de localiser le répertoire personnel (HOME).");
     }
 
     std::string desktopPath = std::string(homeDir) + "/Desktop";
-    std::string filepath = desktopPath + "/" + filename;
+    return desktopPath + "/" + filename;
+}
 
-    std::ofstream wavFile(filepath, std::ios::binary);
+inline std::fstream initializeWavFile(const std::string& filename, int sampleRate, int channels) {
+    std::string filepath = getFilePath(filename);
+
+    std::fstream wavFile(filepath, std::ios::binary | std::ios::out);
     if (!wavFile) {
         throw std::runtime_error("Failed to create WAV file.");
     }
 
+    juce::Logger::outputDebugString("Initializing WAV file with " + std::to_string(sampleRate) + "Hz, " + std::to_string(channels) + " channels");
     // Paramètres pour l'entête initial
     int byteRate = sampleRate * channels * sizeof(int16_t);
     int blockAlign = channels * sizeof(int16_t);
@@ -102,27 +107,21 @@ inline void initializeWavFile(const std::string& filename, int sampleRate, int c
     wavFile.write("data", 4);
     wavFile.write(reinterpret_cast<const char*>(&dataSize), 4);
 
-    wavFile.close();
     std::cout << "Initialized WAV file: " << filepath << std::endl;
+    return wavFile;
 }
 
 inline void appendWavData(const std::string& filename, const std::vector<float>& pcmData) {
-    const char* homeDir = getenv("HOME");
-    if (!homeDir) {
-        throw std::runtime_error("Impossible de localiser le répertoire personnel (HOME).");
-    }
-
-    std::string desktopPath = std::string(homeDir) + "/Desktop";
-    std::string filepath = desktopPath + "/" + filename;
-
+    std::string filepath = getFilePath(filename);
     std::ofstream wavFile(filepath, std::ios::binary | std::ios::app);
     if (!wavFile) {
         throw std::runtime_error("Impossible d'ouvrir le fichier WAV pour ajout.");
     }
 
-    // Ajouter les données audio (conversion float -> PCM int16_t)
     for (float sample : pcmData) {
-        // Convertir en PCM 16 bits (échelle [-32768, 32767])
+        if (sample < -1.0f || sample > 1.0f) {
+            std::cerr << "Sample out of range: " << sample << std::endl;
+        }
         int16_t intSample = static_cast<int16_t>(std::clamp(sample * 32767.0f, -32768.0f, 32767.0f));
         wavFile.write(reinterpret_cast<const char*>(&intSample), sizeof(int16_t));
     }
@@ -130,20 +129,7 @@ inline void appendWavData(const std::string& filename, const std::vector<float>&
     wavFile.close();
 }
 
-inline void finalizeWavFile(const std::string& filename) {
-    const char* homeDir = getenv("HOME");
-    if (!homeDir) {
-        throw std::runtime_error("Impossible de localiser le répertoire personnel (HOME).");
-    }
-
-    std::string desktopPath = std::string(homeDir) + "/Desktop";
-    std::string filepath = desktopPath + "/" + filename;
-
-    std::fstream wavFile(filepath, std::ios::binary | std::ios::in | std::ios::out);
-    if (!wavFile) {
-        throw std::runtime_error("Failed to open WAV file for finalizing.");
-    }
-
+inline void finalizeWavFile(std::fstream wavFile) {
     // Aller à la fin pour calculer la taille des données
     wavFile.seekp(0, std::ios::end);
     int fileSize = wavFile.tellp();
@@ -159,6 +145,6 @@ inline void finalizeWavFile(const std::string& filename) {
     wavFile.write(reinterpret_cast<const char*>(&dataSize), 4);
 
     wavFile.close();
-    std::cout << "Finalized WAV file: " << filepath << std::endl;
+    std::cout << "Finalized WAV file" << std::endl;
 }
 

@@ -32,6 +32,8 @@ private:
     std::condition_variable queueCondition;
     bool audioThreadRunning = false;
     bool stopThread = false;
+    bool doesFileExist = false;
+    std::fstream wavFile;
 
     void stopAudioThread();
     void startAudioThread();
