@@ -70,8 +70,6 @@ set(SourceFiles
         Source/CrashHandler.h
         Source/MainAudioProcessor.cpp
         Source/MainAudioProcessor.h
-        Source/Gui/MainWindow.cpp
-        Source/Gui/MainWindow.h
         Source/Gui/MainPageComponent.cpp
         Source/Gui/MainPageComponent.h
         Source/Gui/LoginPageComponent.cpp
