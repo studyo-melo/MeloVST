@@ -72,7 +72,7 @@ inline std::string getFilePath(const std::string& filename) {
     return desktopPath + "/" + filename;
 }
 
-inline std::fstream initializeWavFile(const std::string& filename, int sampleRate, int channels) {
+inline std::fstream initializeWavFile(const std::string& filename, int sampleRate, int channels, int samplePerBlock) {
     std::string filepath = getFilePath(filename);
 
     std::fstream wavFile(filepath, std::ios::binary | std::ios::out);

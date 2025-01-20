@@ -14,7 +14,7 @@ WebRTCAudioService::WebRTCAudioService():
     opusEncoder(SAMPLE_RATE, CHANNELS, BITRATE),
     opusDecoder(SAMPLE_RATE, CHANNELS)
 {
-    wavFile = initializeWavFile(wavFilename, SAMPLE_RATE_2, CHANNELS);
+    // wavFile = initializeWavFile(wavFilename, SAMPLE_RATE_2, CHANNELS);
 }
 
 WebRTCAudioService::~WebRTCAudioService() {
@@ -45,16 +45,10 @@ void WebRTCAudioService::sendAudioData() {
             pcmData = std::move(audioQueue.front());
             audioQueue.pop();
         }
-        for (float sample : pcmData) {
-            if (sample < -1.0f || sample > 1.0f) {
-                std::cerr << "Sample out of range: " << sample << std::endl;
-            }
-            int16_t intSample = static_cast<int16_t>(std::clamp(sample * 32767.0f, -32768.0f, 32767.0f));
-            wavFile.write(reinterpret_cast<const char*>(&intSample), sizeof(int16_t));
-        }
+
         if (audioTrack) {
             try {
-                juce::Logger::outputDebugString("Sending audio data: " + std::to_string(pcmData.size()) + " bytes");
+                // juce::Logger::outputDebugString("Sending audio data: " + std::to_string(pcmData.size()) + " bytes");
 
                 // std::vector<float> pcmDataLocal = opusDecoder.decode(encodedData);
                 // appendWavData(wavFilename, pcmData);

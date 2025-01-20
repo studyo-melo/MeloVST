@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <fstream>
 
 //==============================================================================
 class MainAudioProcessor final : public juce::AudioProcessor
@@ -45,4 +46,5 @@ public:
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainAudioProcessor)
+    std::fstream wavFile;
 };
