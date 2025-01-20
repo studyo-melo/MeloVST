@@ -60,6 +60,7 @@ target_link_libraries(
 set(SourceFiles
         Source/Utils/StringUtils.h
         Source/Utils/VectorUtils.h
+        Source/Utils/FileUtils.h
         Source/Utils/Constants.h
         Source/Utils/JuceLocalStorage.h
         Source/Utils/json.hpp

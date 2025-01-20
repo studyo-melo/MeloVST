@@ -13,6 +13,7 @@
 #include "../Socket/SocketEvents.h"
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
+#include "../Utils/FileUtils.h"
 #include "ReconnectTimer.h"
 #include "WebRTCConnexionHandler.h"
 
