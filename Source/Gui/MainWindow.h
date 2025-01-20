@@ -9,13 +9,12 @@
 #include "../Events/EventListener.h"
 #include "../Events/EventManager.h"
 
-class MainWindow final : public juce::DocumentWindow, public EventListener
+class MainWindow final : public juce::Component, public EventListener
 {
 public:
     explicit MainWindow (const juce::String& name);
     ~MainWindow() override;
 
-    void closeButtonPressed() override;
     void paint (juce::Graphics&) override;
     void resized() override;
     void onLoginEvent(const LoginEvent &event) override;
@@ -24,7 +23,7 @@ public:
 private:
    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
 
-    std::unique_ptr<juce::Component> currentPage;
+    std::unique_ptr<Component> currentPage;
     void navigateToLoginPage();
     void navigateToMainPage();
 };

@@ -16,13 +16,12 @@ public:
     explicit MainApplication (MainAudioProcessor&);
     ~MainApplication() override;
 
+
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
-    std::unique_ptr<MainWindow> mainWindowInstance;
-    MainWindow& mainWindow;
-    MainAudioProcessor& processorRef;
+    std::unique_ptr<Component> mainWindow;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainApplication)
 };

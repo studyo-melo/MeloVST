@@ -77,17 +77,13 @@ void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
             break;
         }
         case rtc::PeerConnection::State::Connecting: {
+            connectButton.setButtonText(juce::String::fromUTF8(("Stopper la demande de connexion")));
             RTCStateText.setText("En cours de connexion avec l'artiste...", juce::dontSendNotification);
-            break;
-        }
-        case rtc::PeerConnection::State::Disconnected: {
-            connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
-            RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
-                                 juce::dontSendNotification);
             break;
         }
         default: {
             connectButton.setVisible(true);
+            connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
             RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
                                  juce::dontSendNotification);
             break;

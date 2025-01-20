@@ -3,13 +3,8 @@
 //
 #include "MainWindow.h"
 
-MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colours::lightgrey, DocumentWindow::allButtons)
+MainWindow::MainWindow(const juce::String& name): Component(name)
 {
-    setUsingNativeTitleBar(true);
-    setContentOwned(new juce::Label("label", "Hello, World!"), true);
-    setResizable(true, true);
-    setSize(600, 400);
-
     const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
     if (accessToken.isEmpty()) {
         navigateToLoginPage();
@@ -25,20 +20,6 @@ MainWindow::MainWindow(const juce::String& name): DocumentWindow(name,juce::Colo
 
 MainWindow::~MainWindow() {
     EventManager::getInstance().removeListener(this);
-}
-
-void MainWindow::closeButtonPressed()
-{
-    const auto hostDescription = juce::String(juce::PluginHostType().getHostDescription());
-    if (hostDescription.equalsIgnoreCase("Unknown"))
-    {
-        juce::Logger::outputDebugString("Exiting main program");
-        juce::JUCEApplication::getInstance()->systemRequestedQuit();
-    }
-    else
-    {
-        setVisible(false);
-    }
 }
 
 void MainWindow::paint(juce::Graphics& g)
@@ -72,7 +53,6 @@ void MainWindow::navigateToLoginPage()
 void MainWindow::navigateToMainPage()
 {
     currentPage = std::make_unique<MainPageComponent>();
-    setContentOwned(currentPage.get(), true);
-    // setContentOwned(currentPage.get());
+    addAndMakeVisible(currentPage.get());
     resized();
 }

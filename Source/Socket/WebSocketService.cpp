@@ -18,7 +18,7 @@ WebSocketService::WebSocketService(const juce::String &wsRoute): webSocket(ix::W
                 juce::Logger::outputDebugString("Connexion WebSocket ouverte.");
                 break;
             case ix::WebSocketMessageType::Close:
-                juce::Logger::outputDebugString("Connexion WebSocket fermée.");
+                juce::Logger::outputDebugString("Connexion WebSocket fermee.");
                 break;
             case ix::WebSocketMessageType::Error:
                 juce::Logger::outputDebugString(
@@ -58,7 +58,7 @@ void WebSocketService::connectToServer() {
                 juce::Logger::outputDebugString("Erreur WebSocket : " + juce::String(msg->errorInfo.reason));
                 break;
             case ix::WebSocketMessageType::Close:
-                juce::Logger::outputDebugString("WebSocket fermé.");
+                juce::Logger::outputDebugString("WebSocket fermee");
                 break;
             default:
                 juce::Logger::outputDebugString("Autre événement WebSocket détecté.");
