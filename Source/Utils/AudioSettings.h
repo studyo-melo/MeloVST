@@ -20,9 +20,21 @@ public:
         return blockSize;
     }
 
+    [[nodiscard]] int getBitDepth() const noexcept {
+        return bitDepth;
+    }
+
+    [[nodiscard]] int getOpusSampleRate() const noexcept {
+        return opusSampleRate;
+    }
+
     // Mutateurs pour définir les paramètres audio
     void setSampleRate(int newSampleRate) noexcept {
         sampleRate = newSampleRate;
+    }
+
+    void setOpusSampleRate(int newOpusSampleRate) noexcept {
+        opusSampleRate = newOpusSampleRate;
     }
 
     void setBlockSize(int newBlockSize) noexcept {
@@ -32,6 +44,11 @@ public:
     void setNumChannels(int newNumChannels) noexcept {
         numChannels = newNumChannels;
     }
+
+    void setBitDepth(int newBitDepth) noexcept {
+        bitDepth = newBitDepth;
+    }
+
 
 private:
     // Constructeur et destructeur privés pour le Singleton
@@ -46,4 +63,6 @@ private:
     int sampleRate = 0;
     int blockSize = 0;
     int numChannels = 0;
+    int bitDepth = 0;
+    int opusSampleRate = 0;
 };

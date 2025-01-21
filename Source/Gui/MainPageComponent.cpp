@@ -14,6 +14,8 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService())
     addAndMakeVisible(RTCStateText);
     addAndMakeVisible(RTCSignalingStateText);
     addAndMakeVisible(RTCIceCandidateStateText);
+    addAndMakeVisible(createFileButton);
+    addAndMakeVisible(finalizeFileButton);
 
     auto userContext = AuthService::getInstance().getUserContext();
     title.setText(juce::String::fromUTF8(("Bienvenue " + userContext->user.firstname).c_str()),
@@ -29,6 +31,15 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService())
     RTCStateText.setJustificationType(juce::Justification::centred);
     RTCIceCandidateStateText.setJustificationType(juce::Justification::centred);
     RTCSignalingStateText.setJustificationType(juce::Justification::centred);
+
+    createFileButton.setButtonText(juce::String::fromUTF8(("Créer un fichier")));
+    createFileButton.onClick = [this] {
+        webRTCAudioService.createFile();
+    };
+    finalizeFileButton.setButtonText(juce::String::fromUTF8(("Finaliser le fichier")));
+    finalizeFileButton.onClick = [this] {
+        webRTCAudioService.finalizeFile();
+    };
 
     connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
     connectButton.onClick = [this, meloWebRTCServerService = &webRTCAudioService] {
@@ -133,6 +144,12 @@ void MainPageComponent::resized() {
 
     pageFlexbox.items.add(juce::FlexItem(titleFlexbox).withFlex(1));
     pageFlexbox.items.add(juce::FlexItem(stateFlexbox).withFlex(1));
+    pageFlexbox.items.add(
+        juce::FlexItem(createFileButton).withHeight(30).withWidth(200).withAlignSelf(juce::FlexItem::AlignSelf::center).
+        withFlex(0).withMargin(juce::FlexItem::Margin(20, 0, 20, 0)));
+    pageFlexbox.items.add(
+        juce::FlexItem(finalizeFileButton).withHeight(30).withWidth(200).withAlignSelf(juce::FlexItem::AlignSelf::center).
+        withFlex(0).withMargin(juce::FlexItem::Margin(20, 0, 20, 0)));
     pageFlexbox.items.add(
         juce::FlexItem(connectButton).withHeight(30).withWidth(200).withAlignSelf(juce::FlexItem::AlignSelf::center).
         withFlex(0).withMargin(juce::FlexItem::Margin(20, 0, 20, 0)));

@@ -2,24 +2,23 @@
 
 #include "../Utils/AudioSettings.h"
 
-int SAMPLE_RATE_2 = 44100;
-// int SAMPLE_RATE_2 = 24000;
-int SAMPLE_RATE = 48000;
-int CHANNELS = 2;
-// int CHANNELS = 2;
-int BITRATE = 64000;
-
-
-const std::string wavFilename = FileUtils::generateTimestampedFilename("output", "wav");
-
 WebRTCAudioService::WebRTCAudioService():
-    opusEncoder(SAMPLE_RATE, CHANNELS, BITRATE),
-    opusDecoder(SAMPLE_RATE, CHANNELS) {
-    wavFile = initializeWavFile(wavFilename);
+    opusEncoder(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels(), AudioSettings::getInstance().getBitDepth()),
+    opusDecoder(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels()) {
 }
 
 WebRTCAudioService::~WebRTCAudioService() {
     stopAudioThread();
+}
+
+void WebRTCAudioService::createFile() {
+    const std::string wavFilename = FileUtils::generateTimestampedFilename("output", "wav");
+    wavFile = FileUtils::initializeWavFile(wavFilename);
+}
+
+
+void WebRTCAudioService::finalizeFile() {
+    FileUtils::finalizeWavFile(std::move(wavFile));
 }
 
 void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
@@ -37,7 +36,6 @@ void WebRTCAudioService::sendAudioData() {
     while (!stopThread) {
         std::vector<float> pcmData;
 
-        // Récupérer les données PCM de la file d'attente
         {
             std::unique_lock<std::mutex> lock(queueMutex);
             queueCondition.wait(lock, [this]() { return !audioQueue.empty() || stopThread; });
@@ -49,10 +47,9 @@ void WebRTCAudioService::sendAudioData() {
 
         if (audioTrack) {
             try {
-                // juce::Logger::outputDebugString("Sending audio data: " + std::to_string(pcmData.size()) + " bytes");
-
+                juce::Logger::outputDebugString("Sending audio data: " + std::to_string(pcmData.size()) + " bytes");
+                FileUtils::appendWavData(wavFile, pcmData);
                 auto encodedData = opusEncoder.encode(pcmData.data(), pcmData.size());
-                appendWavData(wavFile, pcmData);
                 audioTrack->send(reinterpret_cast<const std::byte *>(encodedData.data()), encodedData.size());
             } catch (const std::exception &e) {
                 juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));
@@ -87,11 +84,6 @@ void WebRTCAudioService::stopAudioThread() {
     queueCondition.notify_all();
     if (audioThread.joinable()) {
         audioThread.join();
-    }
-    try {
-        finalizeWavFile(std::move(wavFile));
-    } catch (const std::exception &e) {
-        juce::Logger::outputDebugString("Error finalizing WAV file: " + std::string(e.what()));
     }
 }
 

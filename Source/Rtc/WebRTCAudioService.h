@@ -21,6 +21,8 @@ class WebRTCAudioService : public WebRTCConnexionHandler {
 public:
     WebRTCAudioService();
     ~WebRTCAudioService();
+    void createFile();
+    void finalizeFile();
 
 private:
     OpusEncoderWrapper opusEncoder;

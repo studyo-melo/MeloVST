@@ -13,9 +13,17 @@ MainAudioProcessor::MainAudioProcessor()
                      #endif
                        )
 {
-    AudioSettings::getInstance().setSampleRate(getSampleRate());
+    AudioSettings::getInstance().setBitDepth(16);
+    AudioSettings::getInstance().setOpusSampleRate(48000);
+    AudioSettings::getInstance().setSampleRate(44100);
     AudioSettings::getInstance().setBlockSize(getBlockSize());
     AudioSettings::getInstance().setNumChannels(getMainBusNumOutputChannels());
+
+    juce::Logger::outputDebugString("Bit depth: " + std::to_string(AudioSettings::getInstance().getBitDepth()));
+    juce::Logger::outputDebugString("Opus Sample rate: " + std::to_string(AudioSettings::getInstance().getOpusSampleRate()));
+    juce::Logger::outputDebugString("Sample rate: " + std::to_string(AudioSettings::getInstance().getSampleRate()));
+    juce::Logger::outputDebugString("Block Size: " + std::to_string(AudioSettings::getInstance().getBlockSize()));
+    juce::Logger::outputDebugString("Num Channels: " + std::to_string(AudioSettings::getInstance().getNumChannels()));
 }
 
 MainAudioProcessor::~MainAudioProcessor()
@@ -134,15 +142,14 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     int numChannels = buffer.getNumChannels(); // Nombre de canaux (1 pour mono, 2 pour stéréo, etc.)
     int numSamples = buffer.getNumSamples();   // Nombre d'échantillons dans le buffer
 
-    // Si le buffer est mono mais attendu en stéréo, duplique le canal unique
-    if (buffer.getNumChannels() < 2)
-    {
-        auto* monoData = buffer.getReadPointer(0); // Lecture des données du canal mono
-        buffer.setSize(2, numSamples, true, false, true); // Étend le buffer à deux canaux
-
-        auto* rightChannel = buffer.getWritePointer(1);  // Récupère le pointeur du canal droit
-        std::memcpy(rightChannel, monoData, numSamples * sizeof(float)); // Copie les données du mono
-    }
+    // if (buffer.getNumChannels() < 2)
+    // {
+    //     auto* monoData = buffer.getReadPointer(0); // Lecture des données du canal mono
+    //     buffer.setSize(2, numSamples, true, false, true); // Étend le buffer à deux canaux
+    //
+    //     auto* rightChannel = buffer.getWritePointer(1);  // Récupère le pointeur du canal droit
+    //     std::memcpy(rightChannel, monoData, numSamples * sizeof(float)); // Copie les données du mono
+    // }
 
 
     std::vector<float> pcmData;

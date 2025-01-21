@@ -5,11 +5,11 @@
 
 class OpusEncoderWrapper {
 public:
-    OpusEncoderWrapper(int sampleRate, int channels, int bitrate) {
+    OpusEncoderWrapper(int sampleRate, int channels, int bitDepth) {
         // Validation des paramètres
         if (sampleRate != 8000 && sampleRate != 12000 && sampleRate != 16000 &&
             sampleRate != 24000 && sampleRate != 48000)
-            throw std::invalid_argument("Invalid sample rate for Opus encoder");
+            throw std::invalid_argument("Invalid sample rate for Opus encoder " + std::to_string(sampleRate));
         if (channels != 1 && channels != 2)
             throw std::invalid_argument("Invalid channel count for Opus encoder");
 
@@ -18,7 +18,9 @@ public:
         if (error != OPUS_OK)
             throw std::runtime_error("Failed to create Opus encoder");
 
+        auto bitrate = sampleRate * channels * bitDepth;
         opus_encoder_ctl(encoder, OPUS_SET_BITRATE(bitrate > 0 ? bitrate : OPUS_AUTO));
+        opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
         opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(10));
         opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(10));
         opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(1));
