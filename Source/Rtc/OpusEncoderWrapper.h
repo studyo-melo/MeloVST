@@ -29,7 +29,7 @@ public:
         opus_encoder_destroy(encoder);
     }
 
-    std::vector<uint8_t> encode(const float *pcmData, int frameSize) {
+    std::vector<uint8_t> encode(float *pcmData, int frameSize) {
         // Taille tampon ajustée à la taille maximale attendue
         std::vector<uint8_t> encodedData(4000);
 

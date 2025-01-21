@@ -1,5 +1,6 @@
 #include "MainAudioProcessor.h"
 #include "MainApplication.h"
+#include "Utils/AudioSettings.h"
 
 //==============================================================================
 MainAudioProcessor::MainAudioProcessor()
@@ -12,6 +13,9 @@ MainAudioProcessor::MainAudioProcessor()
                      #endif
                        )
 {
+    AudioSettings::getInstance().setSampleRate(getSampleRate());
+    AudioSettings::getInstance().setBlockSize(getBlockSize());
+    AudioSettings::getInstance().setNumChannels(getMainBusNumOutputChannels());
 }
 
 MainAudioProcessor::~MainAudioProcessor()

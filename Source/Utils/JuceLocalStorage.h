@@ -55,5 +55,6 @@ private:
     JuceLocalStorage(const JuceLocalStorage&) = delete;
     JuceLocalStorage& operator=(const JuceLocalStorage&) = delete;
 
+    static JuceLocalStorage* instance;
     std::unique_ptr<juce::PropertiesFile> propertiesFile;
 };

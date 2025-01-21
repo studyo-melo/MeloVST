@@ -3,6 +3,8 @@
 #include <cmath>
 #include <opus.h>
 
+#include "../Utils/AudioSettings.h"
+
 class OpusDecoderWrapper
 {
 public:
@@ -72,15 +74,18 @@ inline std::string getFilePath(const std::string& filename) {
     return desktopPath + "/" + filename;
 }
 
-inline std::fstream initializeWavFile(const std::string& filename, int sampleRate, int channels, int samplePerBlock) {
+inline std::fstream initializeWavFile(const std::string& filename) {
     std::string filepath = getFilePath(filename);
 
     std::fstream wavFile(filepath, std::ios::binary | std::ios::out);
     if (!wavFile) {
         throw std::runtime_error("Failed to create WAV file.");
     }
+    int sampleRate = 48000;//AudioSettings::getInstance().getSampleRate();
+    int channels = 2; //AudioSettings::getInstance().getNumChannels();
+    int blockSize = 1024; //AudioSettings::getInstance().getBlockSize();
 
-    juce::Logger::outputDebugString("Initializing WAV file with " + std::to_string(sampleRate) + "Hz, " + std::to_string(channels) + " channels");
+    juce::Logger::outputDebugString("Initializing WAV file with " + std::to_string(sampleRate) + "Hz, " + std::to_string(channels) + " channels" + " and " + std::to_string(blockSize) + " block size");
     // Paramètres pour l'entête initial
     int byteRate = sampleRate * channels * sizeof(int16_t);
     int blockAlign = channels * sizeof(int16_t);
@@ -111,13 +116,7 @@ inline std::fstream initializeWavFile(const std::string& filename, int sampleRat
     return wavFile;
 }
 
-inline void appendWavData(const std::string& filename, const std::vector<float>& pcmData) {
-    std::string filepath = getFilePath(filename);
-    std::ofstream wavFile(filepath, std::ios::binary | std::ios::app);
-    if (!wavFile) {
-        throw std::runtime_error("Impossible d'ouvrir le fichier WAV pour ajout.");
-    }
-
+inline void appendWavData(std::fstream& wavFile, const std::vector<float>& pcmData) {
     for (float sample : pcmData) {
         if (sample < -1.0f || sample > 1.0f) {
             std::cerr << "Sample out of range: " << sample << std::endl;
@@ -125,8 +124,6 @@ inline void appendWavData(const std::string& filename, const std::vector<float>&
         int16_t intSample = static_cast<int16_t>(std::clamp(sample * 32767.0f, -32768.0f, 32767.0f));
         wavFile.write(reinterpret_cast<const char*>(&intSample), sizeof(int16_t));
     }
-
-    wavFile.close();
 }
 
 inline void finalizeWavFile(std::fstream wavFile) {
