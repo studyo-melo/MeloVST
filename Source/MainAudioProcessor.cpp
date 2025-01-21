@@ -87,10 +87,6 @@ void MainAudioProcessor::changeProgramName (int index, const juce::String& newNa
 //==============================================================================
 void MainAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::Logger::outputDebugString("Prepared to play with sample rate: " + std::to_string(sampleRate) + "Hz, " + std::to_string(samplesPerBlock) + " samples per block");
-    const std::string wavFilename = FileUtils::generateTimestampedFilename("output", "wav");
-    wavFile = initializeWavFile(wavFilename, sampleRate, getNumOutputChannels(), samplesPerBlock);
-
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
@@ -98,7 +94,6 @@ void MainAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
 void MainAudioProcessor::releaseResources()
 {
-    finalizeWavFile(std::move(wavFile));
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
@@ -132,24 +127,34 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 {
     juce::ignoreUnused (midiMessages);
 
-    const int numSamples = buffer.getNumSamples();
-    const int numChannels = buffer.getNumChannels();
+    int numChannels = buffer.getNumChannels(); // Nombre de canaux (1 pour mono, 2 pour stéréo, etc.)
+    int numSamples = buffer.getNumSamples();   // Nombre d'échantillons dans le buffer
 
-    // juce::Logger::outputDebugString("Processing audio block: " + std::to_string(numSamples) + " samples, " + std::to_string(numChannels) + " channels");
-    // Copie des données PCM
+    // Si le buffer est mono mais attendu en stéréo, duplique le canal unique
+    if (buffer.getNumChannels() < 2)
+    {
+        auto* monoData = buffer.getReadPointer(0); // Lecture des données du canal mono
+        buffer.setSize(2, numSamples, true, false, true); // Étend le buffer à deux canaux
+
+        auto* rightChannel = buffer.getWritePointer(1);  // Récupère le pointeur du canal droit
+        std::memcpy(rightChannel, monoData, numSamples * sizeof(float)); // Copie les données du mono
+    }
+
+
     std::vector<float> pcmData;
-    for (int channel = 0; channel < numChannels; ++channel) {
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
         const float* channelData = buffer.getReadPointer(channel);
-        pcmData.insert(pcmData.end(), channelData, channelData + numSamples);
+        pcmData.insert(pcmData.end(), channelData, channelData + numSamples); // Ajoute les données dans le PCM
     }
-    for (float sample : pcmData) {
-        if (sample < -1.0f || sample > 1.0f) {
-            std::cerr << "Sample out of range: " << sample << std::endl;
-        }
-        int16_t intSample = static_cast<int16_t>(std::clamp(sample * 32767.0f, -32768.0f, 32767.0f));
-        wavFile.write(reinterpret_cast<const char*>(&intSample), sizeof(int16_t));
-    }
-    // EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{pcmData, numChannels, numSamples, getSampleRate()});
+
+    // Notifie l'EventManager qu'un bloc audio a été traité
+    EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{
+        pcmData,
+        numChannels,
+        numSamples,
+        getSampleRate()
+    });;
 }
 
 //==============================================================================
