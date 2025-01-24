@@ -1,6 +1,8 @@
 #include "WebRTCAudioService.h"
 
+#include "../Debug/DebugRTPWrapper.h"
 #include "../Utils/AudioSettings.h"
+#include "../Utils/AudioUtils.h"
 
 WebRTCAudioService::WebRTCAudioService(): opusCodec()
 {
@@ -33,12 +35,19 @@ void WebRTCAudioService::sendAudioData() {
             pcmData = std::move(audioQueue.front());
             audioQueue.pop();
         }
+        if (pcmData.empty()) {
+            return;
+        }
 
         if (audioTrack) {
             try {
-                juce::Logger::outputDebugString("Sending audio data: " + std::to_string(pcmData.size()) + " bytes");
-                auto encodedData = opusCodec.encode(pcmData.data());
-                audioTrack->send(reinterpret_cast<const std::byte *>(encodedData.data()), encodedData.size());
+                // auto encodedData = opusCodec.encode(pcmData.data());
+                // auto rtpPacket = RTPWrapper::createRTPPacket(encodedData, seqNum++, timestamp, ssrc);
+                // timestamp += opusCodec.getFrameSize();
+                // DebugRTPWrapper::debugPacket(rtpPacket);
+
+                // juce::Logger::outputDebugString("Sending audio data: " + std::to_string(rtpPacket.size()) + " bytes");
+                // audioTrack->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
             } catch (const std::exception &e) {
                 juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));
             }

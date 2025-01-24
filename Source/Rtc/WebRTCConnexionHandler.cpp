@@ -124,7 +124,7 @@ void WebRTCConnexionHandler::onWsMessageReceived(const MessageWsReceivedEvent &e
         if (peerConnection->state() == rtc::PeerConnection::State::Connected) {
             return;
         }
-        juce::Logger::outputDebugString("Received ICE candidate");
+        juce::Logger::outputDebugString("Received ICE candidate ->" + event.data["candidate"]);
         std::string candidate = event.data["candidate"];
         std::string sdpMid = event.data["sdpMid"];
 

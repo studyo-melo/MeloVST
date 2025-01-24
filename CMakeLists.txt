@@ -59,6 +59,7 @@ target_link_libraries(
 # Make sure you include any new source files here
 set(SourceFiles
         Source/Utils/StringUtils.h
+        Source/Utils/AudioUtils.h
         Source/Utils/VectorUtils.h
         Source/Utils/FileUtils.h
         Source/Utils/Constants.h
@@ -67,6 +68,7 @@ set(SourceFiles
         Source/Utils/AudioSettings.h
         Source/Debug/DebugAudioCallback.h
         Source/Debug/AudioAppPlayer.h
+        Source/Debug/AudioAppPlayer.cpp
         Source/Debug/DebugRTPWrapper.h
         Source/MainApplication.cpp
         Source/MainApplication.h

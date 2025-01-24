@@ -1,3 +1,4 @@
+#pragma once
 #include <juce_core/juce_core.h>
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "../Events/EventListener.h"
@@ -5,52 +6,19 @@
 #include "../Rtc/OpusCodecWrapper.h"
 #include "../Utils/AudioSettings.h"
 
-class AudioBlockPlayer : public juce::AudioAppComponent, EventListener {
+class AudioAppPlayer : public juce::AudioAppComponent, public EventListener {
 public:
-    AudioBlockPlayer(): opusCodec() {
-        setAudioChannels(0, 2);
-        EventManager::getInstance().addListener(this);
-    }
+    AudioAppPlayer();
 
-    ~AudioBlockPlayer() override {
-        shutdownAudio();
-        EventManager::getInstance().removeListener(this);
-    }
+    ~AudioAppPlayer();
 
-    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override {
-        currentSampleRate = sampleRate;
-    }
+    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
 
-    void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) override {
-        if (audioBlock.empty()) {
-            bufferToFill.clearActiveBufferRegion();
-            return;
-        }
+    void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
 
-        auto *leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-        auto *rightChannel = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample);
+    void releaseResources() override;
 
-        auto encodedAudioBlock = opusCodec.encode(audioBlock.data());
-        auto decodedAudioBlock = opusCodec.decode(encodedAudioBlock);
-        for (int sample = 0; sample < bufferToFill.numSamples; ++sample) {
-            if (currentSampleIndex >= decodedAudioBlock.size())
-                currentSampleIndex = 0; // Boucle sur le bloc audio
-
-            float currentSample = decodedAudioBlock[currentSampleIndex++];
-            leftChannel[sample] = currentSample;
-            rightChannel[sample] = currentSample;
-        }
-    }
-
-    void releaseResources() override {
-        audioBlock.clear();
-    }
-
-    void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override {
-        audioBlock.resize(event.data.size());
-        audioBlock = event.data;
-        currentNumSamples = event.numSamples;
-    }
+    void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent& event) override;
 
 private:
     std::vector<float> audioBlock; // Contient les échantillons audio
@@ -59,5 +27,6 @@ private:
     double currentSampleRate = 0.0;
 
     OpusCodecWrapper opusCodec;
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioBlockPlayer)
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioAppPlayer)
 };

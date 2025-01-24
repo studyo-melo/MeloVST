@@ -20,11 +20,13 @@ public:
             throw std::runtime_error("Failed to create Opus decoder: " + std::string(opus_strerror(error)));
 
         // Configuration de l'encodeur
-        // opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
-        // opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(10));
-        // opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(10));
-        // opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(1));
-        // opus_encoder_ctl(encoder, OPUS_SET_BANDWIDTH(OPUS_BANDWIDTH_FULLBAND));
+         opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
+         opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(10));
+         opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(10));
+         opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(1));
+         opus_encoder_ctl(encoder, OPUS_SET_BANDWIDTH(OPUS_BANDWIDTH_FULLBAND));
+        // opus_decoder_ctl(decoder, OPUS_SET_GAIN(0));
+
     }
 
     ~OpusCodecWrapper() {
@@ -38,7 +40,7 @@ public:
         if (!encoder)
             throw std::runtime_error("Encoder not initialized");
 
-        std::vector<uint8_t> encodedData(4000); // Taille maximale pour l'encodage
+        std::vector<uint8_t> encodedData(4096); // Taille maximale pour l'encodage
         int frameSize = static_cast<int>(frameDuration * sampleRate);
         int bytes = opus_encode_float(encoder, pcmData, frameSize, encodedData.data(), static_cast<int>(encodedData.size()));
         if (bytes < 0)
@@ -61,6 +63,18 @@ public:
 
         pcmData.resize(decodedSamples * channels); // Ajuster la taille au nombre d'échantillons décodés
         return pcmData;
+    }
+
+    int getFrameSize() const {
+        return static_cast<int>(frameDuration * sampleRate);
+    }
+
+    int getSampleRate() const {
+        return sampleRate;
+    }
+
+    int getChannels() const {
+        return channels;
     }
 
 private:

@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-
+#include "../Utils/StringUtils.h"
 class  Artist
 {
 public:
