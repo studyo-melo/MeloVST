@@ -5,8 +5,7 @@
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 
-#include "OpusEncoderWrapper.h"
-#include "OpusDecoderWrapper.h"
+#include "OpusCodecWrapper.h"
 #include "../Socket/WebSocketService.h"
 #include "../Events/EventListener.h"
 #include "../Models/Session.h"
@@ -21,12 +20,9 @@ class WebRTCAudioService : public WebRTCConnexionHandler {
 public:
     WebRTCAudioService();
     ~WebRTCAudioService();
-    void createFile();
-    void finalizeFile();
 
 private:
-    OpusEncoderWrapper opusEncoder;
-    OpusDecoderWrapper opusDecoder;
+    OpusCodecWrapper opusCodec;
     // Audio Thread
     std::thread audioThread;
     std::queue<std::vector<float>> audioQueue;
@@ -34,8 +30,6 @@ private:
     std::condition_variable queueCondition;
     bool audioThreadRunning = false;
     bool stopThread = false;
-    bool doesFileExist = false;
-    std::fstream wavFile;
 
     void stopAudioThread();
     void startAudioThread();

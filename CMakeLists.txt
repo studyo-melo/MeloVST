@@ -92,8 +92,7 @@ set(SourceFiles
         Source/Rtc/WebRTCConnexionHandler.cpp
         Source/Rtc/WebRTCConnexionHandler.h
         Source/Rtc/ReconnectTimer.h
-        Source/Rtc/OpusEncoderWrapper.h
-        Source/Rtc/OpusDecoderWrapper.h
+        Source/Rtc/OpusCodecWrapper.h
         Source/Rtc/RTPWrapper.h
         Source/Models/User.h
         Source/Models/Session.h

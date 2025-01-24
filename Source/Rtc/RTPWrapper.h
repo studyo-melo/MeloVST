@@ -85,5 +85,58 @@ public:
       // Retourner uniquement le payload (sans l'en-tête RTP)
       return std::vector<uint8_t>(rtpPacket.begin() + headerSize, rtpPacket.end());
   }
+   static void debugPacket(const std::vector<uint8_t> &encodedData) {
+        typedef struct {
+            unsigned char cc: 4; /* CSRC count             */
+            unsigned char x: 1; /* header extension flag  */
+            unsigned char p: 1; /* padding flag           */
+            unsigned char version: 2; /* protocol version       */
+            unsigned char pt: 7; /* payload type           */
+            unsigned char m: 1; /* marker bit             */
+            uint16_t seq; /* sequence number        */
+            uint32_t ts; /* timestamp              */
+            uint32_t ssrc; /* synchronization source */
+        } srtp_hdr_t;
 
+        try {
+            auto data = reinterpret_cast<const std::byte *>(encodedData.data());
+            auto bin = rtc::binary(data, data + encodedData.size()); // message_variant
+            auto message = rtc::make_message(std::move(bin));
+
+            int size = int(message->size());
+            auto message2 = rtc::make_message(size + 16 + 128, message);
+            void *message2Data = message2->data();
+            auto hdr = (srtp_hdr_t *) message2Data;
+            std::cout << "RTP Header:" << std::endl;
+            std::cout << "  Version: " << static_cast<int>(hdr->version)
+                    << " (0x" << std::hex << static_cast<int>(hdr->version) << std::dec << ")" << std::endl;
+
+            std::cout << "  CC: " << static_cast<int>(hdr->cc)
+                    << " (0x" << std::hex << static_cast<int>(hdr->cc) << std::dec << ")" << std::endl;
+
+            std::cout << "  X: " << static_cast<int>(hdr->x)
+                    << " (0x" << std::hex << static_cast<int>(hdr->x) << std::dec << ")" << std::endl;
+
+            std::cout << "  Padding: " << static_cast<int>(hdr->p)
+                    << " (0x" << std::hex << static_cast<int>(hdr->p) << std::dec << ")" << std::endl;
+
+            std::cout << "  Payload Type: " << static_cast<int>(hdr->pt)
+                    << " (0x" << std::hex << static_cast<int>(hdr->pt) << std::dec << ")" << std::endl;
+
+            std::cout << "  Marker (M): " << static_cast<int>(hdr->m)
+                    << " (0x" << std::hex << static_cast<int>(hdr->m) << std::dec << ")" << std::endl;
+
+            std::cout << "  Sequence Number: " << hdr->seq
+                    << " (0x" << std::hex << hdr->seq << std::dec << ")" << std::endl;
+
+            std::cout << "  Timestamp: " << hdr->ts
+                    << " (0x" << std::hex << hdr->ts << std::dec << ")" << std::endl;
+
+            std::cout << "  SSRC: " << hdr->ssrc
+                    << " (0x" << std::hex << hdr->ssrc << std::dec << ")" << std::endl;
+        } catch (std::exception &e) {
+            std::cout << ("Error decoding RTP header: ") << e.what() << std::endl;
+        }
+    }
 };
+

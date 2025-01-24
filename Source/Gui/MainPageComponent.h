@@ -26,7 +26,7 @@ public:
 
 private:
     juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText;
-    juce::TextButton logoutButton, connectButton, createFileButton, finalizeFileButton;
+    juce::TextButton logoutButton, connectButton;
     WebRTCAudioService webRTCAudioService;
     WebSocketService webSocketService;
     juce::Array<PopulatedSession> ongoingSessions;

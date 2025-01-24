@@ -3,22 +3,12 @@
 #include "../Utils/AudioSettings.h"
 
 WebRTCAudioService::WebRTCAudioService():
-    opusEncoder(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels(), AudioSettings::getInstance().getBitDepth()),
-    opusDecoder(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels()) {
+    opusCodec(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels())
+{
 }
 
 WebRTCAudioService::~WebRTCAudioService() {
     stopAudioThread();
-}
-
-void WebRTCAudioService::createFile() {
-    const std::string wavFilename = FileUtils::generateTimestampedFilename("output", "wav");
-    wavFile = FileUtils::initializeWavFile(wavFilename);
-}
-
-
-void WebRTCAudioService::finalizeFile() {
-    FileUtils::finalizeWavFile(std::move(wavFile));
 }
 
 void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
@@ -48,8 +38,7 @@ void WebRTCAudioService::sendAudioData() {
         if (audioTrack) {
             try {
                 juce::Logger::outputDebugString("Sending audio data: " + std::to_string(pcmData.size()) + " bytes");
-                FileUtils::appendWavData(wavFile, pcmData);
-                auto encodedData = opusEncoder.encode(pcmData.data(), pcmData.size());
+                auto encodedData = opusCodec.encode(pcmData.data(), pcmData.size());
                 audioTrack->send(reinterpret_cast<const std::byte *>(encodedData.data()), encodedData.size());
             } catch (const std::exception &e) {
                 juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));

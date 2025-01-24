@@ -1,5 +1,7 @@
 #pragma once
 #include <juce_core/juce_core.h>
+#include <iostream>
+#include <fstream>
 
 namespace FileUtils {
     static std::string generateTimestampedFilename(const std::string& baseName, const std::string& extension) {
