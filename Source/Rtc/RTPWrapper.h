@@ -16,19 +16,6 @@ struct RTPHeader {
 
 class RTPWrapper {
 public:
-  static void debugRTPHeader(const RTPHeader &header) {
-        std::cout << "RTP Header Debug:" << std::endl;
-        std::cout << "  Version: " << ((header.v_p_x_cc >> 6) & 0x03) << std::endl;
-        std::cout << "  Padding: " << ((header.v_p_x_cc >> 5) & 0x01) << std::endl;
-        std::cout << "  Extension: " << ((header.v_p_x_cc >> 4) & 0x01) << std::endl;
-        std::cout << "  CSRC Count: " << (header.v_p_x_cc & 0x0F) << std::endl;
-        std::cout << "  Marker: " << ((header.m_pt >> 7) & 0x01) << std::endl;
-        std::cout << "  Payload Type: " << (header.m_pt & 0x7F) << std::endl;
-        std::cout << "  Sequence Number: " << ntohs(header.sequenceNumber) << std::endl;
-        std::cout << "  Timestamp: " << ntohl(header.timestamp) << std::endl;
-        std::cout << "  SSRC: " << ntohl(header.ssrc) << std::endl;
-    }
-
     static std::vector<uint8_t> createRTPPacket(const std::vector<uint8_t> &audioData, uint16_t seqNum, uint32_t ts,
                                                 uint32_t ssrc) {
         RTPHeader header;
@@ -85,6 +72,10 @@ public:
       // Retourner uniquement le payload (sans l'en-tête RTP)
       return std::vector<uint8_t>(rtpPacket.begin() + headerSize, rtpPacket.end());
   }
+
+
+    // DEBUG
+
    static void debugPacket(const std::vector<uint8_t> &encodedData) {
         typedef struct {
             unsigned char cc: 4; /* CSRC count             */
@@ -137,6 +128,19 @@ public:
         } catch (std::exception &e) {
             std::cout << ("Error decoding RTP header: ") << e.what() << std::endl;
         }
+    }
+
+    static void debugRTPHeader(const RTPHeader &header) {
+        std::cout << "RTP Header Debug:" << std::endl;
+        std::cout << "  Version: " << ((header.v_p_x_cc >> 6) & 0x03) << std::endl;
+        std::cout << "  Padding: " << ((header.v_p_x_cc >> 5) & 0x01) << std::endl;
+        std::cout << "  Extension: " << ((header.v_p_x_cc >> 4) & 0x01) << std::endl;
+        std::cout << "  CSRC Count: " << (header.v_p_x_cc & 0x0F) << std::endl;
+        std::cout << "  Marker: " << ((header.m_pt >> 7) & 0x01) << std::endl;
+        std::cout << "  Payload Type: " << (header.m_pt & 0x7F) << std::endl;
+        std::cout << "  Sequence Number: " << ntohs(header.sequenceNumber) << std::endl;
+        std::cout << "  Timestamp: " << ntohl(header.timestamp) << std::endl;
+        std::cout << "  SSRC: " << ntohl(header.ssrc) << std::endl;
     }
 };
 

@@ -142,14 +142,9 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     int numChannels = buffer.getNumChannels(); // Nombre de canaux (1 pour mono, 2 pour stéréo, etc.)
     int numSamples = buffer.getNumSamples();   // Nombre d'échantillons dans le buffer
 
-    // if (buffer.getNumChannels() < 2)
-    // {
-    //     auto* monoData = buffer.getReadPointer(0); // Lecture des données du canal mono
-    //     buffer.setSize(2, numSamples, true, false, true); // Étend le buffer à deux canaux
-    //
-    //     auto* rightChannel = buffer.getWritePointer(1);  // Récupère le pointeur du canal droit
-    //     std::memcpy(rightChannel, monoData, numSamples * sizeof(float)); // Copie les données du mono
-    // }
+
+    juce::Logger::outputDebugString("Num channels: " + std::to_string(numChannels) + " - Num samples: " + std::to_string(numSamples) + " - Sample rate: " + std::to_string(getSampleRate()));
+    juce::Logger::outputDebugString("Block size: " + std::to_string(getBlockSize()));
 
 
     std::vector<float> pcmData;
