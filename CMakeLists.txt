@@ -66,6 +66,7 @@ set(SourceFiles
         Source/Utils/json.hpp
         Source/Utils/AudioSettings.h
         Source/Debug/DebugAudioCallback.h
+        Source/Debug/AudioAppPlayer.h
         Source/MainApplication.cpp
         Source/MainApplication.h
         Source/CrashHandler.h

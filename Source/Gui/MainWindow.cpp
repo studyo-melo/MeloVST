@@ -2,9 +2,13 @@
 // Created by Padoa on 08/01/2025.
 //
 #include "MainWindow.h"
+#include "../Debug/AudioAppPlayer.h"
 
 MainWindow::MainWindow(const juce::String& name): Component(name)
 {
+    AudioBlockPlayer *audioBlockPlayer = new AudioBlockPlayer();
+    addAndMakeVisible(audioBlockPlayer);
+
     const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
     if (accessToken.isEmpty()) {
         navigateToLoginPage();
