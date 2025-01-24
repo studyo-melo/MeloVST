@@ -2,7 +2,7 @@
 #include <opus.h>
 #include <vector>
 #include <stdexcept>
-#include <cmath>
+#include <juce_core/juce_core.h>
 
 
 
@@ -55,8 +55,9 @@ public:
         int frameSize = static_cast<int>(frameDuration * sampleRate);
         std::vector<float> pcmData(frameSize * channels); // Préparation du tampon de sortie
         int decodedSamples = opus_decode_float(decoder, encodedData.data(), static_cast<int>(encodedData.size()), pcmData.data(), frameSize, 0);
-        if (decodedSamples < 0)
+        if (decodedSamples <= 0) {
             throw std::runtime_error("Opus decoding error: " + std::string(opus_strerror(decodedSamples)));
+        }
 
         pcmData.resize(decodedSamples * channels); // Ajuster la taille au nombre d'échantillons décodés
         return pcmData;

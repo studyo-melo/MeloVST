@@ -67,6 +67,7 @@ set(SourceFiles
         Source/Utils/AudioSettings.h
         Source/Debug/DebugAudioCallback.h
         Source/Debug/AudioAppPlayer.h
+        Source/Debug/DebugRTPWrapper.h
         Source/MainApplication.cpp
         Source/MainApplication.h
         Source/CrashHandler.h
@@ -157,3 +158,5 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
+
+add_subdirectory(Tests)
