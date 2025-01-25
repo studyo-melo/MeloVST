@@ -147,7 +147,6 @@ target_compile_definitions(${PROJECT_NAME}
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
-        r8brain-free-src
         opus
         datachannel
         ixwebsocket
