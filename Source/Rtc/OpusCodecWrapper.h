@@ -5,7 +5,6 @@
 #include <juce_core/juce_core.h>
 
 
-
 class OpusCodecWrapper {
 public:
     OpusCodecWrapper()

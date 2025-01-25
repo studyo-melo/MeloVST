@@ -111,6 +111,14 @@ set(SourceFiles
         Source/Events/EventListener.h
         Source/Events/EventManager.h
         Source/Events/Events.h
+        Source/ThirdParty/espOpus/opus_decoder.cc
+        Source/ThirdParty/espOpus/opus_decoder.h
+        Source/ThirdParty/espOpus/opus_encoder.cc
+        Source/ThirdParty/espOpus/opus_encoder.h
+        Source/ThirdParty/espOpus/opus_resampler.cc
+        Source/ThirdParty/espOpus/opus_resampler.h
+        Source/ThirdParty/espOpus/resampler_structs.h
+        Source/ThirdParty/espOpus/silk_resampler.h
 )
 
 # Change these to your own preferences

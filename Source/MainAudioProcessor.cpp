@@ -135,33 +135,43 @@ bool MainAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
 }
 
 void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
-                                              juce::MidiBuffer& midiMessages)
+                                       juce::MidiBuffer& midiMessages)
 {
     juce::ignoreUnused (midiMessages);
 
-    int numChannels = buffer.getNumChannels(); // Nombre de canaux (1 pour mono, 2 pour stéréo, etc.)
-    int numSamples = buffer.getNumSamples();   // Nombre d'échantillons dans le buffer
+    const int numChannels = buffer.getNumChannels();
+    const int numSamples = buffer.getNumSamples();
 
-
-    juce::Logger::outputDebugString("Num channels: " + std::to_string(numChannels) + " - Num samples: " + std::to_string(numSamples) + " - Sample rate: " + std::to_string(getSampleRate()));
+    // Log uniquement en mode debug pour éviter de ralentir le traitement
+#if JUCE_DEBUG
+    juce::Logger::outputDebugString("Num channels: " + std::to_string(numChannels) +
+                                    " - Num samples: " + std::to_string(numSamples) +
+                                    " - Sample rate: " + std::to_string(getSampleRate()));
     juce::Logger::outputDebugString("Block size: " + std::to_string(getBlockSize()));
+#endif
 
-
+    // Réserve l'espace nécessaire pour éviter les réallocations multiples
     std::vector<float> pcmData;
+    pcmData.reserve(static_cast<size_t>(numChannels * numSamples));
+
     for (int channel = 0; channel < numChannels; ++channel)
     {
         const float* channelData = buffer.getReadPointer(channel);
-        pcmData.insert(pcmData.end(), channelData, channelData + numSamples); // Ajoute les données dans le PCM
+        if (channelData != nullptr) // Vérifie que le pointeur est valide
+        {
+            pcmData.insert(pcmData.end(), channelData, channelData + numSamples);
+        }
     }
 
     // Notifie l'EventManager qu'un bloc audio a été traité
     EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{
-        pcmData,
+        std::move(pcmData), // Transfert des données pour éviter une copie
         numChannels,
         numSamples,
         getSampleRate()
-    });;
+    });
 }
+
 
 //==============================================================================
 bool MainAudioProcessor::hasEditor() const

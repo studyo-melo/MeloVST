@@ -25,8 +25,7 @@ private:
         const int sampleRate = 48000;
         const int channels = 2;
         const int frameSize = static_cast<int>(0.02 * sampleRate); // 20 ms de données
-        std::vector<float> inbuf = std::vector<float>(frameSize * channels, 0.0f);
-        generate_music(inbuf, inbuf.size());
+        auto inbuf = generate_music(frameSize * channels);
 
         auto encodedData = codec.encode(inbuf);
         expect(!encodedData.empty(), "Encoded data should not be empty");
@@ -53,8 +52,9 @@ private:
         return (Rz<<16)+Rw;
     }
 
-    void generate_music(std::vector<float> buf, opus_int32 len)
+    std::vector<float> generate_music(const int len)
     {
+        std::vector<float> buf = std::vector<float>(len, 0.0f);
         opus_int32 a1,b1,a2,b2;
         opus_int32 c1,c2,d1,d2;
         opus_int32 i,j;
@@ -80,7 +80,10 @@ private:
             buf[i*2+1]=v2>32767?32767:(v2<-32768?-32768:v2);
             if(i%6==0)j++;
         }
+
+        return buf;
     }
+
 
     // void testInvalidInputs() {
     //     beginTest("Invalid Inputs");
