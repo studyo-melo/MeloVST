@@ -1,6 +1,10 @@
+#include <CDSPResampler.h>
+
 #include "Rtc/OpusCodecWrapper.h"
 #include <juce_core/juce_core.h>
 #include <vector>
+
+#include "Utils/AudioUtils.h"
 
 class OpusCodecWrapperTest : public juce::UnitTest {
 public:
@@ -21,16 +25,27 @@ private:
         const int sampleRate = 48000;
         const int channels = 2;
         const int frameSize = static_cast<int>(0.02 * sampleRate); // 20 ms de données
-        std::vector<float> pcmData(frameSize * channels, 0.5f); // Tampon rempli de données arbitraires
+        std::vector<float> pcmData = buildPcmData(frameSize, channels);
 
-        // Encoder les données PCM
         auto encodedData = codec.encode(pcmData.data());
         expect(!encodedData.empty(), "Encoded data should not be empty");
 
-        // Décoder les données encodées
         auto decodedData = codec.decode(encodedData);
         expect(!decodedData.empty(), "Decoded data should not be empty");
         expectEquals(static_cast<int>(decodedData.size()), frameSize * channels, "Decoded data size mismatch");
+
+        for (int i = 0; i < frameSize * channels; ++i) {
+            expectEquals(decodedData[i], pcmData[i], "Decoded data mismatch");
+        }
+    }
+
+    static std::vector<float> buildPcmData(int frameSize, int channels) {
+        std::vector<float> pcmData(frameSize * channels);
+        for (int i = 0; i < frameSize * channels; ++i) {
+            pcmData[i] = static_cast<float>(rand()) / RAND_MAX;
+        }
+        return pcmData;
+
     }
 
     // void testInvalidInputs() {

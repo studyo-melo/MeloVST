@@ -21,7 +21,11 @@ endfunction()
 
 # Ajouter les tests individuellement
 add_unit_test(OpusCodecWrapperTest OpusCodecWrapperTest.cpp)
-target_link_libraries(OpusCodecWrapperTest PRIVATE ${OPUS_LIBRARY})
+target_link_libraries(OpusCodecWrapperTest PRIVATE
+        juce::juce_audio_basics
+        juce::juce_dsp
+        ${OPUS_LIBRARY}
+)
 add_unit_test(RTPWrapperTest RTPWrapperTest.cpp)
 target_link_libraries(RTPWrapperTest PRIVATE
         datachannel
@@ -34,6 +38,12 @@ add_executable(RunAllTests
         TestMain.cpp
 )
 
-target_link_libraries(RunAllTests PRIVATE juce::juce_core ${OPUS_LIBRARY})
+target_link_libraries(RunAllTests
+        PRIVATE
+        juce::juce_core
+        juce::juce_audio_basics
+        juce::juce_dsp
+        ${OPUS_LIBRARY}
+)
 target_include_directories(RunAllTests PRIVATE ../Source)
 add_test(NAME RunAllTests COMMAND RunAllTests)
