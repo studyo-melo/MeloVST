@@ -49,7 +49,7 @@ CPMAddPackage(
 CPMAddPackage(
     NAME libopus
     GIT_REPOSITORY https://github.com/xiph/opus.git
-    GIT_TAG origin/main
+    GIT_TAG v1.5.2
 )
 
 include_directories(${libopus_SOURCE_DIR}/include)

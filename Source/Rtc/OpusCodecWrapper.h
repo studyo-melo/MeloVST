@@ -20,11 +20,17 @@ public:
             throw std::runtime_error("Failed to create Opus decoder: " + std::string(opus_strerror(error)));
 
         // Configuration de l'encodeur
-         opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
-         opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(10));
-         opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(10));
-         opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(1));
-         opus_encoder_ctl(encoder, OPUS_SET_BANDWIDTH(OPUS_BANDWIDTH_FULLBAND));
+        opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
+        opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(10));
+        opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(5));
+        opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(1));
+        opus_decoder_ctl(decoder, OPUS_SET_GAIN(0));
+        // opus_encoder_ctl(encoder, OPUS_SET_BANDWIDTH(OPUS_BANDWIDTH_MEDIUMBAND));
+        // opus_decoder_ctl(decoder, OPUS_SET_BITRATE(OPUS_AUTO));
+        // opus_decoder_ctl(decoder, OPUS_SET_PACKET_LOSS_PERC(0));
+        // opus_decoder_ctl(decoder, OPUS_SET_COMPLEXITY(0));
+        // opus_decoder_ctl(decoder, OPUS_SET_INBAND_FEC(1));
+        // opus_decoder_ctl(decoder, OPUS_SET_BANDWIDTH(OPUS_BANDWIDTH_FULLBAND));
         // opus_decoder_ctl(decoder, OPUS_SET_GAIN(0));
 
     }
@@ -36,13 +42,13 @@ public:
             opus_decoder_destroy(decoder);
     }
 
-    std::vector<uint8_t> encode(const float* pcmData) {
+    std::vector<uint8_t> encode(const std::vector<float> &pcmData) {
         if (!encoder)
             throw std::runtime_error("Encoder not initialized");
 
         std::vector<uint8_t> encodedData(4096); // Taille maximale pour l'encodage
         int frameSize = static_cast<int>(frameDuration * sampleRate);
-        int bytes = opus_encode_float(encoder, pcmData, frameSize, encodedData.data(), static_cast<int>(encodedData.size()));
+        int bytes = opus_encode_float(encoder, pcmData.data(), frameSize, encodedData.data(), encodedData.size());
         if (bytes < 0)
             throw std::runtime_error("Opus encoding error: " + std::string(opus_strerror(bytes)));
 
@@ -56,7 +62,7 @@ public:
 
         int frameSize = static_cast<int>(frameDuration * sampleRate);
         std::vector<float> pcmData(frameSize * channels); // Préparation du tampon de sortie
-        int decodedSamples = opus_decode_float(decoder, encodedData.data(), static_cast<int>(encodedData.size()), pcmData.data(), frameSize, 0);
+        int decodedSamples = opus_decode_float(decoder, encodedData.data(), encodedData.size(), pcmData.data(), frameSize, 0);
         if (decodedSamples <= 0) {
             throw std::runtime_error("Opus decoding error: " + std::string(opus_strerror(decodedSamples)));
         }

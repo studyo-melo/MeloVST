@@ -32,10 +32,10 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
     auto decodedAudioBlock = opusCodec.decode(encodedAudioBlock);
 
     for (int sample = 0; sample < bufferToFill.numSamples; ++sample) {
-        if (currentSampleIndex >= decodedAudioBlock.size())
+        if (currentSampleIndex >= audioBlock.size())
             currentSampleIndex = 0; // Boucle sur le bloc audio
 
-        float currentSample = decodedAudioBlock[currentSampleIndex++];
+        float currentSample = audioBlock[currentSampleIndex++];
         leftChannel[sample] = currentSample;
         rightChannel[sample] = currentSample;
     }
