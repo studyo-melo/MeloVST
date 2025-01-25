@@ -36,18 +36,24 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-        NAME ixwebsocket
-        GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
-        GIT_TAG origin/master
+    NAME ixwebsocket
+    GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
+    GIT_TAG origin/master
+)
+CPMAddPackage(
+    NAME r8brain-free-src
+    GIT_REPOSITORY https://github.com/avaneev/r8brain-free-src.git
+    GIT_TAG origin/master
 )
 
 CPMAddPackage(
-        NAME libopus
-        GIT_REPOSITORY https://github.com/xiph/opus.git
-        GIT_TAG origin/main
+    NAME libopus
+    GIT_REPOSITORY https://github.com/xiph/opus.git
+    GIT_TAG origin/main
 )
 
 include_directories(${libopus_SOURCE_DIR}/include)
+include_directories(${r8brain-free-src_SOURCE_DIR})
 
 add_library(
         datachannel_static INTERFACE IMPORTED
@@ -141,6 +147,7 @@ target_compile_definitions(${PROJECT_NAME}
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
+        r8brain-free-src
         opus
         datachannel
         ixwebsocket
