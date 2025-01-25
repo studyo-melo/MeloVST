@@ -13,6 +13,7 @@ public:
     void addListener(EventListener* listener)
     {
         listeners.add(listener);
+        juce::Logger::outputDebugString("Listener added " + listeners.size());
     }
 
     void removeListener(EventListener* listener)

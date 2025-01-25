@@ -32,11 +32,11 @@ public:
 protected:
     std::shared_ptr<rtc::PeerConnection> peerConnection;
     std::shared_ptr<rtc::Track> audioTrack;
+    std::shared_ptr<rtc::DataChannel> dataChannel;
     void notifyRTCStateChanged() const;
 
 private:
     std::vector<rtc::Candidate> pendingCandidates;
-    std::shared_ptr<rtc::DataChannel> dataChannel;
     WebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
 

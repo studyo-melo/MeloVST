@@ -13,7 +13,10 @@ WebRTCAudioService::~WebRTCAudioService() {
 }
 
 void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
-    if (!audioTrack || !audioTrack->isOpen()) {
+    // if (!audioTrack || !audioTrack->isOpen()) {
+    //     return;
+    // }
+    if (!dataChannel || !dataChannel->isOpen()) {
         return;
     }
     {
@@ -39,15 +42,16 @@ void WebRTCAudioService::sendAudioData() {
             return;
         }
 
-        if (audioTrack) {
+        if (dataChannel && dataChannel->isOpen()) {
             try {
                 // auto encodedData = opusCodec.encode(pcmData.data());
                 // auto rtpPacket = RTPWrapper::createRTPPacket(encodedData, seqNum++, timestamp, ssrc);
                 // timestamp += opusCodec.getFrameSize();
                 // DebugRTPWrapper::debugPacket(rtpPacket);
 
-                // juce::Logger::outputDebugString("Sending audio data: " + std::to_string(rtpPacket.size()) + " bytes");
-                // audioTrack->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
+                juce::Logger::outputDebugString("Sending audio data: " + std::to_string(pcmData.size()) + " bytes");
+                dataChannel->send(reinterpret_cast<const std::byte *>(pcmData.data()), pcmData.size());
+
             } catch (const std::exception &e) {
                 juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));
             }

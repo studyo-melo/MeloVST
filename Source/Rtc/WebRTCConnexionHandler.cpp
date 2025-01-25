@@ -21,12 +21,16 @@ void WebRTCConnexionHandler::setupConnection() {
 
     peerConnection = std::make_shared<rtc::PeerConnection>(config);
 
-    rtc::Description::Audio newAudioTrack{};
-    newAudioTrack.addOpusCodec(111);
-    newAudioTrack.setBitrate(64000); // Débit binaire en bits par seconde
-    newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
-    newAudioTrack.addSSRC(12345, "CNAME");;
+    // rtc::Description::Audio newAudioTrack{};
+    // newAudioTrack.addOpusCodec(111);
+    // newAudioTrack.setBitrate(64000); // Débit binaire en bits par seconde
+    // newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
+    // newAudioTrack.addSSRC(12345, "CNAME");;
 
+    dataChannel = peerConnection->createDataChannel("audio");
+    dataChannel->onOpen([]() {
+        std::cout << "DataChannel ouvert !" << std::endl;
+    });
     peerConnection->onLocalDescription([this](rtc::Description sdp) {
         if (!peerConnection->remoteDescription()) {
             sendOfferToRemote(sdp);
@@ -87,7 +91,7 @@ void WebRTCConnexionHandler::setupConnection() {
         }
     });
 
-    audioTrack = peerConnection->addTrack(static_cast<rtc::Description::Media>(newAudioTrack));
+    // audioTrack = peerConnection->addTrack(static_cast<rtc::Description::Media>(newAudioTrack));
     setOffer();
 }
 
