@@ -18,48 +18,46 @@ void AudioAppPlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRat
     currentSampleIndex = 0;
 }
 
+
+// std::vector<uint8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
+// opusCodec.encode(audioBlock, [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
+//     opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
+// });
+// if (opusEncodedAudioBlock.empty()) {
+//     bufferToFill.clearActiveBufferRegion();
+//     return;
+// }
+//
+// std::vector<int16_t> decodedAudioBlock = opusCodec.decode(opusEncodedAudioBlock);
+// if (decodedAudioBlock.empty()) {
+//     bufferToFill.clearActiveBufferRegion();
+//     return;
+// }
 void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
     if (audioBlock.empty() || !bufferToFill.buffer) {
-        bufferToFill.clearActiveBufferRegion();
+        bufferToFill.clearActiveBufferRegion(); // Efface la région active si aucune donnée
         return;
     }
 
-    std::vector<uint8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
-    opusCodec.encode(audioBlock, [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
-        opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
-    });
-    // Vérifie que les données décodées ont la bonne taille
-    if (opusEncodedAudioBlock.empty()) {
-        bufferToFill.clearActiveBufferRegion();
-        return;
-    }
+    const int numChannels = bufferToFill.buffer->getNumChannels();
+    const int numSamplesToCopy = std::min(static_cast<int>(audioBlock.size()), bufferToFill.numSamples);
 
-    // Décode le bloc audio
-    std::vector<int16_t> decodedAudioBlock = opusCodec.decode(opusEncodedAudioBlock);
-    //
-    // // // Vérifie que les données décodées ont la bonne taille
-    if (decodedAudioBlock.empty()) {
-        bufferToFill.clearActiveBufferRegion();
-        return;
-    }
+    // Remplir les canaux gauche et droit
+    for (int channel = 0; channel < numChannels; ++channel) {
+        auto* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
 
-    auto* leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    auto* rightChannel = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample);
+        // Copie des données audio normalisées
+        for (int i = 0; i < numSamplesToCopy; ++i) {
+            channelData[i] = static_cast<float>(audioBlock[i]) / 32768.0f; // Normalisation entre -1.0 et 1.0
+        }
 
-    // Copie les 520 premiers échantillons décodés dans le tampon audio de JUCE
-    const int samplesToCopy = std::min(static_cast<int>(decodedAudioBlock.size()), 520); // Limite à 520 échantillons
-    for (int i = 0; i < samplesToCopy; ++i) {
-        // Remplir les deux canaux avec les échantillons décodés
-        leftChannel[i] = static_cast<float>(decodedAudioBlock[i]) / 32768.0f; // Normaliser entre -1.0 et 1.0
-        rightChannel[i] = leftChannel[i]; // Si vous souhaitez un signal mono pour les deux canaux
-    }
-
-    // Si le nombre d'échantillons est inférieur à 520, remplissez le reste du tampon avec des zéros
-    for (int i = samplesToCopy; i < bufferToFill.numSamples; ++i) {
-        leftChannel[i] = 0.0f;
-        rightChannel[i] = 0.0f;
+        // Complète le reste avec des zéros si nécessaire
+        for (int i = numSamplesToCopy; i < bufferToFill.numSamples; ++i) {
+            channelData[i] = 0.0f;
+        }
     }
 }
+
 
 
 void AudioAppPlayer::releaseResources() {
