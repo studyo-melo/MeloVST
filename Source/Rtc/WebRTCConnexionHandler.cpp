@@ -22,7 +22,7 @@ void WebRTCConnexionHandler::setupConnection() {
     peerConnection = std::make_shared<rtc::PeerConnection>(config);
 
     rtc::Description::Audio newAudioTrack{};
-    newAudioTrack.addOpusCodec(111);
+    newAudioTrack.addOpusCodec(111, "minptime=10;useinbandfec=0");
     newAudioTrack.setBitrate(96000); // Débit binaire en bits par seconde
     newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
     newAudioTrack.addSSRC(12345, "CNAME");;

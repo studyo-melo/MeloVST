@@ -6,8 +6,12 @@
 #include <arpa/inet.h> // Pour htons et htonl
 
 // Constants
-constexpr int RTP_VERSION = 2; // Version RTP
-constexpr int PAYLOAD_TYPE = 111; // Opus Payload Type
+constexpr int RTP_VERSION = 2;
+constexpr int PAYLOAD_TYPE = 111;
+constexpr int PADDING = 0;
+constexpr int EXTENSION = 0;
+constexpr int CC = 0;
+constexpr int MARKER = 0;
 
 struct RTPHeader {
     uint8_t v_p_x_cc; // Version (2 bits), Padding (1 bit), Extension (1 bit), CSRC Count (4 bits)
@@ -21,8 +25,8 @@ class RTPWrapper {
 public:
     static std::vector<uint8_t> createRTPPacket(const std::vector<uint8_t>& audioData, uint16_t seqNum, uint32_t ts, uint32_t ssrc) {
         RTPHeader header;
-        header.v_p_x_cc = (RTP_VERSION << 6) | (0 << 5) | (0 << 4) | 0; // Version=2, Padding=0, Extension=0, CC=0
-        header.m_pt = (0 << 7) | PAYLOAD_TYPE; // Marker=0, PayloadType=111
+        header.v_p_x_cc = (RTP_VERSION << 6) | (PADDING << 5) | (EXTENSION << 4) | CC; // Version=2, Padding=0, Extension=0, CC=0
+        header.m_pt = (MARKER << 7) | PAYLOAD_TYPE; // Marker=0, PayloadType=111
         header.sequenceNumber = htons(seqNum);
         header.timestamp = htonl(ts);
         header.ssrc = htonl(ssrc);

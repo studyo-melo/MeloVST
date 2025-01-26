@@ -51,7 +51,10 @@ void WebRTCAudioService::sendAudioData() {
                 });
                 if (!opusEncodedAudioBlock.empty()) {
                     auto rtpPacket = RTPWrapper::createRTPPacket(opusEncodedAudioBlock, seqNum++, timestamp, ssrc);
+                    timestamp += opusEncodedAudioBlock.size() / 2;
                     juce::Logger::outputDebugString("Sending audio data: " + std::to_string(rtpPacket.size()) + " bytes");
+                    DebugRTPWrapper::debugPacket(rtpPacket);
+
                     audioTrack->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
                 }
             } catch (const std::exception &e) {
