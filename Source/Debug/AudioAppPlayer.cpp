@@ -2,7 +2,7 @@
 #include "AudioAppPlayer.h"
 
 
-AudioAppPlayer::AudioAppPlayer() : opusCodec(), opusEncoder(48000, 2, 10), opusDecoder(48000, 2, 10) {
+AudioAppPlayer::AudioAppPlayer() {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
     EventManager::getInstance().addListener(this);
 }
@@ -35,9 +35,9 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
         bufferToFill.clearActiveBufferRegion(); // Efface le buffer si toutes les données sont nulles
         return;
     }
-    
+
     std::vector<uint8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
-    opusEncoder.Encode(std::move(audioBlockInt16), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
+    opusCodec.encode(std::move(audioBlockInt16), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
         opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
     });
     // Vérifie que les données décodées ont la bonne taille
@@ -47,7 +47,7 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
     }
 
     // Décode le bloc audio
-    std::vector<int16_t> decodedAudioBlock = opusDecoder.Decode(opusEncodedAudioBlock);
+    std::vector<int16_t> decodedAudioBlock = opusCodec.decode(opusEncodedAudioBlock);
     //
     // // // Vérifie que les données décodées ont la bonne taille
     if (decodedAudioBlock.empty()) {

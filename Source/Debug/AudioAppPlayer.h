@@ -5,8 +5,6 @@
 #include "../Events/EventManager.h"
 #include "../Rtc/OpusCodecWrapper.h"
 #include "../Utils/AudioSettings.h"
-#include "../ThirdParty/espOpus/opus_encoder.h"
-#include "../ThirdParty/espOpus/opus_decoder.h"
 
 class AudioAppPlayer : public juce::AudioAppComponent, public EventListener {
 public:
@@ -29,8 +27,5 @@ private:
     double currentSampleRate = 0.0;
 
     OpusCodecWrapper opusCodec;
-    OpusEncoderWrapper opusEncoder;
-    OpusDecoderWrapper opusDecoder;
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioAppPlayer)
 };

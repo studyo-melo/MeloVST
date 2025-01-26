@@ -4,7 +4,7 @@
 #include "../Utils/AudioSettings.h"
 #include "../Utils/AudioUtils.h"
 
-WebRTCAudioService::WebRTCAudioService(): opusCodec(), opusEncoder(48000, 2, 10)
+WebRTCAudioService::WebRTCAudioService()
 {
 }
 
@@ -46,7 +46,7 @@ void WebRTCAudioService::sendAudioData() {
                     audioBlockInt16[i] = static_cast<int16_t>(pcmData[i] * 32767.0f);
                 }
                 std::vector<uint8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
-                opusEncoder.Encode(std::move(audioBlockInt16), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
+                opusCodec.encode(std::move(audioBlockInt16), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
                     opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
                 });
                 if (!opusEncodedAudioBlock.empty()) {

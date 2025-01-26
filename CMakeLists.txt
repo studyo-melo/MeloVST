@@ -111,10 +111,6 @@ set(SourceFiles
         Source/Events/EventListener.h
         Source/Events/EventManager.h
         Source/Events/Events.h
-        Source/ThirdParty/espOpus/opus_decoder.cc
-        Source/ThirdParty/espOpus/opus_decoder.h
-        Source/ThirdParty/espOpus/opus_encoder.cc
-        Source/ThirdParty/espOpus/opus_encoder.h
 )
 
 # Change these to your own preferences

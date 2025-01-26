@@ -6,8 +6,8 @@
 
 MainWindow::MainWindow(const juce::String& name): Component(name)
 {
-    // AudioAppPlayer *audioBlockPlayer = new AudioAppPlayer();
-    // addAndMakeVisible(audioBlockPlayer);
+    AudioAppPlayer *audioBlockPlayer = new AudioAppPlayer();
+    addAndMakeVisible(audioBlockPlayer);
 
     const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
     if (accessToken.isEmpty()) {
