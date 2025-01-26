@@ -36,13 +36,14 @@ public:
             opus_decoder_destroy(decoder);
     }
 
-    //Un paquet Opus contient :
+    // Un paquet Opus contient :
     // Un en-tête : qui inclut des informations comme le type de trame, le débit binaire, et la taille des trames.
     // Les données encodées: même pour un silence, Opus insère des données encodées représentant le silence.
-    void encode(std::vector<int16_t> pcm, std::function<void(std::vector<int8_t> &&opus)> handler) {
+    std::vector<int8_t> encode(std::vector<int16_t> pcm) {
+        std::vector<int8_t> res;
         int frame_size_ = frameSizePerChannel * numChannels;
         if (encoder == nullptr) {
-            return;
+            return res;
         }
         if (in_buffer_.empty()) {
             in_buffer_ = std::move(pcm);
@@ -55,16 +56,14 @@ public:
             auto ret = opus_encode(encoder, pcm.data(), frameSizePerChannel, reinterpret_cast<unsigned char *>(opus.data()), opus.size());
             if (ret < 0) {
                 in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + frame_size_);
-                return;
+                return opus;
             }
             opus.resize(ret);
-
-            if (handler != nullptr) {
-                handler(std::move(opus));
-            }
+            res.assign(opus.begin(), opus.end());
 
             in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + frame_size_);
         }
+        return res;
     }
 
     std::vector<int8_t> encode_in_place(std::vector<int16_t> pcm) const {

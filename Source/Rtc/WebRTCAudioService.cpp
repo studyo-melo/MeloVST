@@ -41,18 +41,17 @@ void WebRTCAudioService::sendAudioData() {
 
         if (audioTrack) {
             try {
-                std::vector<int8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
-                opusCodec.encode(std::move(pcmData), [&opusEncodedAudioBlock](std::vector<int8_t>&& encodedData) {
-                    opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
-                });
-                if (!opusEncodedAudioBlock.empty()) {
-                    auto rtpPacket = RTPWrapper::createRTPPacket(opusEncodedAudioBlock, seqNum++, timestamp, ssrc);
-                    timestamp += opusEncodedAudioBlock.size() / 2;
-                    juce::Logger::outputDebugString("Sending audio data: " + std::to_string(rtpPacket.size()) + " bytes");
-                    DebugRTPWrapper::debugPacket(rtpPacket);
-
-                    audioTrack->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
+                std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(std::move(pcmData));
+                if (opusEncodedAudioBlock.empty()) {
+                    juce::Logger::outputDebugString("Empty opus encoded audio block");
+                    return;
                 }
+                auto rtpPacket = RTPWrapper::createRTPPacket(opusEncodedAudioBlock, seqNum++, timestamp, ssrc);
+                timestamp += opusEncodedAudioBlock.size() / 2;
+                juce::Logger::outputDebugString("Sending audio data: " + std::to_string(rtpPacket.size()) + " bytes");
+                DebugRTPWrapper::debugPacket(rtpPacket);
+
+                audioTrack->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
             } catch (const std::exception &e) {
                 juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));
             }
