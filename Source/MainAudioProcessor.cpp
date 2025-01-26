@@ -24,6 +24,7 @@ MainAudioProcessor::MainAudioProcessor()
     juce::Logger::outputDebugString("Sample rate: " + std::to_string(AudioSettings::getInstance().getSampleRate()));
     juce::Logger::outputDebugString("Block Size: " + std::to_string(AudioSettings::getInstance().getBlockSize()));
     juce::Logger::outputDebugString("Num Channels: " + std::to_string(AudioSettings::getInstance().getNumChannels()));
+
 }
 
 MainAudioProcessor::~MainAudioProcessor()
@@ -161,6 +162,10 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         {
             pcmData.insert(pcmData.end(), channelData, channelData + numSamples);
         }
+    }
+    
+    if (pcmData.size() <= 0) {
+        return;
     }
 
     // Notifie l'EventManager qu'un bloc audio a été traité

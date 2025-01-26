@@ -13,12 +13,13 @@ public:
     OpusDecoderWrapper(int sample_rate, int channels, int duration_ms = 60);
     ~OpusDecoderWrapper();
 
-    bool Decode(std::vector<uint8_t>&& opus, std::vector<int16_t>& pcm);
+    std::vector<int16_t> Decode(std::vector<uint8_t> opus) const;
     void ResetState();
 
 private:
     struct OpusDecoder* audio_dec_ = nullptr;
     int frame_size_;
+    int numChannels;
 };
 
 #endif // _OPUS_DECODER_WRAPPER_H_

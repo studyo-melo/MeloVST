@@ -10,6 +10,7 @@ OpusDecoderWrapper::OpusDecoderWrapper(int sample_rate, int channels, int durati
     }
 
     frame_size_ = sample_rate / 1000 * channels * duration_ms;
+    numChannels = channels;
 }
 
 OpusDecoderWrapper::~OpusDecoderWrapper() {
@@ -18,18 +19,20 @@ OpusDecoderWrapper::~OpusDecoderWrapper() {
     }
 }
 
-bool OpusDecoderWrapper::Decode(std::vector<uint8_t>&& opus, std::vector<int16_t>& pcm) {
+std::vector<int16_t> OpusDecoderWrapper::Decode(std::vector<uint8_t> opus) const {
+    std::vector<int16_t> pcm(frame_size_*sizeof(opus_int16));
     if (audio_dec_ == nullptr) {
-        return false;
+        return pcm;
     }
 
-    pcm.resize(frame_size_);
-    auto ret = opus_decode(audio_dec_, opus.data(), opus.size(), pcm.data(), pcm.size(), 0);
+    // mon paquet fait 1300 bytes
+    auto ret = opus_decode(audio_dec_, opus.data(), opus.size(), pcm.data(), frame_size_, 0);
     if (ret < 0) {
-        return false;
+        throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
     }
+    pcm.reserve(ret);
 
-    return true;
+    return pcm;
 }
 
 void OpusDecoderWrapper::ResetState() {

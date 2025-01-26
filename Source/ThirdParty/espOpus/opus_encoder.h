@@ -23,9 +23,11 @@ public:
     void ResetState();
 
 private:
+    std::mutex in_buffer_mutex_; // Mutex pour protéger in_buffer_
+    std::vector<int16_t> in_buffer_; // Votre buffer d'entrée
+
     struct OpusEncoder* audio_enc_ = nullptr;
     int frame_size_;
-    std::vector<int16_t> in_buffer_;
 };
 
 #endif // _OPUS_ENCODER_H_

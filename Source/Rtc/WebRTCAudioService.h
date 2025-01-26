@@ -15,6 +15,7 @@
 #include "../Utils/FileUtils.h"
 #include "ReconnectTimer.h"
 #include "WebRTCConnexionHandler.h"
+#include "../ThirdParty/espOpus/opus_encoder.h"
 
 class WebRTCAudioService : public WebRTCConnexionHandler {
 public:
@@ -22,6 +23,7 @@ public:
     ~WebRTCAudioService();
 
 private:
+    OpusEncoderWrapper opusEncoder;
     OpusCodecWrapper opusCodec;
     uint16_t seqNum = 1; // Numéro de séquence RTP
     uint32_t timestamp = 0; // Timestamp RTP (incrementé à chaque trame)

@@ -1,4 +1,6 @@
 #include "opus_encoder.h"
+
+#include <iostream>
 #include <opus.h>
 
 #define TAG "OpusEncoderWrapper"
@@ -25,10 +27,10 @@ OpusEncoderWrapper::~OpusEncoderWrapper() {
 }
 
 void OpusEncoderWrapper::Encode(std::vector<int16_t>&& pcm, std::function<void(std::vector<uint8_t>&& opus)> handler) {
+    std::lock_guard<std::mutex> lock(in_buffer_mutex_);
     if (audio_enc_ == nullptr) {
         return;
     }
-
     if (in_buffer_.empty()) {
         in_buffer_ = std::move(pcm);
     } else {
@@ -37,8 +39,9 @@ void OpusEncoderWrapper::Encode(std::vector<int16_t>&& pcm, std::function<void(s
 
     while (in_buffer_.size() >= frame_size_) {
         std::vector<uint8_t> opus(MAX_OPUS_PACKET_SIZE);
-        auto ret = opus_encode(audio_enc_, in_buffer_.data(), frame_size_, opus.data(), opus.size());
+        auto ret = opus_encode(audio_enc_, pcm.data(), frame_size_, opus.data(), opus.size());
         if (ret < 0) {
+            in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + frame_size_);
             return;
         }
         opus.resize(ret);

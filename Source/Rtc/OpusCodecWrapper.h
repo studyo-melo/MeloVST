@@ -55,7 +55,7 @@ public:
         return encodedData;
     }
 
-    std::vector<float> decode(const std::vector<uint8_t>& encodedData) {
+    std::vector<float> decode(std::vector<uint8_t> encodedData) {
         if (!decoder)
             throw std::runtime_error("Decoder not initialized");
 
