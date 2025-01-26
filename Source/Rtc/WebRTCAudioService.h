@@ -28,7 +28,7 @@ private:
     uint32_t ssrc = 12345; // Identifiant SSRC unique
     // Audio Thread
     std::thread audioThread;
-    std::queue<std::vector<float>> audioQueue;
+    std::queue<std::vector<int16_t>> audioQueue;
     std::mutex queueMutex;
     std::condition_variable queueCondition;
     bool audioThreadRunning = false;

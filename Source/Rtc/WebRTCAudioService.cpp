@@ -25,7 +25,7 @@ void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEve
 
 void WebRTCAudioService::sendAudioData() {
     while (!stopThread) {
-        std::vector<float> pcmData;
+        std::vector<int16_t> pcmData;
 
         {
             std::unique_lock<std::mutex> lock(queueMutex);
@@ -41,12 +41,8 @@ void WebRTCAudioService::sendAudioData() {
 
         if (audioTrack) {
             try {
-                std::vector<int16_t> audioBlockInt16(pcmData.size());
-                for (size_t i = 0; i < pcmData.size(); ++i) {
-                    audioBlockInt16[i] = static_cast<int16_t>(pcmData[i] * 32767.0f);
-                }
                 std::vector<uint8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
-                opusCodec.encode(std::move(audioBlockInt16), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
+                opusCodec.encode(std::move(pcmData), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
                     opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
                 });
                 if (!opusEncodedAudioBlock.empty()) {

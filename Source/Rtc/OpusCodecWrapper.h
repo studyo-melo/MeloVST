@@ -35,7 +35,7 @@ public:
             opus_decoder_destroy(decoder);
     }
 
-    void encode(std::vector<int16_t> &&pcm, std::function<void(std::vector<uint8_t> &&opus)> handler) {
+    void encode(std::vector<int16_t> pcm, std::function<void(std::vector<uint8_t> &&opus)> handler) {
         int frame_size_ = frameSizePerChannel * numChannels;
         if (encoder == nullptr) {
             return;

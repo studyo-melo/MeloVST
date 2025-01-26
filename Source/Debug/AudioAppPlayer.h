@@ -21,7 +21,7 @@ public:
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent& event) override;
 
 private:
-    std::vector<float> audioBlock; // Contient les échantillons audio
+    std::vector<int16_t> audioBlock; // Contient les échantillons audio
     int currentNumSamples = 0; // Nombre d'échantillons dans le bloc
     size_t currentSampleIndex = 0; // Position actuelle dans le bloc
     double currentSampleRate = 0.0;

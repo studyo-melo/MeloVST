@@ -143,24 +143,24 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
 
-    // Log uniquement en mode debug pour éviter de ralentir le traitement
-// #if JUCE_DEBUG
-//     juce::Logger::outputDebugString("Num channels: " + std::to_string(numChannels) +
-//                                     " - Num samples: " + std::to_string(numSamples) +
-//                                     " - Sample rate: " + std::to_string(getSampleRate()));
-//     juce::Logger::outputDebugString("Block size: " + std::to_string(getBlockSize()));
-// #endif
+    std::vector<int16_t> pcmData;
 
-    // Réserve l'espace nécessaire pour éviter les réallocations multiples
-    std::vector<float> pcmData;
+    // Réserve l'espace nécessaire pour éviter les réallocations fréquentes
     pcmData.reserve(static_cast<size_t>(numChannels * numSamples));
 
     for (int channel = 0; channel < numChannels; ++channel)
     {
         const float* channelData = buffer.getReadPointer(channel);
-        if (channelData != nullptr) // Vérifie que le pointeur est valide
+
+        if (channelData == nullptr) {
+            continue;
+        }
+
+        for (int sample = 0; sample < numSamples; ++sample)
         {
-            pcmData.insert(pcmData.end(), channelData, channelData + numSamples);
+            float normalizedSample = juce::jlimit(-1.0f, 1.0f, channelData[sample]);
+            int16_t convertedSample = static_cast<int16_t>(normalizedSample * 32767.0f);
+            pcmData.push_back(convertedSample);
         }
     }
     

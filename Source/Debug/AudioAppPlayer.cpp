@@ -24,20 +24,8 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
         return;
     }
 
-    // Convertit le bloc audio en int16_t
-    std::vector<int16_t> audioBlockInt16(audioBlock.size());
-    for (size_t i = 0; i < audioBlock.size(); ++i) {
-        audioBlockInt16[i] = static_cast<int16_t>(audioBlock[i] * 32767.0f);
-    }
-
-    if (std::all_of(audioBlockInt16.begin(), audioBlockInt16.end(), [](const int16_t sample) { return sample == 0; })
-    ){
-        bufferToFill.clearActiveBufferRegion(); // Efface le buffer si toutes les données sont nulles
-        return;
-    }
-
     std::vector<uint8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
-    opusCodec.encode(std::move(audioBlockInt16), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
+    opusCodec.encode(audioBlock, [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
         opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
     });
     // Vérifie que les données décodées ont la bonne taille
@@ -81,7 +69,6 @@ void AudioAppPlayer::releaseResources() {
 void AudioAppPlayer::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent& event) {
     audioBlock.resize(event.data.size());
     audioBlock = event.data;
-    // std::copy(event.data.begin(), event.data.end(), audioBlock.begin());
 
     currentNumSamples = event.numSamples;
     currentSampleIndex = 0;
