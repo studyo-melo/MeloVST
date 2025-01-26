@@ -144,12 +144,12 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const int numSamples = buffer.getNumSamples();
 
     // Log uniquement en mode debug pour éviter de ralentir le traitement
-#if JUCE_DEBUG
-    juce::Logger::outputDebugString("Num channels: " + std::to_string(numChannels) +
-                                    " - Num samples: " + std::to_string(numSamples) +
-                                    " - Sample rate: " + std::to_string(getSampleRate()));
-    juce::Logger::outputDebugString("Block size: " + std::to_string(getBlockSize()));
-#endif
+// #if JUCE_DEBUG
+//     juce::Logger::outputDebugString("Num channels: " + std::to_string(numChannels) +
+//                                     " - Num samples: " + std::to_string(numSamples) +
+//                                     " - Sample rate: " + std::to_string(getSampleRate()));
+//     juce::Logger::outputDebugString("Block size: " + std::to_string(getBlockSize()));
+// #endif
 
     // Réserve l'espace nécessaire pour éviter les réallocations multiples
     std::vector<float> pcmData;

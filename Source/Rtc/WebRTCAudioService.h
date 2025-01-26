@@ -27,7 +27,7 @@ private:
     OpusCodecWrapper opusCodec;
     uint16_t seqNum = 1; // Numéro de séquence RTP
     uint32_t timestamp = 0; // Timestamp RTP (incrementé à chaque trame)
-    uint32_t ssrc = 123456; // Identifiant SSRC unique
+    uint32_t ssrc = 12345; // Identifiant SSRC unique
     // Audio Thread
     std::thread audioThread;
     std::queue<std::vector<float>> audioQueue;

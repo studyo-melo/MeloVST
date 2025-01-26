@@ -11,6 +11,9 @@ OpusEncoderWrapper::OpusEncoderWrapper(int sample_rate, int channels, int durati
     if (audio_enc_ == nullptr) {
         return;
     }
+    opus_encoder_ctl(audio_enc_, OPUS_SET_BITRATE(96000));
+    opus_encoder_ctl(audio_enc_, OPUS_SET_BANDWIDTH(OPUS_BANDWIDTH_FULLBAND));
+    opus_encoder_ctl(audio_enc_, OPUS_SET_COMPLEXITY(10));
 
     // Default DTX enabled
     SetDtx(true);

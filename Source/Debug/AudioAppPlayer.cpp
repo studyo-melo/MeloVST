@@ -23,10 +23,6 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
         bufferToFill.clearActiveBufferRegion();
         return;
     }
-   
-
-    auto* leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    auto* rightChannel = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample);
 
     // Convertit le bloc audio en int16_t
     std::vector<int16_t> audioBlockInt16(audioBlock.size());
@@ -58,16 +54,22 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
         bufferToFill.clearActiveBufferRegion();
         return;
     }
-    // Remplit les canaux audio avec les données décodées
-    for (int sample = 0; sample < bufferToFill.numSamples; ++sample) {
-        // if (currentSampleIndex >= opusEncodedAudioBlock.size())
-        //     currentSampleIndex = 0; // Boucle sur le bloc audio
 
-        float currentSample = decodedAudioBlock[currentSampleIndex++] / 32767.0f;
-        leftChannel[sample] = currentSample;
-        if (bufferToFill.buffer->getNumChannels() > 1){
-            rightChannel[sample] = currentSample;
-        }
+    auto* leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
+    auto* rightChannel = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample);
+
+    // Copie les 520 premiers échantillons décodés dans le tampon audio de JUCE
+    const int samplesToCopy = std::min(static_cast<int>(decodedAudioBlock.size()), 520); // Limite à 520 échantillons
+    for (int i = 0; i < samplesToCopy; ++i) {
+        // Remplir les deux canaux avec les échantillons décodés
+        leftChannel[i] = static_cast<float>(decodedAudioBlock[i]) / 32768.0f; // Normaliser entre -1.0 et 1.0
+        rightChannel[i] = leftChannel[i]; // Si vous souhaitez un signal mono pour les deux canaux
+    }
+
+    // Si le nombre d'échantillons est inférieur à 520, remplissez le reste du tampon avec des zéros
+    for (int i = samplesToCopy; i < bufferToFill.numSamples; ++i) {
+        leftChannel[i] = 0.0f;
+        rightChannel[i] = 0.0f;
     }
 }
 

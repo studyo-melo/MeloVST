@@ -23,7 +23,7 @@ void WebRTCConnexionHandler::setupConnection() {
 
     rtc::Description::Audio newAudioTrack{};
     newAudioTrack.addOpusCodec(111);
-    newAudioTrack.setBitrate(64000); // Débit binaire en bits par seconde
+    newAudioTrack.setBitrate(96000); // Débit binaire en bits par seconde
     newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
     newAudioTrack.addSSRC(12345, "CNAME");;
 
@@ -53,6 +53,10 @@ void WebRTCConnexionHandler::setupConnection() {
 
     peerConnection->onSignalingStateChange([this](rtc::PeerConnection::SignalingState state) {
         notifyRTCStateChanged();
+    });
+
+    peerConnection->onTrack([this](std::shared_ptr<rtc::Track> track) {
+        juce::Logger::outputDebugString("Track received");
     });
 
     peerConnection->onIceStateChange([this](rtc::PeerConnection::IceState state) {
