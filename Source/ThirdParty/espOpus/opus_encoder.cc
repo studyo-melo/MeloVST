@@ -17,7 +17,8 @@ OpusEncoderWrapper::OpusEncoderWrapper(int sample_rate, int channels, int durati
     // Complexity 5 almost uses up all CPU of ESP32C3
     SetComplexity(5);
 
-    frame_size_ = sample_rate / 1000 * channels * duration_ms;
+    frame_size_per_channel_ = sample_rate / 1000 * duration_ms;
+    num_channel_ = channels;
 }
 
 OpusEncoderWrapper::~OpusEncoderWrapper() {
@@ -27,7 +28,7 @@ OpusEncoderWrapper::~OpusEncoderWrapper() {
 }
 
 void OpusEncoderWrapper::Encode(std::vector<int16_t>&& pcm, std::function<void(std::vector<uint8_t>&& opus)> handler) {
-    std::lock_guard<std::mutex> lock(in_buffer_mutex_);
+    int frame_size_ = frame_size_per_channel_ * num_channel_;
     if (audio_enc_ == nullptr) {
         return;
     }
@@ -39,7 +40,7 @@ void OpusEncoderWrapper::Encode(std::vector<int16_t>&& pcm, std::function<void(s
 
     while (in_buffer_.size() >= frame_size_) {
         std::vector<uint8_t> opus(MAX_OPUS_PACKET_SIZE);
-        auto ret = opus_encode(audio_enc_, pcm.data(), frame_size_, opus.data(), opus.size());
+        auto ret = opus_encode(audio_enc_, pcm.data(), frame_size_per_channel_, opus.data(), opus.size());
         if (ret < 0) {
             in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + frame_size_);
             return;

@@ -2,7 +2,7 @@
 #include "AudioAppPlayer.h"
 
 
-AudioAppPlayer::AudioAppPlayer() : opusCodec(), opusEncoder(48000, 2, 20), opusDecoder(48000, 2, 20) {
+AudioAppPlayer::AudioAppPlayer() : opusCodec(), opusEncoder(48000, 2, 10), opusDecoder(48000, 2, 10) {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
     EventManager::getInstance().addListener(this);
 }

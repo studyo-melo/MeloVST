@@ -27,7 +27,8 @@ private:
     std::vector<int16_t> in_buffer_; // Votre buffer d'entrée
 
     struct OpusEncoder* audio_enc_ = nullptr;
-    int frame_size_;
+    int frame_size_per_channel_;
+    int num_channel_;
 };
 
 #endif // _OPUS_ENCODER_H_

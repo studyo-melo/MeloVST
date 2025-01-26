@@ -4,7 +4,7 @@
 #include "../Utils/AudioSettings.h"
 #include "../Utils/AudioUtils.h"
 
-WebRTCAudioService::WebRTCAudioService(): opusCodec(), opusEncoder(48000, 2)
+WebRTCAudioService::WebRTCAudioService(): opusCodec(), opusEncoder(48000, 2, 10)
 {
 }
 
@@ -49,11 +49,7 @@ void WebRTCAudioService::sendAudioData() {
                 opusEncoder.Encode(std::move(audioBlockInt16), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
                     opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
                 });
-                // auto encodedData = opusCodec.encode(pcmData.data());
                 auto rtpPacket = RTPWrapper::createRTPPacket(opusEncodedAudioBlock, seqNum++, timestamp, ssrc);
-                // timestamp += opusCodec.getFrameSize();
-                // DebugRTPWrapper::debugPacket(rtpPacket);
-
                 juce::Logger::outputDebugString("Sending audio data: " + std::to_string(rtpPacket.size()) + " bytes");
                 audioTrack->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
             } catch (const std::exception &e) {

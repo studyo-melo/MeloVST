@@ -18,7 +18,7 @@ public:
 
 private:
     struct OpusDecoder* audio_dec_ = nullptr;
-    int frame_size_;
+    int frame_size_per_channel_;
     int numChannels;
 };
 
