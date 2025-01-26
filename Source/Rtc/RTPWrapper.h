@@ -23,7 +23,7 @@ struct RTPHeader {
 
 class RTPWrapper {
 public:
-    static std::vector<uint8_t> createRTPPacket(const std::vector<uint8_t>& audioData, uint16_t seqNum, uint32_t ts, uint32_t ssrc) {
+    static std::vector<uint8_t> createRTPPacket(const std::vector<int8_t>& audioData, uint16_t seqNum, uint32_t ts, uint32_t ssrc) {
         RTPHeader header;
         header.v_p_x_cc = (RTP_VERSION << 6) | (PADDING << 5) | (EXTENSION << 4) | CC; // Version=2, Padding=0, Extension=0, CC=0
         header.m_pt = (MARKER << 7) | PAYLOAD_TYPE; // Marker=0, PayloadType=111

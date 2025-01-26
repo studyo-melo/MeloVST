@@ -41,8 +41,8 @@ void WebRTCAudioService::sendAudioData() {
 
         if (audioTrack) {
             try {
-                std::vector<uint8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
-                opusCodec.encode(std::move(pcmData), [&opusEncodedAudioBlock](std::vector<uint8_t>&& encodedData) {
+                std::vector<int8_t> opusEncodedAudioBlock; // Déclaration de la variable à l'extérieur
+                opusCodec.encode(std::move(pcmData), [&opusEncodedAudioBlock](std::vector<int8_t>&& encodedData) {
                     opusEncodedAudioBlock = std::move(encodedData); // Capturer par référence
                 });
                 if (!opusEncodedAudioBlock.empty()) {

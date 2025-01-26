@@ -22,7 +22,8 @@ public:
         opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
         opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(10));
         opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(5));
-        opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(1));
+        opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(0));
+        opus_encoder_ctl(encoder, OPUS_SET_DTX(1));
         opus_decoder_ctl(decoder, OPUS_SET_GAIN(0));
 
         frameSizePerChannel = sampleRate / 1000 * frameDurationInMs;
@@ -35,7 +36,10 @@ public:
             opus_decoder_destroy(decoder);
     }
 
-    void encode(std::vector<int16_t> pcm, std::function<void(std::vector<uint8_t> &&opus)> handler) {
+    //Un paquet Opus contient :
+    // Un en-tête : qui inclut des informations comme le type de trame, le débit binaire, et la taille des trames.
+    // Les données encodées: même pour un silence, Opus insère des données encodées représentant le silence.
+    void encode(std::vector<int16_t> pcm, std::function<void(std::vector<int8_t> &&opus)> handler) {
         int frame_size_ = frameSizePerChannel * numChannels;
         if (encoder == nullptr) {
             return;
@@ -47,8 +51,8 @@ public:
         }
 
         while (in_buffer_.size() >= frame_size_) {
-            std::vector<uint8_t> opus(MAX_OPUS_PACKET_SIZE);
-            auto ret = opus_encode(encoder, pcm.data(), frameSizePerChannel, opus.data(), opus.size());
+            std::vector<int8_t> opus(MAX_OPUS_PACKET_SIZE);
+            auto ret = opus_encode(encoder, pcm.data(), frameSizePerChannel, reinterpret_cast<unsigned char *>(opus.data()), opus.size());
             if (ret < 0) {
                 in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + frame_size_);
                 return;
@@ -63,14 +67,24 @@ public:
         }
     }
 
-    std::vector<int16_t> decode(std::vector<uint8_t> opus) const {
+    std::vector<int8_t> encode_in_place(std::vector<int16_t> pcm) const {
+        std::vector<int8_t> opus(MAX_OPUS_PACKET_SIZE);
+        auto ret = opus_encode(encoder, pcm.data(), frameSizePerChannel, reinterpret_cast<unsigned char *>(opus.data()), opus.size());
+        if (ret < 0) {
+            throw std::runtime_error("Failed to encode audio err code: " + std::to_string(ret));
+        }
+        opus.resize(ret);
+        return opus;
+    }
+
+    std::vector<int16_t> decode(std::vector<int8_t> opus) const {
         std::vector<int16_t> pcm(frameSizePerChannel * numChannels);
         if (decoder == nullptr) {
             return pcm;
         }
 
         // mon paquet fait 1300 bytes
-        auto ret = opus_decode(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
+        auto ret = opus_decode(decoder, reinterpret_cast<const unsigned char *>(opus.data()), opus.size(), pcm.data(), frameSizePerChannel, 0);
         if (ret < 0) {
             throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
         }
