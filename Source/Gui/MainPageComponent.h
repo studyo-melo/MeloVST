@@ -11,6 +11,7 @@
 #include "../Api/ApiRoutes.h"
 #include "../Models/Session.h"
 #include "../Socket/SocketEvents.h"
+#include "../Debug/AudioAppPlayer.h"
 
 class MainPageComponent final : public juce::Component, EventListener
 {
@@ -26,7 +27,8 @@ public:
 
 private:
     juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText;
-    juce::TextButton logoutButton, connectButton;
+    juce::TextButton logoutButton, connectButton, finalizeButton, createButton;
+    AudioAppPlayer debugAudioBlockPlayer;
     WebRTCAudioService webRTCAudioService;
     WebSocketService webSocketService;
     juce::Array<PopulatedSession> ongoingSessions;

@@ -1,10 +1,16 @@
 #pragma once
 #include "AudioAppPlayer.h"
 
+#include "../Utils/FileUtils.h"
+
 
 AudioAppPlayer::AudioAppPlayer(): opusCodec(10, 2, 48000) {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
     EventManager::getInstance().addListener(this);
+
+    wavFile = FileUtils::initializeWavFile("1_base_audio.wav");
+    opusFile = FileUtils::initializeOpusFile("1_encoded_opus_audio.opus");
+    decodedWavFile = FileUtils::initializeWavFile("1_decoded_opus_audio.wav");
 }
 
 AudioAppPlayer::~AudioAppPlayer() {
@@ -12,6 +18,17 @@ AudioAppPlayer::~AudioAppPlayer() {
     EventManager::getInstance().removeListener(this);
 }
 
+void AudioAppPlayer::createFiles() {
+    wavFile = FileUtils::initializeWavFile("1_base_audio.wav");
+    opusFile = FileUtils::initializeOpusFile("1_encoded_opus_audio.opus");
+    decodedWavFile = FileUtils::initializeWavFile("1_decoded_opus_audio.wav");
+}
+
+void AudioAppPlayer::finalizeFiles() {
+    FileUtils::finalizeWavFile(wavFile);
+    FileUtils::finalizeOpusFile(opusFile, opusData.size());
+    FileUtils::finalizeWavFile(decodedWavFile);
+}
 void AudioAppPlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRate) {
     juce::ignoreUnused(samplesPerBlockExpected);
     currentSampleRate = sampleRate;
@@ -31,17 +48,26 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
     //     return;
     // }
 
+    FileUtils::appendWavData(wavFile, audioBlock);
+
     std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode_in_place(audioBlock);
     if (opusEncodedAudioBlock.empty()) {
         bufferToFill.clearActiveBufferRegion();
         return;
     }
 
+    opusData.resize(opusData.size() + opusEncodedAudioBlock.size());
+    opusData.insert(opusData.end(), opusEncodedAudioBlock.begin(), opusEncodedAudioBlock.end());
+    FileUtils::appendOpusData(opusFile, opusEncodedAudioBlock);
+
     std::vector<int16_t> decodedAudioBlock = opusCodec.decode(opusEncodedAudioBlock);
     if (decodedAudioBlock.empty()) {
         bufferToFill.clearActiveBufferRegion();
         return;
     }
+
+    FileUtils::appendWavData(decodedWavFile, decodedAudioBlock);
+
     auto* leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
     auto* rightChannel = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample);
 

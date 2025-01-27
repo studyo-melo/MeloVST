@@ -4,9 +4,11 @@
 #include "MainPageComponent.h"
 
 MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService()),
-                                        webSocketService(
-                                            WebSocketService(getWsRouteString(WsRoute::GetOngoingSession))) {
+                                        webSocketService(WebSocketService(getWsRouteString(WsRoute::GetOngoingSession)))
+{
     setSize(600, 400);
+    addAndMakeVisible(finalizeButton);
+    addAndMakeVisible(createButton);
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
     addAndMakeVisible(mainText);
@@ -46,6 +48,16 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService())
 
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
     logoutButton.onClick = [this] { onLogoutButtonClick(); };
+
+    finalizeButton.setButtonText("Finalizer les fichiers");
+    finalizeButton.onClick = [this] {
+        debugAudioBlockPlayer.finalizeFiles();
+    };
+
+    createButton.setButtonText(juce::String::fromUTF8("Créer les fichiers"));
+    createButton.onClick = [this] {
+        debugAudioBlockPlayer.createFiles();
+    };
 
     auto res = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions);
     if (res.isNotEmpty()) {
@@ -123,6 +135,8 @@ void MainPageComponent::resized() {
         .withMargin(juce::FlexItem::Margin(5, 5, 0, 0))
         .withAlignSelf(juce::FlexItem::AlignSelf::flexEnd)
     );
+    titleFlexbox.items.add(juce::FlexItem(createButton).withFlex(1).withMargin(juce::FlexItem::Margin(10, 0, 0, 0)));
+    titleFlexbox.items.add(juce::FlexItem(finalizeButton).withFlex(1).withMargin(juce::FlexItem::Margin(10, 0, 0, 0)));
     titleFlexbox.items.add(juce::FlexItem(title).withFlex(1).withMargin(juce::FlexItem::Margin(10, 0, 0, 0)));
     titleFlexbox.items.add(juce::FlexItem(mainText).withFlex(1).withMargin(juce::FlexItem::Margin(0, 0, 0, 0)));
 
