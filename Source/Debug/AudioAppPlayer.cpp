@@ -4,7 +4,10 @@
 #include "../Utils/FileUtils.h"
 
 
-AudioAppPlayer::AudioAppPlayer(): opusCodec(20, 2, 48000) {
+AudioAppPlayer::AudioAppPlayer():
+    opusCodec(20, 2, 48000),
+    resampler(44100, 48000, 2)
+{
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
     EventManager::getInstance().addListener(this);
 
@@ -49,9 +52,10 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
     //     return;
     // }
 
-    FileUtils::appendWavData(wavFile, audioBlock);
+    auto resampledAudioBlock = resampler.resampleFromInt16(audioBlock);
+    FileUtils::appendWavData(wavFile, resampledAudioBlock);
 
-    std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(audioBlock);
+    std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(resampledAudioBlock);
     if (opusEncodedAudioBlock.empty()) {
         bufferToFill.clearActiveBufferRegion();
         return;

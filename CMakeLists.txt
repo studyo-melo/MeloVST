@@ -41,7 +41,7 @@ CPMAddPackage(
     GIT_TAG origin/master
 )
 CPMAddPackage(
-    NAME r8brain-free-src
+    NAME r8brain
     GIT_REPOSITORY https://github.com/avaneev/r8brain-free-src.git
     GIT_TAG origin/master
 )
@@ -53,8 +53,9 @@ CPMAddPackage(
 )
 
 include_directories(${libopus_SOURCE_DIR}/include)
-include_directories(${r8brain-free-src_SOURCE_DIR})
-
+include_directories(${r8brain_SOURCE_DIR})
+add_library(r8brain STATIC)
+target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
 add_library(
         datachannel_static INTERFACE IMPORTED
 )
@@ -72,6 +73,7 @@ set(SourceFiles
         Source/Utils/JuceLocalStorage.h
         Source/Utils/json.hpp
         Source/Utils/AudioSettings.h
+        Source/Utils/ResamplerWrapper.h
         Source/Debug/DebugAudioCallback.h
         Source/Debug/AudioAppPlayer.h
         Source/Debug/AudioAppPlayer.cpp
@@ -141,6 +143,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
+        JUCE_ADD_R8BRAIN=1
 )
 
 
@@ -149,6 +152,7 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE
         opus
         datachannel
+        r8brain
         ixwebsocket
         datachannel_static INTERFACE datachannel
         PUBLIC

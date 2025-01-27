@@ -5,6 +5,7 @@
 #include "../Events/EventManager.h"
 #include "../Rtc/OpusCodecWrapper.h"
 #include "../Utils/AudioSettings.h"
+#include "../Utils/ResamplerWrapper.h"
 #include <fstream>
 
 class AudioAppPlayer : public juce::AudioAppComponent, public EventListener {
@@ -34,5 +35,6 @@ private:
     std::fstream decodedWavFile;
 
     OpusCodecWrapper opusCodec;
+    ResamplerWrapper resampler;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioAppPlayer)
 };

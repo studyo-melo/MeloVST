@@ -2,6 +2,9 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <fstream>
+
+#include "Utils/ResamplerWrapper.h"
+
 //==============================================================================
 class MainAudioProcessor final : public juce::AudioProcessor
 {
@@ -43,6 +46,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    ResamplerWrapper *resampler;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainAudioProcessor)
 };

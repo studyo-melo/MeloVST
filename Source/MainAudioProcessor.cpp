@@ -13,6 +13,7 @@ MainAudioProcessor::MainAudioProcessor()
                      #endif
                        )
 {
+    resampler = new ResamplerWrapper(44100, 48000, 2);
     AudioSettings::getInstance().setBitDepth(16);
     AudioSettings::getInstance().setOpusSampleRate(48000);
     AudioSettings::getInstance().setSampleRate(44100);
