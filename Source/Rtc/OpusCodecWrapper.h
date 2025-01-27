@@ -10,7 +10,7 @@ class OpusCodecWrapper {
 public:
     OpusCodecWrapper(int frameDurationInMs, int numChannels, int sampleRate): frameDurationInMs(frameDurationInMs), numChannels(numChannels), sampleRate(sampleRate) {
         int error;
-        encoder = opus_encoder_create(sampleRate, numChannels, OPUS_APPLICATION_VOIP, &error);
+        encoder = opus_encoder_create(sampleRate, numChannels, OPUS_APPLICATION_AUDIO, &error);
         if (error != OPUS_OK)
             throw std::runtime_error("Failed to create Opus encoder: " + std::string(opus_strerror(error)));
 
@@ -20,11 +20,11 @@ public:
         }
         // Configuration de l'encodeur
         opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
-        opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(10));
+        opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(0));
         opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(5));
         opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(0));
-        opus_encoder_ctl(encoder, OPUS_SET_DTX(1));
-        opus_decoder_ctl(decoder, OPUS_SET_GAIN(0));
+        opus_encoder_ctl(encoder, OPUS_SET_DTX(0));
+        opus_decoder_ctl(decoder, OPUS_SET_GAIN(1));
 
         frameSizePerChannel = sampleRate / 1000 * frameDurationInMs;
     }
@@ -66,7 +66,7 @@ public:
         return res;
     }
 
-    std::vector<int8_t> encode_in_place(std::vector<int16_t> pcm) const {
+    std::vector<int8_t> encode_in_place(const std::vector<int16_t> &pcm) const {
         std::vector<int8_t> opus(MAX_OPUS_PACKET_SIZE);
         auto ret = opus_encode(encoder, pcm.data(), frameSizePerChannel, reinterpret_cast<unsigned char *>(opus.data()), opus.size());
         if (ret < 0) {
@@ -76,7 +76,7 @@ public:
         return opus;
     }
 
-    std::vector<int16_t> decode(std::vector<int8_t> opus) const {
+    std::vector<int16_t> decode(const std::vector<int8_t> &opus) const {
         std::vector<int16_t> pcm(frameSizePerChannel * numChannels);
         if (decoder == nullptr) {
             return pcm;
@@ -87,7 +87,7 @@ public:
         if (ret < 0) {
             throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
         }
-        pcm.reserve(ret);
+        pcm.resize(ret);
 
         return pcm;
     }

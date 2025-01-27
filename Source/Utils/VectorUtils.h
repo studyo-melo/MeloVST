@@ -24,4 +24,16 @@ namespace VectorUtils {
 
         return floatData;
     }
+
+    static std::vector<int16_t> convertFloatToInt16(const float* data, size_t size) {
+        // Allouer suffisamment d'espace pour contenir les données int16_t
+        std::vector<int16_t> int16Data(size);
+
+        // Convertir les données flottantes en données int16_t
+        for (size_t i = 0; i < size; ++i) {
+            int16Data[i] = static_cast<int16_t>(data[i] * INT16_MAX);
+        }
+
+        return int16Data;
+    }
 }

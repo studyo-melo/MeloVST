@@ -2,6 +2,8 @@
 #include <juce_core/juce_core.h>
 #include <iostream>
 #include <fstream>
+#include <fstream>
+#include <vector>
 
 namespace FileUtils {
     static std::string generateTimestampedFilename(const std::string& baseName, const std::string& extension) {
@@ -98,5 +100,98 @@ namespace FileUtils {
 
         wavFile.close();
         std::cout << "Finalized WAV file" << std::endl;
+    }
+
+    inline void saveOpusToFile(const std::string& filename, const std::vector<int8_t>& opusData) {
+       std::ofstream outFile(filename, std::ios::binary);
+        if (!outFile) {
+            throw std::runtime_error("Failed to open file for writing: " + filename);
+        }
+
+        // Écrire l'en-tête Ogg
+        outFile.write("OggS", 4); // Identifiant Ogg
+        outFile.put(0);            // Version
+        outFile.put(0);            // Type de paquet (0 pour les données)
+        outFile.put(0);            // Granule position (non utilisé ici)
+        outFile.put(0);            // Granule position (non utilisé ici)
+        outFile.put(0);            // Granule position (non utilisé ici)
+        outFile.put(0);            // Granule position (non utilisé ici)
+        outFile.put(0);            // Bitstream serial number (à générer, ici 0)
+        outFile.put(0);            // Bitstream serial number (à générer, ici 0)
+        outFile.put(0);            // Index de page (à générer)
+        outFile.put(0);            // Index de page (à générer)
+
+        // Calculer la taille de l'en-tête
+        std::streampos opusHeaderStart = outFile.tellp();
+
+        // Écrire les données Opus (encodées)
+        outFile.write(reinterpret_cast<const char*>(opusData.data()), opusData.size());
+
+        // Écrire le reste des informations Ogg
+        std::streampos opusDataStart = outFile.tellp();
+        std::streamsize opusDataSize = opusData.size();
+
+        // Retourner à l'en-tête pour mettre à jour les informations
+        outFile.seekp(0, std::ios::beg);
+
+        // Mettre à jour la taille de l'en-tête et d'autres informations ici
+        // (génération de la taille et d'autres informations si nécessaire)
+
+        // Écrire à nouveau l'en-tête Ogg
+        outFile.write("OggS", 4);
+        outFile.put(0); // Version
+        outFile.put(0); // Type de paquet
+        // Granule position - le nombre d'échantillons dans le flux, cela peut être ajusté si nécessaire
+        outFile.put(static_cast<char>((opusDataSize >> 24) & 0xFF)); // Granule position
+        outFile.put(static_cast<char>((opusDataSize >> 16) & 0xFF)); // Granule position
+        outFile.put(static_cast<char>((opusDataSize >> 8) & 0xFF));  // Granule position
+        outFile.put(static_cast<char>(opusDataSize & 0xFF)); // Granule position
+        outFile.put(0); // Bitstream serial number (0)
+        outFile.put(0); // Index de page (0)
+        outFile.put(0); // Index de page (0)
+
+        // Écrire les données Opus
+        outFile.seekp(opusDataStart, std::ios::beg);
+        outFile.write(reinterpret_cast<const char*>(opusData.data()), opusData.size());
+
+        outFile.close();
+    }
+
+    inline void writeWav(const std::string& filename, const std::vector<int16_t>& pcmData, int sampleRate, int channels) {
+        std::ofstream outFile(getFilePath(filename), std::ios::binary);
+        if (!outFile) {
+            throw std::runtime_error("Failed to open file for writing: " + filename);
+        }
+
+        // WAV header
+        uint32_t dataSize = pcmData.size() * sizeof(int16_t);
+        uint32_t fileSize = 36 + dataSize; // 36 = header size - 8 bytes
+        outFile.write("RIFF", 4);
+        outFile.write(reinterpret_cast<const char*>(&fileSize), 4);
+        outFile.write("WAVE", 4);
+        outFile.write("fmt ", 4);
+
+        uint32_t fmtChunkSize = 16;
+        uint16_t audioFormat = 1; // PCM
+        uint16_t numChannels = static_cast<uint16_t>(channels);
+        uint32_t byteRate = sampleRate * channels * sizeof(int16_t);
+        uint16_t blockAlign = channels * sizeof(int16_t);
+        uint16_t bitsPerSample = 16;
+
+        outFile.write(reinterpret_cast<const char*>(&fmtChunkSize), 4);
+        outFile.write(reinterpret_cast<const char*>(&audioFormat), 2);
+        outFile.write(reinterpret_cast<const char*>(&numChannels), 2);
+        outFile.write(reinterpret_cast<const char*>(&sampleRate), 4);
+        outFile.write(reinterpret_cast<const char*>(&byteRate), 4);
+        outFile.write(reinterpret_cast<const char*>(&blockAlign), 2);
+        outFile.write(reinterpret_cast<const char*>(&bitsPerSample), 2);
+
+        outFile.write("data", 4);
+        outFile.write(reinterpret_cast<const char*>(&dataSize), 4);
+
+        // PCM data
+        outFile.write(reinterpret_cast<const char*>(pcmData.data()), dataSize);
+
+        outFile.close();
     }
 }

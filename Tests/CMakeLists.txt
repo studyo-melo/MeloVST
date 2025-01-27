@@ -14,23 +14,24 @@ find_library(OPUS_LIBRARY opus REQUIRED)
 # Fonction pour simplifier l'ajout de tests
 function(add_unit_test test_name source_file)
     add_executable(${test_name} ${source_file} TestMain.cpp)
-    target_link_libraries(${test_name} PRIVATE juce::juce_core)
+    target_link_libraries(${test_name}
+            PUBLIC
+            opus
+            datachannel
+            datachannel_static INTERFACE datachannel
+            ${OPUS_LIBRARY}
+            PRIVATE
+            juce::juce_core
+            juce::juce_audio_basics
+            juce::juce_dsp
+    )
     target_include_directories(${test_name} PRIVATE ../Source)
     add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
 
 # Ajouter les tests individuellement
 add_unit_test(OpusCodecWrapperTest OpusCodecWrapperTest.cpp)
-target_link_libraries(OpusCodecWrapperTest PRIVATE
-        juce::juce_audio_basics
-        juce::juce_dsp
-        ${OPUS_LIBRARY}
-)
 add_unit_test(RTPWrapperTest RTPWrapperTest.cpp)
-target_link_libraries(RTPWrapperTest PRIVATE
-        datachannel
-        datachannel_static INTERFACE datachannel
-)
 
 add_executable(RunAllTests
         OpusCodecWrapperTest.cpp
