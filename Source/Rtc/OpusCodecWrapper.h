@@ -42,38 +42,29 @@ public:
     std::vector<int8_t> encode(std::vector<int16_t> pcm) {
         std::vector<int8_t> res;
         int frame_size_ = frameSizePerChannel * numChannels;
+
         if (encoder == nullptr) {
             return res;
         }
-        if (in_buffer_.empty()) {
-            in_buffer_ = std::move(pcm);
-        } else {
-            in_buffer_.insert(in_buffer_.end(), pcm.begin(), pcm.end());
-        }
+
+        // Remplir le tampon d'entrée
+        in_buffer_.insert(in_buffer_.end(), pcm.begin(), pcm.end());
 
         while (in_buffer_.size() >= frame_size_) {
             std::vector<int8_t> opus(MAX_OPUS_PACKET_SIZE);
-            auto ret = opus_encode(encoder, pcm.data(), frameSizePerChannel, reinterpret_cast<unsigned char *>(opus.data()), opus.size());
+            auto ret = opus_encode(encoder, in_buffer_.data(), frameSizePerChannel, reinterpret_cast<unsigned char *>(opus.data()), opus.size());
+
             if (ret < 0) {
                 in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + frame_size_);
-                return opus;
+                throw std::runtime_error("Encoding failed with error code: " + std::to_string(ret));
             }
+
             opus.resize(ret);
-            res.assign(opus.begin(), opus.end());
+            res.insert(res.end(), opus.begin(), opus.end());
 
             in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + frame_size_);
         }
         return res;
-    }
-
-    std::vector<int8_t> encode_in_place(const std::vector<int16_t> &pcm) const {
-        std::vector<int8_t> opus(MAX_OPUS_PACKET_SIZE);
-        auto ret = opus_encode(encoder, pcm.data(), frameSizePerChannel, reinterpret_cast<unsigned char *>(opus.data()), opus.size());
-        if (ret < 0) {
-            throw std::runtime_error("Failed to encode audio err code: " + std::to_string(ret));
-        }
-        opus.resize(ret);
-        return opus;
     }
 
     std::vector<int16_t> decode(const std::vector<int8_t> &opus) const {

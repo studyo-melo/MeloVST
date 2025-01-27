@@ -30,12 +30,10 @@ private:
         OpusCodecWrapper codec(1000 * frameDurationInMs, channels, sampleRate);
 
         std::vector<int16_t> inbuf = generate_music(frameSize * channels);
-        FileUtils::writeWav("opus_test.wav", inbuf, sampleRate, channels);
 
-        auto encodedData = codec.encode_in_place(inbuf);
+        auto encodedData = codec.encode(inbuf);
         expect(!encodedData.empty(), "Encoded data should not be empty");
         expect(encodedData.size() < inbuf.size(), "Encoded data size should be less than input data size");
-        FileUtils::saveOpusToFile("opus_test.opus", encodedData);
 
         std::vector<int16_t> decodedData = codec.decode(encodedData);
         expect(!decodedData.empty(), "Decoded data should not be empty");

@@ -41,7 +41,7 @@ void WebRTCAudioService::sendAudioData() {
 
         if (audioTrack) {
             try {
-                std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(std::move(pcmData));
+                std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(pcmData);
                 if (opusEncodedAudioBlock.empty()) {
                     juce::Logger::outputDebugString("Empty opus encoded audio block");
                     return;
