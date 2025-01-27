@@ -13,6 +13,7 @@
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
 #include "../Utils/FileUtils.h"
+#include "../Utils/ResamplerWrapper.h"
 #include "ReconnectTimer.h"
 #include "WebRTCConnexionHandler.h"
 
@@ -23,6 +24,7 @@ public:
 
 private:
     OpusCodecWrapper opusCodec;
+    ResamplerWrapper resampler;
     uint16_t seqNum = 1; // Numéro de séquence RTP
     uint32_t timestamp = 0; // Timestamp RTP (incrementé à chaque trame)
     uint32_t ssrc = 12345; // Identifiant SSRC unique

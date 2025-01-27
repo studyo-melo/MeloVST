@@ -4,7 +4,9 @@
 #include "../Utils/AudioSettings.h"
 #include "../Utils/AudioUtils.h"
 
-WebRTCAudioService::WebRTCAudioService(): opusCodec(10, 2, 48000)
+WebRTCAudioService::WebRTCAudioService():
+opusCodec(10, 2, 48000),
+resampler(44100, 48000, 2)
 {
 }
 
@@ -36,15 +38,16 @@ void WebRTCAudioService::sendAudioData() {
             audioQueue.pop();
         }
         if (pcmData.empty()) {
-            return;
+            continue;
         }
 
         if (audioTrack) {
             try {
+                std::vector<int16_t> resampledAudioBlock = resampler.resampleFromInt16(pcmData);
                 std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(pcmData);
                 if (opusEncodedAudioBlock.empty()) {
                     juce::Logger::outputDebugString("Empty opus encoded audio block");
-                    return;
+                    continue;
                 }
                 auto rtpPacket = RTPWrapper::createRTPPacket(opusEncodedAudioBlock, seqNum++, timestamp, ssrc);
                 timestamp += opusEncodedAudioBlock.size() / 2;

@@ -52,10 +52,11 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
     //     return;
     // }
 
-    auto resampledAudioBlock = resampler.resampleFromInt16(audioBlock);
-    FileUtils::appendWavData(wavFile, resampledAudioBlock);
+    auto resampledDoubleAudioBlock = resampler.resampleFromInt16(audioBlock);
 
-    std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(resampledAudioBlock);
+    FileUtils::appendWavData(wavFile, resampledDoubleAudioBlock);
+
+    std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(resampledDoubleAudioBlock);
     if (opusEncodedAudioBlock.empty()) {
         bufferToFill.clearActiveBufferRegion();
         return;
