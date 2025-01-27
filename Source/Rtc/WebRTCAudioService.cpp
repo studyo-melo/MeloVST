@@ -4,7 +4,7 @@
 #include "../Utils/AudioSettings.h"
 #include "../Utils/AudioUtils.h"
 
-WebRTCAudioService::WebRTCAudioService()
+WebRTCAudioService::WebRTCAudioService(): opusCodec(10, 2, 48000)
 {
 }
 

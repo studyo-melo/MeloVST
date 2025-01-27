@@ -8,7 +8,7 @@
 
 class OpusCodecWrapper {
 public:
-    OpusCodecWrapper(): frameDurationInMs(10), numChannels(2), sampleRate(48000) {
+    OpusCodecWrapper(int frameDurationInMs, int numChannels, int sampleRate): frameDurationInMs(frameDurationInMs), numChannels(numChannels), sampleRate(sampleRate) {
         int error;
         encoder = opus_encoder_create(sampleRate, numChannels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK)
