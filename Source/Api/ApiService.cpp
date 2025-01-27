@@ -79,7 +79,8 @@ juce::String ApiService::makeHttpRequest(const ApiRoute route, RequestConfig con
     }
     catch (const std::exception& e)
     {
-        juce::Logger::outputDebugString("Exception lors de la requête HTTP : " + juce::String(e.what()));
+        juce::Logger::outputDebugString("Exception lors de la requête HTTP : ");
+        juce::Logger::outputDebugString(e.what());
         return "";
     }
 }
