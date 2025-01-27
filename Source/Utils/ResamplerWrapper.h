@@ -4,40 +4,44 @@
 
 #pragma once
 #include <CDSPResampler.h>
+#include <vector>
+#include <cmath>
+#include <memory>
+#include <algorithm>
 
 class ResamplerWrapper {
 public:
     ResamplerWrapper(double sourceSR, double targetSR, int nChan) {
-        resampler = std::make_unique<r8b::CDSPResampler>(sourceSampleRate, targetSampleRate, 512);
+        resampler = std::make_unique<r8b::CDSPResampler>(sourceSR, targetSR, 512);
         sourceSampleRate = sourceSR;
         targetSampleRate = targetSR;
-        targetSampleRate = nChan;
+        numChannels = nChan;
     };
 
-    std::vector<int16_t> resampleFromInt16(const std::vector<int16_t>& sourceVector) const {
-        int sourceLength = static_cast<int>(sourceVector.size()) / numChannels;
-        int destLength = static_cast<int>(std::floor(sourceLength * targetSampleRate / sourceSampleRate));
-
-        std::vector<int16_t> outVector(destLength * numChannels);
-        for (int j = 0; j < numChannels; j++)
-        {
-            std::vector<double> sourceBuffer(sourceLength);
-            for (int i = 0; i < sourceLength; i++)
-            {
-            sourceBuffer[i] = static_cast<double>(sourceVector[i * numChannels + j]) / 32768.0; // Normalisation
-            }
-
-            // Prepare output buffer
-            std::vector<double> outBuffer(destLength);
-            double* outBufferPtr = outBuffer.data();
-            resampler->process(sourceBuffer.data(), sourceLength, outBufferPtr);
-            for (int i = 0; i < destLength; i++)
-            {
-                outVector[i * numChannels + j] = static_cast<int16_t>(std::clamp(outBuffer[i] * 32768.0, -32768.0, 32767.0)); // Normalisation et conversion
-            }
+    std::vector<double> resampleFromDouble(std::vector<double>& sourceVector) const {
+        std::vector<double> outVector(std::floor(sourceVector.size() * targetSampleRate / sourceSampleRate), 0.0);
+        double* outBuffer = outVector.data();
+        resampler->process(sourceVector.data(), sourceVector.size(), outBuffer);
+        for (auto i = 0; i < outVector.size(); ++i) {
+            outVector[i] = std::clamp(outBuffer[i], -1.0, 1.0);
+        }
+        return outVector;
+    }
+    std::vector<int16_t> resampleFromInt16(const std::vector<int16_t>& sourceVector)
+    {
+        std::vector<double> doubleAudioBlock(sourceVector.size());
+        for (auto i = 0; i < sourceVector.size(); ++i) {
+            doubleAudioBlock[i] = static_cast<double>(sourceVector[i] / 32768.0);
         }
 
-        return outVector; // Return the resampled vector
+        std::vector<double> resampledDoubleAudioBlock = resampleFromDouble(doubleAudioBlock);
+
+        std::vector<int16_t> resampledAudioBlock(resampledDoubleAudioBlock.size());
+        for (auto i = 0; i < resampledDoubleAudioBlock.size(); ++i) {
+            resampledAudioBlock[i] = static_cast<int16_t>(resampledDoubleAudioBlock[i] * 32768.0);
+        }
+
+        return resampledAudioBlock;
     }
 
 private:
