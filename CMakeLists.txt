@@ -51,17 +51,21 @@ CPMAddPackage(
     GIT_REPOSITORY https://github.com/xiph/opus.git
     GIT_TAG v1.5.2
 )
+CPMAddPackage(
+    NAME metaRTC
+    GIT_REPOSITORY git@github.com:metartc/metaRTC.git
+    GIT_TAG v7.0-b1
+)
 
+include_directories(${metaRTC_SOURCE_DIR}/include)
 include_directories(${libopus_SOURCE_DIR}/include)
 include_directories(${r8brain_SOURCE_DIR})
+
 add_library(r8brain STATIC)
 target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
-add_library(
-        datachannel_static INTERFACE IMPORTED
-)
-target_link_libraries(
-        datachannel_static INTERFACE datachannel
-)
+
+add_library(datachannel_static INTERFACE IMPORTED)
+target_link_libraries(datachannel_static INTERFACE datachannel)
 
 # Make sure you include any new source files here
 set(SourceFiles
@@ -146,6 +150,8 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_ADD_R8BRAIN=1
 )
 
+set(CMAKE_MACOSX_RPATH 1)
+add_subdirectory(${metaRTC_SOURCE_DIR}/libmetartccore7 ${metaRTC_SOURCE_DIR}/libmetartc7)
 
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
@@ -155,6 +161,7 @@ target_link_libraries(${PROJECT_NAME}
         r8brain
         ixwebsocket
         datachannel_static INTERFACE datachannel
+        ${metaRTC}
         PUBLIC
         juce::juce_analytics
         juce::juce_audio_basics
