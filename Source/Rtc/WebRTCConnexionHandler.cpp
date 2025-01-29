@@ -3,7 +3,8 @@
 WebRTCConnexionHandler::WebRTCConnexionHandler(): meloWebSocketService(
                                                 WebSocketService(
                                                     getWsRouteString(WsRoute::GetOngoingSessionRTC))),
-                                            reconnectTimer([this]() { attemptReconnect(); }) {
+                                            reconnectTimer([this]() { attemptReconnect(); })
+{
     EventManager::getInstance().addListener(this);
 }
 
@@ -19,6 +20,14 @@ void WebRTCConnexionHandler::setupConnection() {
     rtc::Configuration config;
     config.iceServers.emplace_back("stun:stun.l.google.com:19302");
 
+    auto* avinfo = new YangAVInfo();
+    auto* streamConfig = new YangStreamConfig();
+    yangPeerConnection = new YangPeerConnection2(avinfo, streamConfig);
+    yangPeerConnection->init();
+    yangPeerConnection->addAudioTrack(Yang_AED_OPUS);
+
+    juce::Logger::outputDebugString("Creating peer connection... " + yangPeerConnection->isAlive());
+    // yangPeerConnection->createOffer()
     peerConnection = std::make_shared<rtc::PeerConnection>(config);
 
     rtc::Description::Audio newAudioTrack{};

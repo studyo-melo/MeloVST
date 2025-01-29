@@ -4,6 +4,7 @@
 #include <rtc/rtc.hpp>
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
+#include <yangrtc/YangPeerConnection2.h>
 
 #include "../Socket/WebSocketService.h"
 #include "../Events/EventListener.h"
@@ -12,6 +13,8 @@
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
 #include "ReconnectTimer.h"
+
+#include <yangutil/yangavctype.h>
 
 class WebRTCConnexionHandler : EventListener {
 public:
@@ -30,6 +33,7 @@ public:
     virtual juce::String getIceCandidateStateLabel() const;
 
 protected:
+    YangPeerConnection2* yangPeerConnection;
     std::shared_ptr<rtc::PeerConnection> peerConnection;
     std::shared_ptr<rtc::Track> audioTrack;
     void notifyRTCStateChanged() const;

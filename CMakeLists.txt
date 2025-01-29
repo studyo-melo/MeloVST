@@ -2,27 +2,36 @@ cmake_minimum_required(VERSION 3.24)
 
 # Change to your project name
 project(MeloVST VERSION 0.0.1)
+cmake_policy(SET CMP0002 NEW)
 
+
+####################################################################################################
+# CMake Configuration
+####################################################################################################
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch arm64")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
-#set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
+set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -arch arm64 -lssl -lcrypto -lspeex")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # We're going to use CPM as our package manager to bring in JUCE
 # Check to see if we have CPM installed already.  Bring it in if we don't.
 set(CPM_DOWNLOAD_VERSION 0.34.0)
 set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+set(CMAKE_MACOSX_RPATH 1)
 
 if (NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
     message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
     file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
 endif ()
 
+####################################################################################################
+# CPM Modules
+####################################################################################################
 include(${CPM_DOWNLOAD_LOCATION})
 
-# Bring in JUCE locally
 CPMAddPackage(
     NAME juce
     GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
@@ -52,14 +61,58 @@ CPMAddPackage(
     GIT_TAG v1.5.2
 )
 CPMAddPackage(
-    NAME metaRTC
-    GIT_REPOSITORY git@github.com:metartc/metaRTC.git
-    GIT_TAG v7.0-b1
+    NAME speex
+    GIT_REPOSITORY https://github.com/xiph/speex.git
+    GIT_TAG Speex-1.2.1
 )
 
-include_directories(${metaRTC_SOURCE_DIR}/include)
+CPMAddPackage(
+        NAME metaRTC
+        GIT_REPOSITORY git@github.com:metartc/metaRTC.git
+        GIT_TAG v7.0-b1
+)
+
+CPMAddPackage(
+        NAME usrsctp
+        GIT_REPOSITORY https://github.com/sctplab/usrsctp.git
+        GIT_TAG 0.9.5.0
+)
+
+CPMAddPackage(
+        NAME libsrtp
+        GIT_REPOSITORY https://github.com/cisco/libsrtp.git
+        GIT_TAG  v2.6.0
+)
+
+####################################################################################################
+# Include Directories
+####################################################################################################
+
+find_package(OpenSSL REQUIRED)
+find_package(Speex REQUIRED)
+#find_package(Usrsrtp REQUIRED)
+#find_package(LibSRTP REQUIRED)
+
+
+add_subdirectory(${metaRTC_SOURCE_DIR}/libmetartccore7 ${metaRTC_SOURCE_DIR}/libmetartc7)
+include_directories(
+        ${metaRTC_SOURCE_DIR}/include
+        ${metaRTC_SOURCE_DIR}/thirdparty/include
+        ${metaRTC_SOURCE_DIR}/thirdparty/user_include
+        ${metaRTC_SOURCE_DIR}/libmetartc7
+        ${metaRTC_SOURCE_DIR}/libmetartccore7
+)
+include_directories(${speex_SOURCE_DIR}/include)
+include_directories(${libsrtp_SOURCE_DIR}/include)
+include_directories(${usrsctp_SOURCE_DIR}/include)
+include_directories(/opt/homebrew/opt/openssl/include)
+include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${libopus_SOURCE_DIR}/include)
 include_directories(${r8brain_SOURCE_DIR})
+include_directories(${datachannel_SOURCE_DIR})
+
+
+link_directories(/opt/homebrew/opt/openssl/lib)
 
 add_library(r8brain STATIC)
 target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
@@ -67,7 +120,9 @@ target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
 add_library(datachannel_static INTERFACE IMPORTED)
 target_link_libraries(datachannel_static INTERFACE datachannel)
 
-# Make sure you include any new source files here
+####################################################################################################
+# Source Files
+####################################################################################################
 set(SourceFiles
         Source/Utils/StringUtils.h
         Source/Utils/AudioUtils.h
@@ -150,18 +205,25 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_ADD_R8BRAIN=1
 )
 
-set(CMAKE_MACOSX_RPATH 1)
-add_subdirectory(${metaRTC_SOURCE_DIR}/libmetartccore7 ${metaRTC_SOURCE_DIR}/libmetartc7)
+####################################################################################################
+# Link Libraries
+####################################################################################################
 
-# JUCE libraries to bring into our project
+target_link_libraries(metartccore7 ${OPENSSL_LIBRARIES} ${speex_LIBRARIES} ${libopus_LIBRARIES} ${libsrtp_LIBRARIES} ${usrsctp_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
         opus
         datachannel
         r8brain
         ixwebsocket
-        datachannel_static INTERFACE datachannel
-        ${metaRTC}
+        speex
+        ssl
+        libsrtp
+        usrsctp
+        crypto
+        metaRTC
+        metartccore7
+        metartc7
         PUBLIC
         juce::juce_analytics
         juce::juce_audio_basics
