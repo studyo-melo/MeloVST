@@ -12,6 +12,7 @@
 #include "../Socket/SocketEvents.h"
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
+#include "../Utils/RTCUtils.h"
 #include "ReconnectTimer.h"
 
 #include <yangutil/yangavctype.h>
@@ -29,13 +30,11 @@ public:
     virtual bool isConnected() const;
     virtual bool isConnecting() const;
 
-    virtual juce::String getSignalingStateLabel() const;
-    virtual juce::String getIceCandidateStateLabel() const;
-
+    YangIceCandidateState getIceState() const { return iceState; }
+    YangRequestType getSignalingState() const { return signalingState; }
+    YangRtcConnectionState getConnectionState() const { return connectionState; }
 protected:
     YangPeerConnection2* yangPeerConnection;
-    std::shared_ptr<rtc::PeerConnection> peerConnection;
-    std::shared_ptr<rtc::Track> audioTrack;
     void notifyRTCStateChanged() const;
 
 private:
@@ -43,6 +42,9 @@ private:
     std::shared_ptr<rtc::DataChannel> dataChannel;
     WebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
+    YangIceCandidateState iceState;
+    YangRequestType signalingState;
+    YangRtcConnectionState connectionState;
 
 
     // Answer monitoring
@@ -58,10 +60,9 @@ private:
     const int reconnectDelayMs = 2000;
     ReconnectTimer reconnectTimer;
 
-    void handleAnswer(const std::string& sdp);
-    void setOffer();
     void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) override;
     void onWsMessageReceived(const MessageWsReceivedEvent &event) override;
+    void onIceStateChange(void* context,int32_t uid,YangIceCandidateType iceCandidateType,YangIceCandidateState _iceState);
     void monitorAnswer();
 
     void sendCandidateToRemote(const rtc::Candidate& candidate);

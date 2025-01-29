@@ -200,6 +200,7 @@ set(SourceFiles
         Source/Utils/json.hpp
         Source/Utils/AudioSettings.h
         Source/Utils/ResamplerWrapper.h
+        Source/Utils/RTCUtils.h
         Source/Debug/DebugAudioCallback.h
         Source/Debug/AudioAppPlayer.h
         Source/Debug/AudioAppPlayer.cpp

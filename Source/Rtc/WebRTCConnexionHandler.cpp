@@ -10,103 +10,102 @@ WebRTCConnexionHandler::WebRTCConnexionHandler(): meloWebSocketService(
 
 WebRTCConnexionHandler::~WebRTCConnexionHandler() {
     EventManager::getInstance().removeListener(this);
-    if (peerConnection) {
-        peerConnection->close();
+    if (yangPeerConnection) {
+        yangPeerConnection->close();
     }
 }
 
 void WebRTCConnexionHandler::setupConnection() {
-    rtc::InitLogger(rtc::LogLevel::Info);
-    rtc::Configuration config;
-    config.iceServers.emplace_back("stun:stun.l.google.com:19302");
-
+    char* localSdp=NULL;
+    char* remoteSdp=NULL;
     auto* avinfo = new YangAVInfo();
     auto* streamConfig = new YangStreamConfig();
     yangPeerConnection = new YangPeerConnection2(avinfo, streamConfig);
     yangPeerConnection->init();
+    yangPeerConnection->addTransceiver(YangSendonly);
     yangPeerConnection->addAudioTrack(Yang_AED_OPUS);
 
-    juce::Logger::outputDebugString("Creating peer connection... " + yangPeerConnection->isAlive());
-    // yangPeerConnection->createOffer()
-    peerConnection = std::make_shared<rtc::PeerConnection>(config);
+    // yangPeerConnection->connectSfuServer();
 
-    rtc::Description::Audio newAudioTrack{};
-    newAudioTrack.addOpusCodec(111, "minptime=10;useinbandfec=0");
-    newAudioTrack.setBitrate(96000); // Débit binaire en bits par seconde
-    newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
-    newAudioTrack.addSSRC(12345, "CNAME");;
-
-    peerConnection->onLocalDescription([this](rtc::Description sdp) {
-        if (!peerConnection->remoteDescription()) {
-            sendOfferToRemote(sdp);
+    yangPeerConnection->streamConfig->iceCallback.onIceStateChange = [](void* context, int32_t uid, YangIceCandidateType iceCandidateType, YangIceCandidateState iceState) {
+        if (context) {
+            static_cast<WebRTCConnexionHandler*>(context)->iceState = iceState;
+            static_cast<WebRTCConnexionHandler*>(context)->notifyRTCStateChanged();
+            static_cast<WebRTCConnexionHandler*>(context)->onIceStateChange(context, uid, iceCandidateType, iceState);
         }
-    });
+    };
 
-    peerConnection->onLocalCandidate([this](const rtc::Candidate &candidate) {
-        if (peerConnection->signalingState() == rtc::PeerConnection::SignalingState::Stable) {
-            return;
-        }
-
-        if (peerConnection->remoteDescription()) {
-            sendCandidateToRemote(candidate);
-        }
-        else {
-            pendingCandidates.push_back(candidate);
-            juce::Logger::outputDebugString("Candidate stored temporarily. Waiting for remote description.");
-        }
-    });
-
-    peerConnection->onStateChange([this](rtc::PeerConnection::State state) {
-        notifyRTCStateChanged();
-    });
-
-    peerConnection->onSignalingStateChange([this](rtc::PeerConnection::SignalingState state) {
-        notifyRTCStateChanged();
-    });
-
-    peerConnection->onTrack([this](std::shared_ptr<rtc::Track> track) {
-        juce::Logger::outputDebugString("Track received");
-    });
-
-    peerConnection->onIceStateChange([this](rtc::PeerConnection::IceState state) {
-        notifyRTCStateChanged();
-        switch (state) {
-            case rtc::PeerConnection::IceState::New:
-                juce::Logger::outputDebugString("ICE state changed to: New");
-                break;
-            case rtc::PeerConnection::IceState::Closed:
-            case rtc::PeerConnection::IceState::Disconnected: {
-                break;
+    yangPeerConnection->streamConfig->iceCallback.onConnectionStateChange = [](void* context, int32_t uid, YangRtcConnectionState connectionState) {
+        if (context) {
+            static_cast<WebRTCConnexionHandler*>(context)->connectionState = connectionState;
+            static_cast<WebRTCConnexionHandler*>(context)->notifyRTCStateChanged();
+            if (connectionState == Yang_Conn_State_Connected) {
+                static_cast<WebRTCConnexionHandler*>(context)->monitorAnswer();
             }
-            case rtc::PeerConnection::IceState::Failed: {
-                juce::Logger::outputDebugString("ICE state changed to: Disconnected / Failed / Closed");
-                reconnectTimer.callAfterDelay(reconnectDelayMs, [this]() { attemptReconnect(); });
-                break;
-            }
-            case rtc::PeerConnection::IceState::Checking:
-               break;
-            case rtc::PeerConnection::IceState::Completed:
-            case rtc::PeerConnection::IceState::Connected: {
-                if (peerConnection->state() == rtc::PeerConnection::State::Connected) {
-                    juce::Logger::outputDebugString("Already connected, skipping reconnection.");
-                    return;
-                }
-                reconnectAttempts = 0;
-                juce::Logger::outputDebugString("ICE state changed to: Connected");
-                break;
-            }
-            default:
-                break;
         }
-    });
+    };
 
-    audioTrack = peerConnection->addTrack(static_cast<rtc::Description::Media>(newAudioTrack));
-    setOffer();
+    // yangPeerConnection->streamConfig->iceCallback
+
+    auto offerOk = yangPeerConnection->createOffer(&localSdp);
+
+    if(offerOk !=Yang_Ok){
+        yang_error("createOffer fail!");
+    }
+
+    // peerConnection->onLocalDescription([this](rtc::Description sdp) {
+    //     if (!peerConnection->remoteDescription()) {
+    //         sendOfferToRemote(sdp);
+    //     }
+    // });
+
+    // peerConnection->onLocalCandidate([this](const rtc::Candidate &candidate) {
+    //     if (peerConnection->signalingState() == rtc::PeerConnection::SignalingState::Stable) {
+    //         return;
+    //     }
+    //
+    //     if (peerConnection->remoteDescription()) {
+    //         sendCandidateToRemote(candidate);
+    //     }
+    //     else {
+    //         pendingCandidates.push_back(candidate);
+    //         juce::Logger::outputDebugString("Candidate stored temporarily. Waiting for remote description.");
+    //     }
+    // });
+    //
+    //
+    // peerConnection->onTrack([this](std::shared_ptr<rtc::Track> track) {
+    //     juce::Logger::outputDebugString("Track received");
+    // });
+    //
+}
+
+void WebRTCConnexionHandler::onIceStateChange(void* context,int32_t uid,YangIceCandidateType iceCandidateType,YangIceCandidateState iceState) {
+    switch (iceState) {
+        case YangIceNew:
+            juce::Logger::outputDebugString("ICE state changed to: New");
+        break;
+        case YangIceFail: {
+            juce::Logger::outputDebugString("ICE state changed to: Disconnected / Failed / Closed");
+            reconnectTimer.callAfterDelay(reconnectDelayMs, [this]() { attemptReconnect(); });
+            break;
+        }
+        case YangIceSuccess: {
+            if (yangPeerConnection->isConnected()) {
+                juce::Logger::outputDebugString("Already connected, skipping reconnection.");
+            }
+            reconnectAttempts = 0;
+            juce::Logger::outputDebugString("ICE state changed to: Connected");
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void WebRTCConnexionHandler::disconnect() const {
-    if (peerConnection) {
-        peerConnection->close();
+    if (yangPeerConnection) {
+        yangPeerConnection->close();
     }
 }
 
@@ -117,24 +116,20 @@ void WebRTCConnexionHandler::resetConnection() {
 
 void WebRTCConnexionHandler::notifyRTCStateChanged() const {
     juce::Logger::outputDebugString("RTC state changed, notifying listeners");
-    EventManager::getInstance().notifyOnRTCStateChanged({
-        peerConnection->state(), peerConnection->iceState(), peerConnection->signalingState()
-    });
+    EventManager::getInstance().notifyOnRTCStateChanged({connectionState, iceState, signalingState});
 }
 
 
 void WebRTCConnexionHandler::onWsMessageReceived(const MessageWsReceivedEvent &event) {
-    if (!peerConnection) {
-        return;
-    }
-    if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer) {
+    if (!yangPeerConnection) {
         return;
     }
 
     if (event.type == "answer" && event.data.contains("answerSdp")) {
-        handleAnswer(event.data["answerSdp"]);
+        std::string answerSdp = event.data["answerSdp"];
+        yangPeerConnection->setRemoteDescription(answerSdp.data());
     } else if (event.type == "candidate") {
-        if (peerConnection->state() == rtc::PeerConnection::State::Connected) {
+        if (yangPeerConnection->isConnected()) {
             return;
         }
         juce::Logger::outputDebugString("Received ICE candidate ->" + event.data["candidate"]);
@@ -142,43 +137,9 @@ void WebRTCConnexionHandler::onWsMessageReceived(const MessageWsReceivedEvent &e
         std::string sdpMid = event.data["sdpMid"];
 
         rtc::Candidate iceCandidate(rtc::Candidate(candidate, sdpMid));
-        peerConnection->addRemoteCandidate(iceCandidate);
+        // yangPeerConnection->streamConfig
+        // peerConnection->addRemoteCandidate(iceCandidate);
     }
-}
-
-void WebRTCConnexionHandler::setOffer() {
-    if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::Stable && peerConnection->state() ==
-        rtc::PeerConnection::State::Connected) {
-        return;
-    }
-    if (peerConnection->localDescription().has_value()) {
-        sendOfferToRemote(peerConnection->localDescription().value());
-    }
-    else {
-        peerConnection->localDescription().reset();
-        peerConnection->setLocalDescription(rtc::Description::Type::Offer);
-    }
-}
-
-void WebRTCConnexionHandler::handleAnswer(const std::string &sdp) {
-    if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer) {
-        return;
-    }
-    if (peerConnection->state() == rtc::PeerConnection::State::Connected) {
-        return;
-    }
-
-    if (peerConnection->remoteDescription()) {
-        return;
-    }
-
-    juce::Logger::outputDebugString("Received answer");
-    peerConnection->setRemoteDescription(rtc::Description(sdp, "answer"));
-    answerReceived = true;
-    for (const auto &candidate : pendingCandidates) {
-        sendCandidateToRemote(candidate);
-    }
-    pendingCandidates.clear();
 }
 
 void WebRTCConnexionHandler::onOngoingSessionChanged(const OngoingSessionChangedEvent &event) {
@@ -191,7 +152,7 @@ void WebRTCConnexionHandler::attemptReconnect() {
         juce::Logger::outputDebugString("No ongoing session. Cannot reconnect.");
         return;
     }
-    if (peerConnection && peerConnection->state() == rtc::PeerConnection::State::Connected) {
+    if (yangPeerConnection && connectionState == Yang_Conn_State_Connected) {
         juce::Logger::outputDebugString("Already connected. Skipping reconnection.");
         return;
     }
@@ -206,7 +167,7 @@ void WebRTCConnexionHandler::attemptReconnect() {
     resetConnection();
 
     reconnectTimer.callAfterDelay(reconnectDelayMs, [this]() {
-        if (!peerConnection || peerConnection->state() == rtc::PeerConnection::State::Closed) {
+        if (!yangPeerConnection || connectionState == Yang_Conn_State_Closed) {
             attemptReconnect();
         } else {
             juce::Logger::outputDebugString("Reconnection successful.");
@@ -242,24 +203,14 @@ void WebRTCConnexionHandler::monitorAnswer() {
 }
 
 bool WebRTCConnexionHandler::isConnected() const {
-    if (!peerConnection) {
-        return false;
-    }
-    return peerConnection->state() == rtc::PeerConnection::State::Connected;
+    return yangPeerConnection->isConnected();
 }
 
 bool WebRTCConnexionHandler::isConnecting() const {
-    if (!peerConnection) {
-        return false;
-    }
-    return peerConnection->state() == rtc::PeerConnection::State::Connecting;
+    return yangPeerConnection->isAlive();
 }
 
 void WebRTCConnexionHandler::sendOfferToRemote(const rtc::Description &sdp) {
-    if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer
-        || peerConnection->state() == rtc::PeerConnection::State::Connected) {
-        return;
-    }
     if (ongoingSession.has_value()) {
         const auto offerEvent = new RTCOfferSentEvent(sdp, ongoingSession.value());
         meloWebSocketService.sendMessage(offerEvent->createMessage());
@@ -275,46 +226,4 @@ void WebRTCConnexionHandler::sendCandidateToRemote(const rtc::Candidate &candida
     meloWebSocketService.sendMessage(candidateEvent->createMessage());
 }
 
-juce::String WebRTCConnexionHandler::getSignalingStateLabel() const {
-    if (!peerConnection) {
-        return juce::String::fromUTF8("Inconnu");
-    }
-    switch (peerConnection->signalingState()) {
-        case rtc::PeerConnection::SignalingState::Stable:
-            return juce::String::fromUTF8("Stable");
-        case rtc::PeerConnection::SignalingState::HaveLocalOffer:
-            return juce::String::fromUTF8("Offre locale");
-        case rtc::PeerConnection::SignalingState::HaveRemoteOffer:
-            return juce::String::fromUTF8("Offre distante");
-        case rtc::PeerConnection::SignalingState::HaveLocalPranswer:
-            return juce::String::fromUTF8("Pré-réponse locale");
-        case rtc::PeerConnection::SignalingState::HaveRemotePranswer:
-            return juce::String::fromUTF8("Pré-réponse distante");
-        default:
-            return juce::String::fromUTF8("Inconnu");
-    }
-}
 
-juce::String WebRTCConnexionHandler::getIceCandidateStateLabel() const {
-    if (!peerConnection) {
-        return juce::String::fromUTF8("Inconnu");
-    }
-    switch (peerConnection->iceState()) {
-        case rtc::PeerConnection::IceState::New:
-            return juce::String::fromUTF8("Nouveau");
-        case rtc::PeerConnection::IceState::Checking:
-            return juce::String::fromUTF8("Vérification");
-        case rtc::PeerConnection::IceState::Connected:
-            return juce::String::fromUTF8("Connecté");
-        case rtc::PeerConnection::IceState::Completed:
-            return juce::String::fromUTF8("Complété");
-        case rtc::PeerConnection::IceState::Failed:
-            return juce::String::fromUTF8("Échoué");
-        case rtc::PeerConnection::IceState::Disconnected:
-            return juce::String::fromUTF8("Déconnecté");
-        case rtc::PeerConnection::IceState::Closed:
-            return juce::String::fromUTF8("Fermé");
-        default:
-            return juce::String::fromUTF8("Inconnu");
-    }
-}

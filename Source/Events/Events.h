@@ -26,7 +26,7 @@ struct MessageWsReceivedEvent {
 };
 
 struct RTCStateChangeEvent {
-    rtc::PeerConnection::State state;
-    rtc::PeerConnection::IceState iceState;
-    rtc::PeerConnection::SignalingState signalingState;
+    YangRtcConnectionState state;
+    YangIceCandidateState iceState;
+    YangRequestType signalingState;
 };

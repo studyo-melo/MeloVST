@@ -32,7 +32,7 @@ int32_t YangPeerConnection2::addTransceiver(YangRtcDirection direction){
 int32_t YangPeerConnection2::createDataChannel(){
 	return m_conn.createDataChannel(&m_conn.peer);
 }
-int32_t YangPeerConnection2::createOffer( char **psdp){
+int32_t YangPeerConnection2::createOffer(char **psdp){
 	return m_conn.createOffer(&m_conn.peer,psdp);
 }
 int32_t YangPeerConnection2::createAnswer(char* answer){

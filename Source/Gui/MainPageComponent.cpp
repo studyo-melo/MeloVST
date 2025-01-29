@@ -82,13 +82,13 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService())
 void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
     juce::MessageManager::callAsync([this, event] {
     switch (event.state) {
-        case rtc::PeerConnection::State::Connected: {
+        case Yang_Conn_State_Connected: {
             connectButton.setButtonText(juce::String::fromUTF8("Déconnecter la connexion avec l'artiste"));
             RTCStateText.setText(juce::String::fromUTF8("Vous êtes connecté avec l'artiste."),
                                  juce::dontSendNotification);
             break;
         }
-        case rtc::PeerConnection::State::Connecting: {
+        case Yang_Conn_State_Connecting: {
             connectButton.setButtonText(juce::String::fromUTF8(("Stopper la demande de connexion")));
             RTCStateText.setText("En cours de connexion avec l'artiste...", juce::dontSendNotification);
             break;
@@ -102,9 +102,8 @@ void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
         }
     }
 
-    RTCIceCandidateStateText.setText(webRTCAudioService.getIceCandidateStateLabel(), juce::dontSendNotification);
-    RTCSignalingStateText.setText(webRTCAudioService.getSignalingStateLabel(),
-                                  juce::dontSendNotification);
+    RTCIceCandidateStateText.setText(RTCUtils::getIceCandidateStateLabel(webRTCAudioService.getIceState()), juce::dontSendNotification);
+    RTCSignalingStateText.setText(RTCUtils::getSignalingStateLabel(webRTCAudioService.getSignalingState()), juce::dontSendNotification);
     });
 }
 
