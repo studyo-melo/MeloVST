@@ -1,7 +1,7 @@
 ﻿//
 // Copyright (c) 2019-2022 yanggaofeng
 //
-#include <yangdecoder/pc/YangAudioDecoderAac.h>
+#include "./YangAudioDecoderAac.h"
 #include <yangutil/yangavinfotype.h>
 #include <yangutil/sys/YangLog.h>
 

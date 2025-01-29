@@ -2,7 +2,6 @@
 // Copyright (c) 2019-2022 yanggaofeng
 //
 #include <yangcapture/YangScreenShare.h>
-#include <yangavutil/video/YangYuvConvert.h>
 
 
 YangScreenCapture::YangScreenCapture(){

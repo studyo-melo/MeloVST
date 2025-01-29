@@ -3,7 +3,6 @@
 //
 #ifndef __YangLivingVideoCaptureHandle__
 #define __YangLivingVideoCaptureHandle__
-#include <yangavutil/video/YangYuvConvert.h>
 #include <yangutil/buffer/YangVideoBuffer.h>
 #include <yangutil/yangavinfotype.h>
 
@@ -36,7 +35,6 @@ private:
 
 	YangVideoBuffer *m_out_videoBuffer,*m_pre_videoBuffer,*m_living_out_videoBuffer,*m_film_out_videoBuffer;
 	YangFrame m_videoFrame;
-	YangYuvConvert m_yuv;
 	uint8_t *m_buf,*m_androidBuf;
     int32_t m_width,m_height,m_bufLen,m_ylen,m_ulen;
 	int64_t vtick;

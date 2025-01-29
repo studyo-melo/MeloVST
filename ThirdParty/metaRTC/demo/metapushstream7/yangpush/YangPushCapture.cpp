@@ -4,7 +4,6 @@
 
 #include <yangpush/YangPushCapture.h>
 
-#include <yangavutil/video/YangYuvConvert.h>
 #include <yangavutil/video/YangYuvUtil.h>
 
 #include <yangcapture/YangCaptureFactory.h>

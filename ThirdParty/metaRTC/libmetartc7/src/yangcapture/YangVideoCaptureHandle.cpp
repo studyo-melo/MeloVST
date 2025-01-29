@@ -69,7 +69,6 @@ void YangVideoCaptureHandle::putBufferNv21(int64_t startTime, uint8_t *data_y, u
 	if(m_androidBuf==NULL){
 		m_androidBuf=new uint8_t[m_bufLen];
 	}
-	m_yuv.nv21toI420(data_y, m_androidBuf, m_width, m_height);
 	putBufferAndroid(startTime,m_androidBuf,m_bufLen);
 }
 
@@ -94,7 +93,6 @@ void YangVideoCaptureHandle::putBufferAndroid(int64_t startTime, uint8_t *pBuffe
 	vtick = curstamp - basesatmp;
 	if(m_rotate){
 		//if(m_isRotate)
-			m_yuv.rotateI420(pBuffer,m_buf,m_width,m_height,(RotationMode)m_rotate);
 		//else
 			//m_yuv.i420tonv12(pBuffer, m_buf, m_width, m_height);
 		m_videoFrame.payload=m_buf;
@@ -117,14 +115,10 @@ void YangVideoCaptureHandle::putBuffer(int64_t pstamtime,	uint8_t *pBuffer, int3
 	if(m_buf){
 		if(m_captureVideoFormat==YangYuy2){
 
-			if(m_encoderVideoFormat==YangI420) m_yuv.yuy2toI420(pBuffer,m_buf,m_width,m_height);
-			if(m_encoderVideoFormat==YangNv12) m_yuv.yuy2tonv12(pBuffer,m_buf,m_width,m_height);
-			if(m_encoderVideoFormat==YangArgb) m_yuv.yuy2toargb(pBuffer,m_buf,m_width,m_height);
 			tmp=m_buf;
         }else if(m_captureVideoFormat==YangNv12){
 
             if(m_encoderVideoFormat==YangI420){
-                m_yuv.nv12toI420(pBuffer,m_buf,m_width,m_height);
                 tmp=m_buf;
 
             }else if(m_encoderVideoFormat==YangNv12)
@@ -137,7 +131,6 @@ void YangVideoCaptureHandle::putBuffer(int64_t pstamtime,	uint8_t *pBuffer, int3
                 tmp=pBuffer;
 
             }else if(m_encoderVideoFormat==YangNv12)
-                m_yuv.i420tonv12(pBuffer,m_buf,m_width,m_height);
                 tmp=m_buf;
 			//if(m_encoderVideoFormat==YangArgb) m_yuv.i420torgba(pBuffer,m_buf,m_width,m_height);
 		}else if(m_captureVideoFormat==YangArgb){

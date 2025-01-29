@@ -9,16 +9,12 @@
 
 #include <yangencoder/YangFfmpegEncoderMeta.h>
 #include <yangencoder/YangGpuEncoderFactory.h>
-#include <yangencoder/YangH265EncoderMeta.h>
-#include <yangencoder/YangH265EncoderSoft.h>
 #include <yangencoder/YangVideoEncoderFfmpeg.h>
 #include <yangencoder/YangEncoderMediacodec.h>
 
 #if Yang_Enable_Openh264
 #include <yangencoder/YangOpenH264Encoder.h>
 #else
-#include <yangencoder/YangH264EncoderMeta.h>
-#include <yangencoder/YangH264EncoderSoft.h>
 #endif
 
 YangEncoderFactory::YangEncoderFactory() {
@@ -35,14 +31,12 @@ YangVideoEncoderMeta* YangEncoderFactory::createVideoEncoderMeta(
 		return new YangFfmpegEncoderMeta();
 #endif
 #if !Yang_Enable_Openh264
-	if(pcontext->videoEncoderType==0) return new YangH264EncoderMeta();
+	if(pcontext->videoEncoderType==0)
 #endif
-	if (pcontext->videoEncoderType == 1)
-		return new YangH265EncoderMeta();
+	if (pcontext->videoEncoderType == 1) return nullptr;
 #if Yang_Enable_Openh264
 	return NULL;
 #else
-	return new YangH264EncoderMeta();
 #endif
 }
 
@@ -85,12 +79,10 @@ YangVideoEncoder* YangEncoderFactory::createVideoEncoder(YangVideoCodec paet,
 	if (pcontext->videoEncHwType == 0) {
 #if Yang_Enable_Openh264
 		if (paet == Yang_VED_H264)
-			return new YangOpenH264Encoder();
 #else
-		if (paet == Yang_VED_H264)		return  new YangH264EncoderSoft();
+		if (paet == Yang_VED_H264)
 #endif
-		if (paet == Yang_VED_H265)
-			return new YangH265EncoderSoft();
+		if (paet == Yang_VED_H265) return nullptr;
 	} else {
 #if Yang_Enable_GPU_Encoding
                 YangGpuEncoderFactory gf;
@@ -104,7 +96,6 @@ YangVideoEncoder* YangEncoderFactory::createVideoEncoder(YangVideoCodec paet,
 #if Yang_Enable_Openh264
 	return new YangOpenH264Encoder();
 #else
-			return  new YangH264EncoderSoft();
 #endif
 
 #endif

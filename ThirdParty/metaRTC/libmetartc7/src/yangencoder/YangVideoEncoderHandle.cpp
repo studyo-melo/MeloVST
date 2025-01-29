@@ -3,7 +3,6 @@
 //
 #include <yangencoder/YangVideoEncoderHandle.h>
 #include <yangencoder/YangEncoderFactory.h>
-#include <yangavutil/video/YangYuvConvert.h>
 #include <yangutil/yangavinfotype.h>
 #include <yangutil/sys/YangLog.h>
 
@@ -76,7 +75,6 @@ void YangVideoEncoderHandle::onAudioData(YangFrame* pframe){
 void YangVideoEncoderHandle::startLoop() {
 	m_isConvert = 1;
 	YangVideoInfo para;
-	YangYuvConvert yuv;
 	memcpy(&para, m_videoInfo, sizeof(YangVideoInfo));
 
 	int32_t isTrans = (para.width != para.outWidth ? 1 : 0);
@@ -135,7 +133,6 @@ void YangVideoEncoderHandle::startLoop() {
 			}
 #else
 			if(para.videoEncoderFormat==YangI420) {
-				yuv.i420tonv12(tmpsrc,nv12Src,wid,hei);
 				tmp=nv12Src;
 			}
 			if(para.videoEncoderFormat==YangArgb){
@@ -164,9 +161,6 @@ void YangVideoEncoderHandle::startLoop() {
 		videoFrame.uid=m_uid;
 
 		if (isTrans) {
-			yuv.scaleI420(tmp,
-					outVideoSrc, para.width, para.height, para.outWidth,
-					para.outHeight);
 			videoFrame.payload=outVideoSrc;
 			videoFrame.nb=m_out_fileSize;
 

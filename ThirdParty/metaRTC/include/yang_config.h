@@ -7,8 +7,8 @@
 
 #include "yang_config_os.h"
 
-#define Yang_Enable_Datachannel 1
-#define Yang_Enable_Openh264    1
+#define Yang_Enable_Datachannel 0
+#define Yang_Enable_Openh264    0
 #define Yang_Enable_Json        1
 
 #if Yang_OS_WIN
@@ -23,14 +23,14 @@
 
 #define Yang_StreamName_Lenght 128
 
-#define Yang_Enable_H265_Encoding 1
+#define Yang_Enable_H265_Encoding 0
 #define Yang_Enable_MJpeg_Encoding 0
 #define Yang_Enable_AV1_Encoding 0
 
 #define Yang_Enable_RTC_Audio 1
-#define Yang_Enable_RTC_Video 1
+#define Yang_Enable_RTC_Video 0
 
-#define Yang_Enable_Tcp_Srs 1
+#define Yang_Enable_Tcp_Srs 0
 
 #define Yang_Enable_Embbed 0
 #define Yang_Enable_10bit 0
@@ -44,7 +44,7 @@
 #define Yang_Enable_H264Decoder_So 1
 #define Yang_Enable_FfmpegSo 0
 #else
-#define Yang_Enable_H264Decoder 1
+#define Yang_Enable_H264Decoder 0
 #if !Yang_OS_ANDROID
 #define Yang_Enable_H264Decoder_So 0
 #else

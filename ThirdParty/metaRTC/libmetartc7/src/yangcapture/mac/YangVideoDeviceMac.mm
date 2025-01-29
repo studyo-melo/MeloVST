@@ -3,7 +3,7 @@
 //
 #include "YangVideoDeviceMac.h"
 #if Yang_OS_APPLE
-
+#import <Foundation/Foundation.h>
 #import <CoreFoundation/CFString.h>
 #import <AVFoundation/AVFoundation.h>
 #import <CoreFoundation/CoreFoundation.h>

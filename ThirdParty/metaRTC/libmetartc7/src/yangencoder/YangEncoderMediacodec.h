@@ -7,7 +7,6 @@
 #include <yangutil/buffer/YangVideoBuffer.h>
 #include <yangutil/buffer/YangVideoEncoderBuffer.h>
 #include <yangutil/sys/YangLoadLib.h>
-#include <yangavutil/video/YangYuvConvert.h>
 
 #if Yang_OS_ANDROID
 

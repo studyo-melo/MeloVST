@@ -138,7 +138,7 @@ add_definitions(-DFLOATING_POINT -DEXPORT= -DUSE_SMALLFT)
 ####################################################################################################
 find_package(PkgConfig REQUIRED)
 find_package(OpenSSL REQUIRED)
-
+find_library(OPENH264_LIBRARY openh264)
 pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
         libavcodec libavformat libavutil libswscale libswresample)
 
@@ -177,6 +177,9 @@ message(STATUS "USRSCTP_SOURCE_DIR: ${usrsctp_SOURCE_DIR}")
 message(STATUS "USRSCTP_BINARY_DIR: ${usrsctp_BINARY_DIR}")
 message(STATUS "libmetartc7_SOURCE_DIR: ${libmetartc7_SOURCE_DIR}")
 message(STATUS "libmetartccore7_SOURCE_DIR: ${libmetartccore7_SOURCE_DIR}")
+message(STATUS "AVFoundation_LIBRARY: ${AVFOUNDATION_LIBRARY}")
+message(STATUS "AudioToolbox_LIBRARY: ${AUDIOTOOLBOX_LIBRARY}")
+message(STATUS "OPENH264_LIBRARY: ${OPENH264_LIBRARY}")
 
 add_library(r8brain STATIC)
 target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
@@ -272,25 +275,34 @@ target_compile_definitions(${PROJECT_NAME}
 ####################################################################################################
 # Link Libraries
 ####################################################################################################
-add_library(clip255 STATIC ${CMAKE_SOURCE_DIR}/ThirdParty/clip255.c)
-#add_library(metartc7 STATIC ${metaRTC_SOURCE_DIR}/libmetartc7/**/*.cpp)
-#file(GLOB METARTC7_SOURCES ${metaRTC_SOURCE_DIR}/libmetartc7/src/*.cpp)
-#message(STATUS "METARTC7_SOURCES: ${METARTC7_SOURCES}")
-#message(STATUS "METARTC7_SOURCES_DIR: ${metaRTC_SOURCE_DIR}")
-#target_sources(metartc7 PRIVATE ${METARTC7_SOURCES})
 
-target_link_libraries(metartccore7 ${OPENSSL_LIBRARIES} ${usrsctp_BINARY_DIR}/usrsctplib/libusrsctp.dylib libSRTP::srtp2 speexdsp clip255 opus PkgConfig::FFMPEG)
-target_link_libraries(metartc7 ${OPENSSL_LIBRARIES} ${usrsctp_BINARY_DIR}/usrsctplib/libusrsctp.dylib libSRTP::srtp2 speexdsp clip255 opus PkgConfig::FFMPEG)
+add_library(clip255 STATIC ${CMAKE_SOURCE_DIR}/ThirdParty/clip255.c)
+target_link_libraries(metartccore7
+        ${OPENSSL_LIBRARIES}
+        ${usrsctp_BINARY_DIR}/usrsctplib/libusrsctp.dylib
+        libSRTP::srtp2
+        speexdsp
+        opus
+        clip255
+        PkgConfig::FFMPEG
+        "-framework Foundation"
+        "-framework AVFoundation"
+        "-framework AudioToolbox"
+        "-framework CoreAudio"
+        "-framework CoreFoundation"
+        "-framework CoreMedia"
+        "-framework CoreVideo"
+        ${OPENH264_LIBRARY}
+)
+target_link_libraries(metartc7
+        metartccore7
+)
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
         opus
         datachannel
         r8brain
         ixwebsocket
-        speexdsp
-        ssl
-        usrsctp
-        crypto
         metartccore7
         metartc7
         PUBLIC

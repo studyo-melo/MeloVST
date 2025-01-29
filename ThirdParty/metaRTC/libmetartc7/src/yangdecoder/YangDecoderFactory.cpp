@@ -2,10 +2,7 @@
 // Copyright (c) 2019-2022 yanggaofeng
 //
 #include <yangdecoder/YangDecoderFactory.h>
-#include <yangdecoder/YangH264DecoderSoftFactory.h>
 #include <yangdecoder/YangAudioDecoderOpus.h>
-#include <yangdecoder/YangH264DecoderSoft.h>
-#include <yangdecoder/YangDecoderOpenh264.h>
 
 #if Yang_OS_ANDROID
 #include <yangdecoder/YangDecoderMediacodec.h>
@@ -28,8 +25,8 @@ YangDecoderFactory::~YangDecoderFactory() {
 YangAudioDecoder *YangDecoderFactory::createAudioDecoder(YangAudioCodec paet,YangAudioParam *pcontext){
 
 #if  !Yang_OS_ANDROID
-	if(paet==Yang_AED_SPEEX) return new YangAudioDecoderSpeex(pcontext);
-	if(paet==Yang_AED_AAC) return new YangAudioDecoderAac(pcontext);
+	// if(paet==Yang_AED_SPEEX) return new YangAudioDecoderSpeex(pcontext);
+	// if(paet==Yang_AED_AAC) return new YangAudioDecoderAac(pcontext);
 #endif
 	return new YangAudioDecoderOpus(pcontext);
 }
@@ -42,7 +39,7 @@ YangAudioDecoder *YangDecoderFactory::createAudioDecoder(YangAudioParam *pcontex
 #if !Yang_OS_ANDROID
 YangVideoDecoder* YangDecoderFactory::createFfmpegVideoDecoder(YangVideoCodec paet,YangVideoInfo *pcontext){
 #if Yang_Enable_Ffmpeg_Codec
-	return new YangVideoDecoderFfmpeg(pcontext,paet);
+	// return new YangVideoDecoderFfmpeg(pcontext,paet);
 #else
 	return NULL;
 #endif
@@ -61,18 +58,18 @@ YangVideoDecoder* YangDecoderFactory::createVideoDecoder(YangVideoCodec paet,Yan
 #if	Yang_Enable_H264Decoder
 			return new YangH264DecoderSoft();
 #else
-			return new YangVideoDecoderFfmpeg(pcontext,paet);
+			// return new YangVideoDecoderFfmpeg(pcontext,paet);
 #endif
 		}else{
 #if Yang_Enable_Ffmpeg_Codec
-			return new YangVideoDecoderFfmpeg(pcontext,paet);
+			// return new YangVideoDecoderFfmpeg(pcontext,paet);
 #else
 			return NULL;
 #endif
 		}
 	}
 #if Yang_Enable_Ffmpeg_Codec
-	if (paet == Yang_VED_H265)				return new YangVideoDecoderFfmpeg(pcontext,paet);
+	// if (paet == Yang_VED_H265)				return new YangVideoDecoderFfmpeg(pcontext,paet);
 #endif
 #endif
 	return NULL;

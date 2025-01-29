@@ -4,7 +4,6 @@
 #ifndef SRC_YANGPUSH_YANGSENDVIDEOIMPL_H_
 #define SRC_YANGPUSH_YANGSENDVIDEOIMPL_H_
 #include <yangutil/buffer/YangVideoBuffer.h>
-#include <yangavutil/video/YangYuvConvert.h>
 #include <yangpush/YangSendVideoI.h>
 class YangSendVideoImpl:public YangSendVideoI {
 public:
@@ -18,7 +17,6 @@ public:
 	YangVideoBuffer* m_outPreVideoBuffer;
 	YangVideoBuffer* m_outVideoBuffer;
 private:
-	YangYuvConvert m_yuv;
 	YangFrame m_videoFrame;
 	uint8_t* m_buf;
 
