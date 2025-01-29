@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch arm64")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
-set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -arch arm64 -lssl -lcrypto -lspeex")
+set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -arch arm64 -lssl -lcrypto -lspeex -lusrsctp -lsrtp2 -lffmpeg")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # We're going to use CPM as our package manager to bring in JUCE
@@ -26,6 +26,7 @@ if (NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
     message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
     file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
 endif ()
+
 
 ####################################################################################################
 # CPM Modules
@@ -42,6 +43,8 @@ CPMAddPackage(
     NAME libdatachannel
     GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
     GIT_TAG origin/master
+    OPTIONS "USE_SYSTEM_USRSCTP ON"
+    OPTIONS "USE_SYSTEM_SRTP ON"
 )
 
 CPMAddPackage(
@@ -67,12 +70,6 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-        NAME metaRTC
-        GIT_REPOSITORY git@github.com:metartc/metaRTC.git
-        GIT_TAG v7.0-b1
-)
-
-CPMAddPackage(
         NAME usrsctp
         GIT_REPOSITORY https://github.com/sctplab/usrsctp.git
         GIT_TAG 0.9.5.0
@@ -81,38 +78,105 @@ CPMAddPackage(
 CPMAddPackage(
         NAME libsrtp
         GIT_REPOSITORY https://github.com/cisco/libsrtp.git
-        GIT_TAG  v2.6.0
+        GIT_TAG v2.6.0
+        OPTIONS
+        "ENABLE_STATIC ON" # Force la compilation de la version statique
+        "ENABLE_SHARED ON" # Active la compilation d'une version dynamique (.so ou .dylib)
 )
-
+CPMAddPackage(
+        NAME speexdsp
+        GIT_REPOSITORY https://github.com/xiph/speexdsp.git
+        GIT_TAG SpeexDSP-1.2.1
+        OPTIONS
+        "ENABLE_STATIC ON" # Force la compilation de la version statique
+        "ENABLE_SHARED ON" # Active la compilation d'une version dynamique (.so ou .dylib)
+)
+#
+file(GLOB SPEEX_SOURCES ${speexdsp_SOURCE_DIR}/libspeexdsp/*.c)
+add_library(speexdsp STATIC ${SPEEX_SOURCES})
+target_include_directories(speexdsp PUBLIC ${speexdsp_SOURCE_DIR}/include)
+#
+## Exécute le script `autogen.sh` pour générer les fichiers de configuration
+execute_process(
+        COMMAND ${speexdsp_SOURCE_DIR}/autogen.sh ./libspeexdsp
+        WORKING_DIRECTORY ${speexdsp_SOURCE_DIR}
+        RESULT_VARIABLE result
+        OUTPUT_VARIABLE output
+        ERROR_VARIABLE error
+        COMMAND_ERROR_IS_FATAL ANY
+)
+#
+execute_process(
+        COMMAND ${speexdsp_SOURCE_DIR}/configure --prefix=${CMAKE_BINARY_DIR}/speexdsp
+        WORKING_DIRECTORY ${speexdsp_SOURCE_DIR}
+        RESULT_VARIABLE result
+        OUTPUT_VARIABLE output
+        ERROR_VARIABLE error
+        COMMAND_ERROR_IS_FATAL ANY
+)
+#
+execute_process(
+        COMMAND make
+        WORKING_DIRECTORY ${speexdsp_SOURCE_DIR}
+        RESULT_VARIABLE result
+        OUTPUT_VARIABLE output
+        ERROR_VARIABLE error
+        COMMAND_ERROR_IS_FATAL ANY
+)
+#
+execute_process(
+        COMMAND make install
+        WORKING_DIRECTORY ${speexdsp_SOURCE_DIR}
+        RESULT_VARIABLE result
+        OUTPUT_VARIABLE output
+        ERROR_VARIABLE error
+        COMMAND_ERROR_IS_FATAL ANY
+)
+add_definitions(-DFLOATING_POINT -DEXPORT= -DUSE_SMALLFT)
 ####################################################################################################
 # Include Directories
 ####################################################################################################
-
+find_package(PkgConfig REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Speex REQUIRED)
-#find_package(Usrsrtp REQUIRED)
-#find_package(LibSRTP REQUIRED)
 
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+        libavcodec libavformat libavutil libswscale libswresample)
 
-add_subdirectory(${metaRTC_SOURCE_DIR}/libmetartccore7 ${metaRTC_SOURCE_DIR}/libmetartc7)
+link_directories(/opt/homebrew/opt/openssl/lib)
+link_directories(/opt/homebrew/opt/ffmpeg/lib)
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/libmetartccore7)
+add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/libmetartc7)
 include_directories(
-        ${metaRTC_SOURCE_DIR}/include
-        ${metaRTC_SOURCE_DIR}/thirdparty/include
-        ${metaRTC_SOURCE_DIR}/thirdparty/user_include
-        ${metaRTC_SOURCE_DIR}/libmetartc7
-        ${metaRTC_SOURCE_DIR}/libmetartccore7
+        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/include
+        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/thirdparty/include
+        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/thirdparty/user_include
+        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/libmetartc7
+        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/libmetartccore7
 )
+include_directories(/opt/homebrew/opt/openssl/include)
+include_directories(/opt/homebrew/opt/ffmpeg/include)
+include_directories(${libopus_SOURCE_DIR}/include)
 include_directories(${speex_SOURCE_DIR}/include)
 include_directories(${libsrtp_SOURCE_DIR}/include)
-include_directories(${usrsctp_SOURCE_DIR}/include)
-include_directories(/opt/homebrew/opt/openssl/include)
+include_directories(${usrsctp_SOURCE_DIR}/usrsctplib)
 include_directories(${OPENSSL_INCLUDE_DIR})
-include_directories(${libopus_SOURCE_DIR}/include)
 include_directories(${r8brain_SOURCE_DIR})
 include_directories(${datachannel_SOURCE_DIR})
 
-
-link_directories(/opt/homebrew/opt/openssl/lib)
+message(STATUS "Compilation en cours...")
+message(STATUS "ffmpeg_INCLUDE_DIR: ${ffmpeg_INCLUDE_DIR}")
+message(STATUS "ffmpeg_LIBRARIES: ${ffmpeg_LIBRARIES}")
+message(STATUS "OPENSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
+message(STATUS "OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
+message(STATUS "SPEEX_SOURCE_DIR: ${speex_SOURCE_DIR}")
+message(STATUS "SPEEX_BINARY_DIR: ${speex_BINARY_DIR}")
+message(STATUS "libsrtp_SOURCE_DIR: ${libsrtp_SOURCE_DIR}")
+message(STATUS "libsrtp_BINARY_DIR: ${libsrtp_BINARY_DIR}")
+message(STATUS "USRSCTP_SOURCE_DIR: ${usrsctp_SOURCE_DIR}")
+message(STATUS "USRSCTP_BINARY_DIR: ${usrsctp_BINARY_DIR}")
+message(STATUS "libmetartc7_SOURCE_DIR: ${libmetartc7_SOURCE_DIR}")
+message(STATUS "libmetartccore7_SOURCE_DIR: ${libmetartccore7_SOURCE_DIR}")
 
 add_library(r8brain STATIC)
 target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
@@ -208,20 +272,25 @@ target_compile_definitions(${PROJECT_NAME}
 ####################################################################################################
 # Link Libraries
 ####################################################################################################
+add_library(clip255 STATIC ${CMAKE_SOURCE_DIR}/ThirdParty/clip255.c)
+#add_library(metartc7 STATIC ${metaRTC_SOURCE_DIR}/libmetartc7/**/*.cpp)
+#file(GLOB METARTC7_SOURCES ${metaRTC_SOURCE_DIR}/libmetartc7/src/*.cpp)
+#message(STATUS "METARTC7_SOURCES: ${METARTC7_SOURCES}")
+#message(STATUS "METARTC7_SOURCES_DIR: ${metaRTC_SOURCE_DIR}")
+#target_sources(metartc7 PRIVATE ${METARTC7_SOURCES})
 
-target_link_libraries(metartccore7 ${OPENSSL_LIBRARIES} ${speex_LIBRARIES} ${libopus_LIBRARIES} ${libsrtp_LIBRARIES} ${usrsctp_LIBRARIES})
+target_link_libraries(metartccore7 ${OPENSSL_LIBRARIES} ${usrsctp_BINARY_DIR}/usrsctplib/libusrsctp.dylib libSRTP::srtp2 speexdsp clip255 opus PkgConfig::FFMPEG)
+target_link_libraries(metartc7 ${OPENSSL_LIBRARIES} ${usrsctp_BINARY_DIR}/usrsctplib/libusrsctp.dylib libSRTP::srtp2 speexdsp clip255 opus PkgConfig::FFMPEG)
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
         opus
         datachannel
         r8brain
         ixwebsocket
-        speex
+        speexdsp
         ssl
-        libsrtp
         usrsctp
         crypto
-        metaRTC
         metartccore7
         metartc7
         PUBLIC

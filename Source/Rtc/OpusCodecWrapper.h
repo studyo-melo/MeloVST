@@ -5,12 +5,13 @@
 #include <juce_core/juce_core.h>
 
 #define MAX_OPUS_PACKET_SIZE 1500
+#define MAX_PACKET_SIZE (3*1276)
 
 class OpusCodecWrapper {
 public:
     OpusCodecWrapper(int frameDurationInMs, int numChannels, int sampleRate): frameDurationInMs(frameDurationInMs), numChannels(numChannels), sampleRate(sampleRate) {
         int error;
-        encoder = opus_encoder_create(sampleRate, numChannels, OPUS_APPLICATION_AUDIO, &error);
+        encoder = opus_encoder_create(sampleRate, numChannels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK)
             throw std::runtime_error("Failed to create Opus encoder: " + std::string(opus_strerror(error)));
 
@@ -19,14 +20,22 @@ public:
             return;
         }
         // Configuration de l'encodeur
-        opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
-        opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(0));
-        opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(5));
-        opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(0));
-        opus_encoder_ctl(encoder, OPUS_SET_DTX(0));
-        opus_decoder_ctl(decoder, OPUS_SET_GAIN(1));
+        opus_encoder_ctl(encoder, OPUS_SET_VBR(0));
+        opus_encoder_ctl(encoder, OPUS_SET_LSB_DEPTH(16));
+        // opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(0));
+        // opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(5));
+        // opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(0));
+        // opus_encoder_ctl(encoder, OPUS_SET_DTX(0));
+        // opus_decoder_ctl(decoder, OPUS_SET_GAIN(1));
 
         frameSizePerChannel = sampleRate / 1000 * frameDurationInMs;
+        m_frameSize=sampleRate/50;
+
+        m_frameShortSize=m_frameSize*numChannels;
+        m_in = new short[m_frameShortSize];
+        m_cbits = new uint8_t[MAX_PACKET_SIZE];
+        m_input = new uint8_t[m_frameShortSize*2];
+        m_input1 = new short[m_frameShortSize];
     }
 
     ~OpusCodecWrapper() {
@@ -66,6 +75,26 @@ public:
         }
         return res;
     }
+    //
+    // int32_t encode2(YangFrame* pframe,YangEncoderCallback *pcallback) {
+    //     if (!m_encoder)		return 1;
+    //
+    //     memcpy(m_input, pframe->payload, pframe->nb);
+    //     for (int32_t i = 0; i < m_frameShortSize; i++) {
+    //         m_input1[i] = m_input[2 * i + 1] << 8 | m_input[2 * i];
+    //     }
+    //
+    //     ret = yang_opus_encode(m_encoder, m_input1, m_frameSize, m_cbits,	MAX_PACKET_SIZE);
+    //     if (ret > 0 && pcallback){
+    //         pframe->payload=m_cbits;
+    //         pframe->nb=ret;
+    //         pcallback->onAudioData(pframe);
+    //
+    //     }
+    //
+    //
+    //     return 1;
+    // }
 
     std::vector<int16_t> decode(const std::vector<int8_t> &opus) const {
         std::vector<int16_t> pcm(frameSizePerChannel * numChannels);
@@ -103,4 +132,15 @@ private:
     int frameDurationInMs;
     int numChannels;
     int sampleRate;
+
+    int32_t ret;
+    int32_t m_frameSize;
+    int32_t m_frameShortSize;
+    OpusEncoder *m_encoder;
+
+
+    uint8_t *m_cbits;
+    uint8_t *m_input;
+    short *m_in;
+    short *m_input1;
 };
