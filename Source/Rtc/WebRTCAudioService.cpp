@@ -15,7 +15,7 @@ WebRTCAudioService::~WebRTCAudioService() {
 }
 
 void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
-    // if (!audioTrack || !audioTrack->isOpen()) {
+    // if (!yangPeerConnection-> || !audioTrack->isOpen()) {
         // return;
     // }
     {
@@ -92,7 +92,7 @@ void WebRTCAudioService::stopAudioThread() {
 }
 
 void WebRTCAudioService::onRTCStateChanged(const RTCStateChangeEvent &event) {
-    if (event.state == rtc::PeerConnection::State::Connected && !audioThreadRunning) {
+    if (event.state == Yang_Conn_State_Connected && !audioThreadRunning) {
         startAudioThread();
     }
     else {

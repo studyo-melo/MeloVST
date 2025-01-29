@@ -3,6 +3,7 @@
 
 #include "../Models/Session.h"
 #include <rtc/rtc.hpp>
+#include <yangutil/yangavctype.h>
 
 struct AudioBlockProcessedEvent {
     const std::vector<int16_t> data;

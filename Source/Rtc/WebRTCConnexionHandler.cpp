@@ -18,10 +18,12 @@ WebRTCConnexionHandler::~WebRTCConnexionHandler() {
 void WebRTCConnexionHandler::setupConnection() {
     char* localSdp=NULL;
     char* remoteSdp=NULL;
-    auto* avinfo = new YangAVInfo();
+    auto context =new YangContext();
+    context->init((char*)"yang_config.ini");
     auto* streamConfig = new YangStreamConfig();
-    yangPeerConnection = new YangPeerConnection2(avinfo, streamConfig);
-    yangPeerConnection->init();
+    yangPeerConnection = new YangPeerConnection2(&context->avinfo, streamConfig);
+
+
     yangPeerConnection->addTransceiver(YangSendonly);
     yangPeerConnection->addAudioTrack(Yang_AED_OPUS);
 
@@ -49,10 +51,12 @@ void WebRTCConnexionHandler::setupConnection() {
 
     auto offerOk = yangPeerConnection->createOffer(&localSdp);
 
-    if(offerOk !=Yang_Ok){
+    if(offerOk != Yang_Ok){
         yang_error("createOffer fail!");
     }
 
+    yangPeerConnection->connectSfuServer();
+    sendOfferToRemote(localSdp);
     // peerConnection->onLocalDescription([this](rtc::Description sdp) {
     //     if (!peerConnection->remoteDescription()) {
     //         sendOfferToRemote(sdp);
@@ -203,14 +207,20 @@ void WebRTCConnexionHandler::monitorAnswer() {
 }
 
 bool WebRTCConnexionHandler::isConnected() const {
+    if (!yangPeerConnection) {
+        return false;
+    }
     return yangPeerConnection->isConnected();
 }
 
 bool WebRTCConnexionHandler::isConnecting() const {
+    if (!yangPeerConnection) {
+        return false;
+    }
     return yangPeerConnection->isAlive();
 }
 
-void WebRTCConnexionHandler::sendOfferToRemote(const rtc::Description &sdp) {
+void WebRTCConnexionHandler::sendOfferToRemote(char* sdp) {
     if (ongoingSession.has_value()) {
         const auto offerEvent = new RTCOfferSentEvent(sdp, ongoingSession.value());
         meloWebSocketService.sendMessage(offerEvent->createMessage());
@@ -218,12 +228,12 @@ void WebRTCConnexionHandler::sendOfferToRemote(const rtc::Description &sdp) {
     }
 }
 
-void WebRTCConnexionHandler::sendCandidateToRemote(const rtc::Candidate &candidate) {
-    if (!ongoingSession.has_value()) {
-        return;
-    }
-    const auto candidateEvent = new RTCIceCandidateSentEvent(candidate, ongoingSession.value());
-    meloWebSocketService.sendMessage(candidateEvent->createMessage());
-}
+// void WebRTCConnexionHandler::sendCandidateToRemote(const rtc::Candidate &candidate) {
+//     if (!ongoingSession.has_value()) {
+//         return;
+//     }
+//     const auto candidateEvent = new RTCIceCandidateSentEvent(candidate, ongoingSession.value());
+//     meloWebSocketService.sendMessage(candidateEvent->createMessage());
+// }
 
 

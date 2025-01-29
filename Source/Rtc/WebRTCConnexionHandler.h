@@ -38,8 +38,6 @@ protected:
     void notifyRTCStateChanged() const;
 
 private:
-    std::vector<rtc::Candidate> pendingCandidates;
-    std::shared_ptr<rtc::DataChannel> dataChannel;
     WebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
     YangIceCandidateState iceState;
@@ -65,7 +63,7 @@ private:
     void onIceStateChange(void* context,int32_t uid,YangIceCandidateType iceCandidateType,YangIceCandidateState _iceState);
     void monitorAnswer();
 
-    void sendCandidateToRemote(const rtc::Candidate& candidate);
-    void sendOfferToRemote(const rtc::Description &sdp);
+    // void sendCandidateToRemote(const rtc::Candidate& candidate);
+    void sendOfferToRemote(char* sdp);
     void attemptReconnect();
 };

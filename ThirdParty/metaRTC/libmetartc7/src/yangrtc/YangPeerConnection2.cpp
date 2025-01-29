@@ -54,13 +54,16 @@ int32_t YangPeerConnection2::connectWhipServer(char* url){
 }
 
 int32_t YangPeerConnection2::close(){
+	if (&m_conn == nullptr) return 0;
 	return m_conn.close(&m_conn.peer);
 }
 
 int32_t YangPeerConnection2::isAlive(){
+	if (&m_conn == nullptr) return 0;
 	return m_conn.isAlive(&m_conn.peer);
 }
 int32_t YangPeerConnection2::isConnected(){
+	if (&m_conn == nullptr) return 0;
 	 return m_conn.isConnected(&m_conn.peer);
 }
 

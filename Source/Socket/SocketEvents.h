@@ -30,7 +30,7 @@ public:
 
 class RTCOfferSentEvent : SocketEvent {
 public:
-    RTCOfferSentEvent(const rtc::Description &sdp, const PopulatedSession &ongoingSession) : sdp(sdp), ongoingSession(ongoingSession) {}
+    RTCOfferSentEvent(char* &sdp, const PopulatedSession &ongoingSession) : sdp(sdp), ongoingSession(ongoingSession) {}
     std::string type = "offer";
     rtc::Description sdp;
     PopulatedSession ongoingSession;
