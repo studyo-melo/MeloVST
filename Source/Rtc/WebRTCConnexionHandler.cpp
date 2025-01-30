@@ -1,6 +1,6 @@
 #include "WebRTCConnexionHandler.h"
 
-#include <yangutil/sys/YangCString.h>
+#include <yangrtc/YangRtcConnection.h>
 
 WebRTCConnexionHandler::WebRTCConnexionHandler(): meloWebSocketService(
                                                       WebSocketService(
@@ -23,13 +23,18 @@ void WebRTCConnexionHandler::setupConnection() {
     auto context =new YangContext();
     auto* streamConfig = new YangStreamConfig();
     streamConfig->isControlled = yangtrue;
+    // context->avinfo.sys.mediaServer = 7;
+    // context->avinfo.rtc.iceCandidateType = YangIceStun;
+    // streamConfig->isControlled = yangfalse;
     yangPeerConnection = new YangPeerConnection2(&context->avinfo, streamConfig);
 
 
     yangPeerConnection->addTransceiver(YangSendonly);
     yangPeerConnection->addAudioTrack(Yang_AED_OPUS);
+    YangRtcConnection *rtcConnection = static_cast<YangRtcConnection*>(yangPeerConnection->getConn()->peer.conn);
 
-    yangPeerConnection->streamConfig->iceCallback.onIceStateChange = [](void* context, int32_t uid, YangIceCandidateType iceCandidateType, YangIceCandidateState iceState) {
+    rtcConnection->session->ice.session.callback.onIceStateChange = [](void* context, int32_t uid, YangIceCandidateType iceCandidateType, YangIceCandidateState iceState) {
+        juce::Logger::outputDebugString("ICE state changed to: " + std::to_string(iceState));
         if (context) {
             static_cast<WebRTCConnexionHandler*>(context)->iceState = iceState;
             static_cast<WebRTCConnexionHandler*>(context)->notifyRTCStateChanged();
@@ -37,7 +42,8 @@ void WebRTCConnexionHandler::setupConnection() {
         }
     };
 
-    yangPeerConnection->streamConfig->iceCallback.onConnectionStateChange = [](void* context, int32_t uid, YangRtcConnectionState connectionState) {
+    rtcConnection->session->ice.session.callback.onConnectionStateChange = [](void* context, int32_t uid, YangRtcConnectionState connectionState) {
+        juce::Logger::outputDebugString("Connection state changed to: " + std::to_string(connectionState));
         if (context) {
             static_cast<WebRTCConnexionHandler*>(context)->connectionState = connectionState;
             static_cast<WebRTCConnexionHandler*>(context)->notifyRTCStateChanged();
@@ -57,16 +63,6 @@ void WebRTCConnexionHandler::setupConnection() {
 
 //    yangPeerConnection->connectSfuServer();
     sendOfferToRemote(localSdp);
-    // peerConnection->onLocalDescription([this](rtc::Description sdp) {
-    //     if (!peerConnection->remoteDescription()) {
-    //         sendOfferToRemote(sdp);
-    //     }
-    // });
-
-    // peerConnection->onLocalCandidate([this](const rtc::Candidate &candidate) {
-    //     if (peerConnection->signalingState() == rtc::PeerConnection::SignalingState::Stable) {
-    //         return;
-    //     }
     //
     //     if (peerConnection->remoteDescription()) {
     //         sendCandidateToRemote(candidate);
@@ -131,20 +127,24 @@ void WebRTCConnexionHandler::onWsMessageReceived(const MessageWsReceivedEvent &e
 
     if (event.type == "answer" && event.data.contains("answerSdp")) {
         std::string answerSdp = event.data["answerSdp"].get<std::string>();
-        // char* remoteSdp = new char[answerSdp.length() + 1]; // +1 pour le caractère nul
-        // std::strcpy(remoteSdp, answerSdp.c_str());
         juce::Logger::outputDebugString("Received answer sdp ->" + answerSdp);
-
         answerSdp.erase(std::remove(answerSdp.begin(), answerSdp.end(), '\r'), answerSdp.end());
         yangPeerConnection->setRemoteDescription(answerSdp.data());
-    } else if (event.type == "candidate") {
-        if (yangPeerConnection->isConnected()) {
-            return;
-        }
-        juce::Logger::outputDebugString("Received ICE candidate ->" + event.data["candidate"]);
-        std::string candidate = event.data["candidate"];
-        std::string sdpMid = event.data["sdpMid"];
-
+        sendCandidateToRemote();
+    } else if (event.type == "ice-candidate") {
+        // if (yangPeerConnection->isConnected()) {
+            // return;
+        // }
+        std::string candidate = event.data["candidate"].get<std::string>();
+        juce::Logger::outputDebugString("Received ICE candidate ->" + candidate);
+        YangRtcConnection *rtcConnection = static_cast<YangRtcConnection*>(yangPeerConnection->getConn()->peer.conn);
+        rtcConnection->addRemoteCandidate(rtcConnection->session, candidate.c_str());
+        // YangRtcSession *rtcSession = rtcConnection->session;
+        // YangIceSession *iceSession = rtcSession->ice;
+        // yangPeerConnection->getConn().
+        // iceSession->initIce(iceSession);
+        // std::string sdpMid = event.data["sdpMid"];
+        // yangPeerConnection->getRtcSession()->ice.session.iceHandle(candidate.data(), sdpMid.data());
         // rtc::Candidate iceCandidate(rtc::Candidate(candidate, sdpMid));
         // yangPeerConnection->streamConfig
         // peerConnection->addRemoteCandidate(iceCandidate);
@@ -233,12 +233,14 @@ void WebRTCConnexionHandler::sendOfferToRemote(char* sdp) {
     }
 }
 
-// void WebRTCConnexionHandler::sendCandidateToRemote(const rtc::Candidate &candidate) {
-//     if (!ongoingSession.has_value()) {
-//         return;
-//     }
-//     const auto candidateEvent = new RTCIceCandidateSentEvent(candidate, ongoingSession.value());
-//     meloWebSocketService.sendMessage(candidateEvent->createMessage());
-// }
+void WebRTCConnexionHandler::sendCandidateToRemote() {
+    if (!ongoingSession.has_value()) {
+        return;
+    }
+    auto iceCandidate = yangPeerConnection->getConn()->getIceCandidateType(&yangPeerConnection->getConn()->peer);
+
+    // const auto candidateEvent = new RTCIceCandidateSentEvent(candidate, ongoingSession.value());
+    // meloWebSocketService.sendMessage(candidateEvent->createMessage());
+}
 
 

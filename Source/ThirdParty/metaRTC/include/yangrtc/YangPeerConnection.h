@@ -4,6 +4,7 @@
 
 #ifndef INCLUDE_YANGRTC_YANGPEERCONNECTION_H_
 #define INCLUDE_YANGRTC_YANGPEERCONNECTION_H_
+#include <yangrtc/YangPeerConnection.h>
 #include <yangutil/yangavinfotype.h>
 
 typedef struct{

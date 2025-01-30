@@ -35,6 +35,6 @@ int32_t yang_encode_h264_stap(YangBuffer* buf,YangRtpSTAPData* data);
 int32_t yang_decode_h265_stap(YangBuffer* buf,YangRtpSTAPData* data);
 int32_t yang_encode_h265_stap(YangBuffer* buf,YangRtpSTAPData* data);
 #ifdef __cplusplus
-}
+
 #endif
 #endif /* SRC_YANGRTP_YANGRTPSTAPPAYLOAD_H_ */

@@ -350,8 +350,7 @@ void yang_stop_rtcudp(YangRtcSocketSession *sock) {
 }
 
 void yang_rtcudp_update_remoteAddr(YangRtcSocketSession *sock,char* remoteIp,int32_t port){
-
-	yang_trace("\nremoteIp=%s,port=%d",remoteIp,port);
+	yang_printf("\nremoteIp=%s,port=%d", remoteIp, port);
 	yang_addr_set(&sock->remote_addr,remoteIp,port,sock->familyType,sock->socketProtocol);
 
 	sock->notRemoteInit=(port==0?yangtrue:yangfalse);
@@ -388,7 +387,6 @@ int32_t yang_create_rtcsocket(YangRtcSocket *psock,YangIpFamilyType familyType, 
 		psock->write=yang_rtc_sendData;
 	else
 		psock->write=yang_rtc_tcp_sendData;
-
 
 	psock->updateRemoteAddress=yang_rtcudp_update_remoteAddr;
 

@@ -136,10 +136,13 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartccore7)
 add_subdirectory(${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartc7)
 include_directories(
         ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/include
-        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/thirdparty/include
-        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/thirdparty/user_include
-        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartc7
-        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartccore7
+        SYSTEM ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/thirdparty/include
+        SYSTEM ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/thirdparty/user_include
+)
+
+include_directories(
+        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartc7/src
+        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartccore7/src
 )
 include_directories(/opt/homebrew/opt/openssl/include)
 include_directories(/opt/homebrew/opt/ffmpeg/include)

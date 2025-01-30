@@ -71,6 +71,7 @@ static void ice_onIceStateChange(YangIceSession* session,YangIceCandidateType ic
 
 int32_t yang_ice_stun_request(YangIceServer* server,int32_t localport){
 
+	yang_printf("Calling Stun Request on server: %s:%d \n", server->serverIp, server->serverPort);
 	char tmp[1024]={0};
 	int32_t err=Yang_Ok;
 	int32_t waitTime=0;
@@ -86,6 +87,7 @@ int32_t yang_ice_stun_request(YangIceServer* server,int32_t localport){
 	char serverIp[64]={0};
 	yang_getIp(server->familyType,server->serverIp,serverIp);
 
+	yang_printf("Got ip %s \n", serverIp);
 	udp->updateRemoteAddress(&udp->session,serverIp,server->serverPort);
 
 	udp->session.receive=g_yang_ice_stun_receive;
@@ -101,6 +103,15 @@ int32_t yang_ice_stun_request(YangIceServer* server,int32_t localport){
 	stun->encodeStunServer(&buf,udp,server->username,pwd);
 
 
+	// yang_printf('%s', buf.data.c_str());
+	// yang_printf('%s', udp->session.remote_addr.addr4);
+	// yang_printf('%d', udp->session.remote_addr.port);
+	// yang_printf('%s', pwd);
+	yang_printf("Sending Stun Request\n");
+	yang_printf("Stun Request: %s \n", buf.data);
+	yang_printf("Stun Request: %s \n", server->username);
+	yang_printf("Stun Request: %s \n", server->password);
+	// yang_printf("Stun Request: %s \n", udp->session->);
 	if((err=udp->write(&udp->session,buf.data, yang_buffer_pos(&buf)))!=Yang_Ok){
 		yang_error("stun server request fail");
 		goto ret;

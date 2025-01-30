@@ -105,16 +105,16 @@ void yang_avinfo_initRtc(YangRtcInfo *rtc) {
 	rtc->enableAudioBuffer = yangfalse;
 
 	rtc->iceUsingLocalIp=yangfalse;
-	rtc->iceServerPort=3478;
+	rtc->iceServerPort=19302;
 
 	rtc->rtcSocketProtocol=Yang_Socket_Protocol_Udp;
 	rtc->turnSocketProtocol=Yang_Socket_Protocol_Udp;
 
-	rtc->rtcPort = 1985;
+	rtc->rtcPort = 19302;
 	rtc->rtcLocalPort = 16000;
 
-	yang_strcpy(rtc->rtcServerIP, "stun.l.google.com");
-	yang_strcpy(rtc->iceServerIP, "stun.l.google.com");
+	yang_strcpy(rtc->rtcServerIP, "74.125.192.127");
+	yang_strcpy(rtc->iceServerIP, "74.125.192.127");
 	yang_strcpy(rtc->iceLocalIP, "127.0.0.1");
 	yang_strcpy(rtc->iceUserName, "metartc");
 	yang_strcpy(rtc->icePassword, "metartc");

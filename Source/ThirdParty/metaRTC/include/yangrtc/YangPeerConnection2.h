@@ -4,6 +4,7 @@
 #ifndef INCLUDE_YANGRTC_YANGPEERCONNECTION2_H_
 #define INCLUDE_YANGRTC_YANGPEERCONNECTION2_H_
 #include <yangrtc/YangPeerConnection.h>
+
 class YangPeerConnection2 {
 public:
 	YangPeerConnection2(YangAVInfo* avinfo,YangStreamConfig* streamConfig);
@@ -14,6 +15,7 @@ public:
 
     int32_t addAudioTrack(YangAudioCodec codec);
     int32_t addVideoTrack(YangVideoCodec codec);
+	YangPeerConnection* getConn();
 
     int32_t addTransceiver(YangRtcDirection direction);
 

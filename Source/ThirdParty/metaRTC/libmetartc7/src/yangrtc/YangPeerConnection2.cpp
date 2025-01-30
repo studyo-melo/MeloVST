@@ -82,3 +82,7 @@ int32_t YangPeerConnection2::on_message(YangFrame* msgFrame){
 int32_t YangPeerConnection2::sendRtcMessage( YangRtcMessageType mess){
 	 return m_conn.sendRtcMessage(&m_conn.peer,mess);
 }
+
+YangPeerConnection *YangPeerConnection2::getConn(){
+	return &m_conn;
+}

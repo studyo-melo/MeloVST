@@ -60,6 +60,7 @@ private:
 
     void onOngoingSessionChanged(const OngoingSessionChangedEvent& event) override;
     void onWsMessageReceived(const MessageWsReceivedEvent &event) override;
+    void sendCandidateToRemote();
     void onIceStateChange(void* context,int32_t uid,YangIceCandidateType iceCandidateType,YangIceCandidateState _iceState);
     void monitorAnswer();
 

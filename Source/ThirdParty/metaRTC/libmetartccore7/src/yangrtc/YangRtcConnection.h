@@ -34,7 +34,8 @@ typedef struct{
 	yangbool (*isAlive)(YangRtcSession* session);
 	yangbool (*isConnected)(YangRtcSession* session);
 	void (*receive)(YangRtcSession *session, char *data, int32_t size);
-	void (*updateCandidateAddress)(YangRtcSession *session,char* ip,int32_t port) ;
+	void (*updateCandidateAddress)(YangRtcSession *session,char* ip,int32_t port);
+	void (*addRemoteCandidate)(YangRtcSession *session,const char* candidate);
 	void (*onConnectionStateChange)(YangRtcSession *session,YangRtcConnectionState state);
 
 }YangRtcConnection;

@@ -199,6 +199,7 @@ int32_t yang_socket_recvfrom(yang_socket_t fd,char* buffer,int32_t bufferLen,Yan
 
 int32_t yang_socket_sendto(yang_socket_t fd,char* data,int32_t nb,YangIpAddress* remote_addr,int32_t flag){
 	socklen_t addrLen=yang_sockaddr_len(remote_addr);
+	yang_printf("yang_socket_sendto....%s \n",data);
 	return sendto(fd, data, nb, flag, yang_sockaddr(remote_addr),addrLen);
 }
 
