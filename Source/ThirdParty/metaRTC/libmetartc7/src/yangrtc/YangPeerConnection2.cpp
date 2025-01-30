@@ -59,11 +59,13 @@ int32_t YangPeerConnection2::close(){
 }
 
 int32_t YangPeerConnection2::isAlive(){
-	if (&m_conn == nullptr) return 0;
+    if (&m_conn == nullptr) return 0;
+	if (&(m_conn.isAlive) == nullptr) return 0;
 	return m_conn.isAlive(&m_conn.peer);
 }
 int32_t YangPeerConnection2::isConnected(){
-	if (&m_conn == nullptr) return 0;
+    if (&m_conn == nullptr) return 0;
+	if (&m_conn.isConnected == nullptr) return 0;
 	 return m_conn.isConnected(&m_conn.peer);
 }
 

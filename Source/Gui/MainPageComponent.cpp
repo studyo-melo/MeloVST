@@ -34,16 +34,16 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService())
 
     connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
     connectButton.onClick = [this, meloWebRTCServerService = &webRTCAudioService] {
-        if (meloWebRTCServerService->isConnecting()) {
-            juce::Logger::outputDebugString("Already connecting...");
-            meloWebRTCServerService->disconnect();
-        } else if (meloWebRTCServerService->isConnected()) {
-            juce::Logger::outputDebugString("Disconnecting from artist...");
-            meloWebRTCServerService->disconnect();
-        } else {
-            juce::Logger::outputDebugString("Connecting from artist...");
+        // if (meloWebRTCServerService->isConnecting()) {
+            // juce::Logger::outputDebugString("Already connecting...");
+            // meloWebRTCServerService->disconnect();
+        // } else if (meloWebRTCServerService->isConnected()) {
+            // juce::Logger::outputDebugString("Disconnecting from artist...");
+            // meloWebRTCServerService->disconnect();
+        // } else {
+            // juce::Logger::outputDebugString("Connecting from artist...");
             meloWebRTCServerService->setupConnection();
-        }
+        // }
     };
 
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));

@@ -2,7 +2,6 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 #include "../Models/Session.h"
-#include <rtc/rtc.hpp>
 #include <yangutil/yangavctype.h>
 
 struct AudioBlockProcessedEvent {

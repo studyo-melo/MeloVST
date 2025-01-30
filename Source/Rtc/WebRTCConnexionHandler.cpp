@@ -19,15 +19,12 @@ void WebRTCConnexionHandler::setupConnection() {
     char* localSdp=NULL;
     char* remoteSdp=NULL;
     auto context =new YangContext();
-    context->init((char*)"yang_config.ini");
     auto* streamConfig = new YangStreamConfig();
     yangPeerConnection = new YangPeerConnection2(&context->avinfo, streamConfig);
 
 
     yangPeerConnection->addTransceiver(YangSendonly);
     yangPeerConnection->addAudioTrack(Yang_AED_OPUS);
-
-    // yangPeerConnection->connectSfuServer();
 
     yangPeerConnection->streamConfig->iceCallback.onIceStateChange = [](void* context, int32_t uid, YangIceCandidateType iceCandidateType, YangIceCandidateState iceState) {
         if (context) {
@@ -55,7 +52,7 @@ void WebRTCConnexionHandler::setupConnection() {
         yang_error("createOffer fail!");
     }
 
-    yangPeerConnection->connectSfuServer();
+//    yangPeerConnection->connectSfuServer();
     sendOfferToRemote(localSdp);
     // peerConnection->onLocalDescription([this](rtc::Description sdp) {
     //     if (!peerConnection->remoteDescription()) {
@@ -140,7 +137,7 @@ void WebRTCConnexionHandler::onWsMessageReceived(const MessageWsReceivedEvent &e
         std::string candidate = event.data["candidate"];
         std::string sdpMid = event.data["sdpMid"];
 
-        rtc::Candidate iceCandidate(rtc::Candidate(candidate, sdpMid));
+        // rtc::Candidate iceCandidate(rtc::Candidate(candidate, sdpMid));
         // yangPeerConnection->streamConfig
         // peerConnection->addRemoteCandidate(iceCandidate);
     }

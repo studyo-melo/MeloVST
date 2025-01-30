@@ -32,11 +32,11 @@ class RTCOfferSentEvent : SocketEvent {
 public:
     RTCOfferSentEvent(char* &sdp, const PopulatedSession &ongoingSession) : sdp(sdp), ongoingSession(ongoingSession) {}
     std::string type = "offer";
-    rtc::Description sdp;
+    char* sdp;
     PopulatedSession ongoingSession;
     std::string createMessage() override {
         return StringUtils::createWsMessage(type, {
-        {"sdp", sdp.generateSdp()},
+        {"sdp", sdp},
         {"sessionId", ongoingSession._id},
         {"sellerUserId", ongoingSession.seller.user._id},
         {"artistUserId", ongoingSession.reservedByArtist.user._id}
@@ -63,15 +63,15 @@ public:
 class RTCIceCandidateSentEvent final : SocketEvent {
 public:
     std::string type = "ice-candidate";
-    rtc::Candidate candidate;
+    char* candidate;
     PopulatedSession ongoingSession;
-    explicit RTCIceCandidateSentEvent(const rtc::Candidate &candidate, const PopulatedSession &ongoingSession) : candidate(candidate), ongoingSession(ongoingSession) {}
+    explicit RTCIceCandidateSentEvent(char* &candidate, const PopulatedSession &ongoingSession) : candidate(candidate), ongoingSession(ongoingSession) {}
     std::string createMessage() override {
         return StringUtils::createWsMessage(type, {
             {"meId", ongoingSession.seller.user._id },
-            {"candidate", candidate.candidate()},
-            {"sdpMid", candidate.mid()},
-            {"sdpMLineIndex", candidate.priority()},
+            // {"candidate", candidate.candidate()},
+            // {"sdpMid", candidate.mid()},
+            // {"sdpMLineIndex", candidate.priority()},
             {"sessionId", ongoingSession._id},
             {"sellerUserId", ongoingSession.seller.user._id},
             {"artistUserId", ongoingSession.reservedByArtist.user._id}

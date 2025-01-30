@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <rtc/rtc.hpp>
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 

@@ -40,21 +40,8 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-    NAME libdatachannel
-    GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
-    GIT_TAG origin/master
-    OPTIONS "USE_SYSTEM_USRSCTP ON"
-    OPTIONS "USE_SYSTEM_SRTP ON"
-)
-
-CPMAddPackage(
     NAME ixwebsocket
     GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
-    GIT_TAG origin/master
-)
-CPMAddPackage(
-    NAME r8brain
-    GIT_REPOSITORY https://github.com/avaneev/r8brain-free-src.git
     GIT_TAG origin/master
 )
 
@@ -145,14 +132,14 @@ pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
 link_directories(/opt/homebrew/opt/openssl/lib)
 link_directories(/opt/homebrew/opt/ffmpeg/lib)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/libmetartccore7)
-add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/libmetartc7)
+add_subdirectory(${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartccore7)
+add_subdirectory(${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartc7)
 include_directories(
-        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/include
-        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/thirdparty/include
-        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/thirdparty/user_include
-        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/libmetartc7
-        ${CMAKE_SOURCE_DIR}/ThirdParty/metaRTC/libmetartccore7
+        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/include
+        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/thirdparty/include
+        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/thirdparty/user_include
+        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartc7
+        ${CMAKE_SOURCE_DIR}/Source/ThirdParty/metaRTC/libmetartccore7
 )
 include_directories(/opt/homebrew/opt/openssl/include)
 include_directories(/opt/homebrew/opt/ffmpeg/include)
@@ -161,8 +148,6 @@ include_directories(${speex_SOURCE_DIR}/include)
 include_directories(${libsrtp_SOURCE_DIR}/include)
 include_directories(${usrsctp_SOURCE_DIR}/usrsctplib)
 include_directories(${OPENSSL_INCLUDE_DIR})
-include_directories(${r8brain_SOURCE_DIR})
-include_directories(${datachannel_SOURCE_DIR})
 
 message(STATUS "Compilation en cours...")
 message(STATUS "ffmpeg_INCLUDE_DIR: ${ffmpeg_INCLUDE_DIR}")
@@ -180,12 +165,6 @@ message(STATUS "libmetartccore7_SOURCE_DIR: ${libmetartccore7_SOURCE_DIR}")
 message(STATUS "AVFoundation_LIBRARY: ${AVFOUNDATION_LIBRARY}")
 message(STATUS "AudioToolbox_LIBRARY: ${AUDIOTOOLBOX_LIBRARY}")
 message(STATUS "OPENH264_LIBRARY: ${OPENH264_LIBRARY}")
-
-add_library(r8brain STATIC)
-target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
-
-add_library(datachannel_static INTERFACE IMPORTED)
-target_link_libraries(datachannel_static INTERFACE datachannel)
 
 ####################################################################################################
 # Source Files
@@ -225,6 +204,7 @@ set(SourceFiles
         Source/Socket/SocketRoutes.h
         Source/Api/AuthService.cpp
         Source/Api/AuthService.h
+        Source/Rtc/WebRTCConfig.h
         Source/Rtc/WebRTCAudioService.h
         Source/Rtc/WebRTCAudioService.cpp
         Source/Rtc/WebRTCConnexionHandler.cpp
@@ -277,7 +257,7 @@ target_compile_definitions(${PROJECT_NAME}
 # Link Libraries
 ####################################################################################################
 
-add_library(clip255 STATIC ${CMAKE_SOURCE_DIR}/ThirdParty/clip255.c)
+add_library(clip255 STATIC ${CMAKE_SOURCE_DIR}/Source/ThirdParty/clip255.c)
 target_link_libraries(metartccore7
         ${OPENSSL_LIBRARIES}
         ${usrsctp_BINARY_DIR}/usrsctplib/libusrsctp.dylib
@@ -301,8 +281,6 @@ target_link_libraries(metartc7
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
         opus
-        datachannel
-        r8brain
         ixwebsocket
         metartccore7
         metartc7

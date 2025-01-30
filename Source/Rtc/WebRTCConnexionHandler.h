@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <rtc/rtc.hpp>
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 #include <yangrtc/YangPeerConnection2.h>
@@ -13,6 +12,7 @@
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
 #include "../Utils/RTCUtils.h"
+#include "./WebRTCConfig.h"
 #include "ReconnectTimer.h"
 
 #include <yangutil/yangavctype.h>

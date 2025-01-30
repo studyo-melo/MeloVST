@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <CDSPResampler.h>
 #include <vector>
 #include <cmath>
 #include <memory>
@@ -12,7 +11,7 @@
 class ResamplerWrapper {
 public:
     ResamplerWrapper(double sourceSR, double targetSR, int nChan) {
-        resampler = std::make_unique<r8b::CDSPResampler>(sourceSR, targetSR, 512);
+        // resampler = std::make_unique<r8b::CDSPResampler>(sourceSR, targetSR, 512);
         sourceSampleRate = sourceSR;
         targetSampleRate = targetSR;
         numChannels = nChan;
@@ -21,7 +20,7 @@ public:
     std::vector<double> resampleFromDouble(std::vector<double>& sourceVector) const {
         std::vector<double> outVector(std::floor(sourceVector.size() * targetSampleRate / sourceSampleRate), 0.0);
         double* outBuffer = outVector.data();
-        resampler->process(sourceVector.data(), sourceVector.size(), outBuffer);
+        // resampler->process(sourceVector.data(), sourceVector.size(), outBuffer);
         for (auto i = 0; i < outVector.size(); ++i) {
             outVector[i] = std::clamp(outBuffer[i], -1.0, 1.0);
         }
@@ -45,7 +44,7 @@ public:
     }
 
 private:
-    std::unique_ptr<r8b::CDSPResampler> resampler;
+    // std::unique_ptr<r8b::CDSPResampler> resampler;
     double sourceSampleRate;
     double targetSampleRate;
     int numChannels;
