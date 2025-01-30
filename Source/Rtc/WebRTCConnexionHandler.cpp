@@ -1,9 +1,11 @@
 #include "WebRTCConnexionHandler.h"
 
+#include <yangutil/sys/YangCString.h>
+
 WebRTCConnexionHandler::WebRTCConnexionHandler(): meloWebSocketService(
-                                                WebSocketService(
-                                                    getWsRouteString(WsRoute::GetOngoingSessionRTC))),
-                                            reconnectTimer([this]() { attemptReconnect(); })
+                                                      WebSocketService(
+                                                          getWsRouteString(WsRoute::GetOngoingSessionRTC))),
+                                                  reconnectTimer([this]() { attemptReconnect(); })
 {
     EventManager::getInstance().addListener(this);
 }
@@ -20,6 +22,7 @@ void WebRTCConnexionHandler::setupConnection() {
     char* remoteSdp=NULL;
     auto context =new YangContext();
     auto* streamConfig = new YangStreamConfig();
+    streamConfig->isControlled = yangtrue;
     yangPeerConnection = new YangPeerConnection2(&context->avinfo, streamConfig);
 
 
@@ -111,7 +114,7 @@ void WebRTCConnexionHandler::disconnect() const {
 }
 
 void WebRTCConnexionHandler::resetConnection() {
-    disconnect();
+    // disconnect();
     setupConnection();
 }
 
@@ -122,12 +125,17 @@ void WebRTCConnexionHandler::notifyRTCStateChanged() const {
 
 
 void WebRTCConnexionHandler::onWsMessageReceived(const MessageWsReceivedEvent &event) {
-    if (!yangPeerConnection) {
+    if (yangPeerConnection == nullptr) {
         return;
     }
 
     if (event.type == "answer" && event.data.contains("answerSdp")) {
-        std::string answerSdp = event.data["answerSdp"];
+        std::string answerSdp = event.data["answerSdp"].get<std::string>();
+        // char* remoteSdp = new char[answerSdp.length() + 1]; // +1 pour le caractère nul
+        // std::strcpy(remoteSdp, answerSdp.c_str());
+        juce::Logger::outputDebugString("Received answer sdp ->" + answerSdp);
+
+        answerSdp.erase(std::remove(answerSdp.begin(), answerSdp.end(), '\r'), answerSdp.end());
         yangPeerConnection->setRemoteDescription(answerSdp.data());
     } else if (event.type == "candidate") {
         if (yangPeerConnection->isConnected()) {

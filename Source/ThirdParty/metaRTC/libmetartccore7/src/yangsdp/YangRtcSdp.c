@@ -417,7 +417,7 @@ int32_t yang_rtcsdp_parse(YangSdp *sdp, char *sdp_str) {
 	for (i = 0; i < strs.vsize; i++) {
 		char *line = strs.str[i];
 		//yang_trace("%s", line.c_str());
-		if (yang_strlen(line) < 2 || line[1] != '=') {
+		if (yang_strlen(line) < 3 || line[1] != '=') {
 			return yang_error_wrap(ERROR_RTC_SDP_DECODE, "invalid sdp line=%s",
 					line);
 		}

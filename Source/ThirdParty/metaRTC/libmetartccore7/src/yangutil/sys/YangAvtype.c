@@ -78,7 +78,7 @@ void yang_avinfo_initAudio(YangAudioInfo *audio) {
 void yang_avinfo_initSys(YangSysInfo *sys) {
 	sys->familyType=Yang_IpFamilyType_IPV4;
 
-	sys->enableLogFile = yangfalse;
+	sys->enableLogFile = yangtrue;
 	sys->mediaServer=Yang_Server_Srs;
 	sys->transType = Yang_Webrtc;
 	sys->httpPort=1988;
@@ -113,8 +113,8 @@ void yang_avinfo_initRtc(YangRtcInfo *rtc) {
 	rtc->rtcPort = 1985;
 	rtc->rtcLocalPort = 16000;
 
-	yang_strcpy(rtc->rtcServerIP, "127.0.0.1");
-	yang_strcpy(rtc->iceServerIP, "127.0.0.1");
+	yang_strcpy(rtc->rtcServerIP, "stun.l.google.com");
+	yang_strcpy(rtc->iceServerIP, "stun.l.google.com");
 	yang_strcpy(rtc->iceLocalIP, "127.0.0.1");
 	yang_strcpy(rtc->iceUserName, "metartc");
 	yang_strcpy(rtc->icePassword, "metartc");

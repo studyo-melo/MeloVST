@@ -21,6 +21,7 @@
 
 #include <yangsdp/YangSdp.h>
 #include <yangsdp/YangAnswerSdp.h>
+#include <yangutil/sys/YangCString.h>
 
 
 static void g_session_receive(char *data, int32_t nb_data, void *user) {

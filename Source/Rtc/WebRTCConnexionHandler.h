@@ -34,10 +34,10 @@ public:
     YangRequestType getSignalingState() const { return signalingState; }
     YangRtcConnectionState getConnectionState() const { return connectionState; }
 protected:
-    YangPeerConnection2* yangPeerConnection;
     void notifyRTCStateChanged() const;
 
 private:
+    YangPeerConnection2* yangPeerConnection;
     WebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
     YangIceCandidateState iceState;

@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019-2022 yanggaofeng
 //
 
@@ -65,7 +65,7 @@ int32_t yang_sdp_genLocalSdp2(YangRtcSession *session, int32_t localport,char *d
 	yang_create_rtcsdp(local_sdp);
 	yang_strcpy(local_sdp->version, "0");
 
-	yang_strcpy(local_sdp->username, "MetaRtc");
+	yang_strcpy(local_sdp->username, "MeloRtc");
 	yang_memset(randstr, 0, sizeof(randstr));
 	yang_snprintf(randstr, 22, "%" PRId64, (int64_t) &local_sdp);
 	yang_strcpy(local_sdp->session_id, randstr);
@@ -98,7 +98,8 @@ int32_t yang_sdp_genLocalSdp2(YangRtcSession *session, int32_t localport,char *d
 	yang_strcpy(audio_media_desc->protos, "UDP/TLS/RTP/SAVPF");
 	audio_media_desc->rtcp_mux = yangtrue;
 	audio_media_desc->rtcp_rsize = yangtrue;
-	yang_sprintf(audio_media_desc->mid,"%d",midNum++);
+    midNum++;
+	// yang_sprintf(audio_media_desc->mid,"%d",midNum++);
 
 #endif
 #if Yang_Enable_RTC_Video
@@ -304,8 +305,8 @@ int32_t yang_sdp_genLocalSdp2(YangRtcSession *session, int32_t localport,char *d
 	yang_memset(randstr, 0, sizeof(randstr));
 	yang_cstr_random(16, randstr);
 #if Yang_Enable_RTC_Audio
-	yang_strcpy(audio_media_desc->ssrc_infos.payload[0].cname, "metaRTC");
-	yang_strcpy(audio_media_desc->ssrc_infos.payload[0].mslabel, "metaRTC");
+	yang_strcpy(audio_media_desc->ssrc_infos.payload[0].cname, "meloRTC");
+	yang_strcpy(audio_media_desc->ssrc_infos.payload[0].mslabel, "meloRTC");
 #endif
 #if Yang_Enable_RTC_Video
 	yang_strcpy(video_media_desc->ssrc_infos.payload[0].cname, "metaRTC");
@@ -322,7 +323,7 @@ int32_t yang_sdp_genLocalSdp2(YangRtcSession *session, int32_t localport,char *d
 	yang_memset(randstr, 0, sizeof(randstr));
 	yang_sprintf(randstr, "%s-%s-%s-%s-%s", tmps[0], tmps[1], tmps[2], tmps[3],tmps[4]);
 
-	yang_strcpy(audio_media_desc->ssrc_infos.payload[0].msid, "metaRTC");
+	yang_strcpy(audio_media_desc->ssrc_infos.payload[0].msid, "meloRTC");
 	yang_strcpy(audio_media_desc->ssrc_infos.payload[0].msid_tracker, randstr);
 	yang_strcpy(audio_media_desc->ssrc_infos.payload[0].label, randstr);
 #endif
