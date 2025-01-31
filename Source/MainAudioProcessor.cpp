@@ -144,25 +144,14 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
 
-    std::vector<int16_t> pcmData;
+    std::vector<float> pcmData;
 
-    // Réserve l'espace nécessaire pour éviter les réallocations fréquentes
     pcmData.reserve(static_cast<size_t>(numChannels * numSamples));
-
     for (int channel = 0; channel < numChannels; ++channel)
     {
         const float* channelData = buffer.getReadPointer(channel);
-
-        if (channelData == nullptr) {
-            continue;
-        }
-
-        for (int sample = 0; sample < numSamples; ++sample)
-        {
-            float normalizedSample = juce::jlimit(-1.0f, 1.0f, channelData[sample]);
-            int16_t convertedSample = static_cast<int16_t>(normalizedSample * 32767.0f);
-            pcmData.push_back(convertedSample);
-        }
+        if (channelData == nullptr) continue;
+        for (int sample = 0; sample < numSamples; ++sample) pcmData.push_back(channelData[sample]);
     }
     
     if (pcmData.size() <= 0) {

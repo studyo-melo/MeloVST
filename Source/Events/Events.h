@@ -5,7 +5,7 @@
 #include <rtc/rtc.hpp>
 
 struct AudioBlockProcessedEvent {
-    const std::vector<int16_t> data;
+    const std::vector<float> data;
     int numChannels;
     int numSamples;
     double sampleRate;

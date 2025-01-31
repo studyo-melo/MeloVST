@@ -27,7 +27,7 @@ private:
         const int sampleRate = 48000;
         const int channels = 2;
         const int frameSize = static_cast<int>(frameDurationInMs * sampleRate);
-        OpusCodecWrapper codec(1000 * frameDurationInMs, channels, sampleRate);
+        OpusCodecWrapper codec(sampleRate, channels, 1000 * frameDurationInMs);
 
         std::vector<int16_t> inbuf = generate_music(frameSize * channels);
 

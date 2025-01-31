@@ -18,6 +18,14 @@ public:
         numChannels = nChan;
     };
 
+    std::vector<float> resampleFromFloat(const std::vector<float>& sourceVector) const {
+        std::vector<double> doubleAudioBlock(sourceVector.begin(), sourceVector.end());
+        std::vector<double> resampledDoubleAudioBlock = resampleFromDouble(doubleAudioBlock);
+
+        std::vector<float> resampledAudioBlock(resampledDoubleAudioBlock.begin(), resampledDoubleAudioBlock.end());
+        return resampledAudioBlock;
+    }
+
     std::vector<double> resampleFromDouble(std::vector<double>& sourceVector) const {
         std::vector<double> outVector(std::floor(sourceVector.size() * targetSampleRate / sourceSampleRate), 0.0);
         double* outBuffer = outVector.data();

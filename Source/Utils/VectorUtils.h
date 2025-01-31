@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <rtc/rtc.hpp>
+#include <juce_core/juce_core.h>
 
 namespace VectorUtils {
     static rtc::binary convertFloatToBinary(const float* data, size_t size) {
@@ -13,9 +14,10 @@ namespace VectorUtils {
         return binaryData;
     }
 
-    static std::vector<float> convertInt16ToFloat(const int16_t* data, size_t size) {
+    static std::vector<float> convertInt16ToFloat(const int16_t* data, const size_t size) {
         // Allouer suffisamment d'espace pour contenir les données flottantes
-        std::vector<float> floatData(size);
+        std::vector<float> floatData(0);
+        floatData.resize(size);
 
         // Convertir les données int16_t en données flottantes
         for (size_t i = 0; i < size; ++i) {

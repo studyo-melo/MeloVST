@@ -2,10 +2,11 @@
 #include "AudioAppPlayer.h"
 
 #include "../Utils/FileUtils.h"
+#include "../Utils/VectorUtils.h"
 
 
 AudioAppPlayer::AudioAppPlayer():
-    opusCodec(20, 2, 48000),
+    opusCodec(48000, 2, 20),
     resampler(44100, 48000, 2)
 {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
@@ -45,34 +46,31 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
         bufferToFill.clearActiveBufferRegion(); // Efface la région active si aucune donnée
         return;
     }
-
+    
     // Si audioBlock est vide, ne pas traiter
-    // if (audioBlock.empty()) {
+    if (audioBlock.empty()) {
+        bufferToFill.clearActiveBufferRegion();
+        return;
+    }
+    
+    // auto resampledDoubleAudioBlock = resampler.resampleFromInt16(audioBlock);
+    //
+    // FileUtils::appendWavData(wavFile, resampledDoubleAudioBlock);
+    //
+    const std::vector<unsigned char> opusEncodedAudioBlock = opusCodec.encode_float(audioBlock);
+    const std::vector<float> decodedAudioBlock = opusCodec.decode_float(opusEncodedAudioBlock);
+    //
+    // opusData.resize(opusData.size() + opusEncodedAudioBlock.size());
+    // opusData.insert(opusData.end(), opusEncodedAudioBlock.begin(), opusEncodedAudioBlock.end());
+    // FileUtils::appendOpusData(opusFile, opusEncodedAudioBlock);
+    //
+    // std::vector<int16_t> decodedAudioBlock = opusCodec.decode(opusEncodedAudioBlock);
+    // if (decodedAudioBlock.empty()) {
     //     bufferToFill.clearActiveBufferRegion();
     //     return;
     // }
-
-    auto resampledDoubleAudioBlock = resampler.resampleFromInt16(audioBlock);
-
-    FileUtils::appendWavData(wavFile, resampledDoubleAudioBlock);
-
-    std::vector<int8_t> opusEncodedAudioBlock = opusCodec.encode(resampledDoubleAudioBlock);
-    if (opusEncodedAudioBlock.empty()) {
-        bufferToFill.clearActiveBufferRegion();
-        return;
-    }
-
-    opusData.resize(opusData.size() + opusEncodedAudioBlock.size());
-    opusData.insert(opusData.end(), opusEncodedAudioBlock.begin(), opusEncodedAudioBlock.end());
-    FileUtils::appendOpusData(opusFile, opusEncodedAudioBlock);
-
-    std::vector<int16_t> decodedAudioBlock = opusCodec.decode(opusEncodedAudioBlock);
-    if (decodedAudioBlock.empty()) {
-        bufferToFill.clearActiveBufferRegion();
-        return;
-    }
-
-    FileUtils::appendWavData(decodedWavFile, decodedAudioBlock);
+    //
+    // FileUtils::appendWavData(decodedWavFile, decodedAudioBlock);
 
     auto* leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
     auto* rightChannel = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample);
@@ -80,9 +78,8 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffe
     int samplesToCopy = std::min(decodedAudioBlock.size() / 2, static_cast<size_t>(bufferToFill.numSamples));
 
     for (int sample = 0; sample < samplesToCopy; ++sample) {
-        float normalizedSample = static_cast<float>(decodedAudioBlock[sample]) / 32768.0f; // Normaliser PCM 16 bits
-        leftChannel[sample] = normalizedSample;
-        rightChannel[sample] = normalizedSample; // Mono -> Stéréo
+        leftChannel[sample] = decodedAudioBlock[sample];
+        rightChannel[sample] = decodedAudioBlock[sample];
     }
 
     // Remplir le reste avec des zéros si besoin
