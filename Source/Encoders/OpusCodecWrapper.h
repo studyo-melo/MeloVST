@@ -61,7 +61,7 @@ public:
     // Un paquet Opus contient :
     // Un en-tête : qui inclut des informations comme le type de trame, le débit binaire, et la taille des trames.
     // Les données encodées: même pour un silence, Opus insère des données encodées représentant le silence.
-    void encode(std::vector<int16_t>&& pcm, std::function<void(std::vector<uint8_t> opus)> handler) {
+    void encode(std::vector<int16_t> pcm, std::function<void(std::vector<unsigned char> opus)> handler) {
         if (encoder == nullptr) {
             return;
         }
@@ -72,8 +72,8 @@ public:
             in_buffer_.insert(in_buffer_.end(), pcm.begin(), pcm.end());
         }
 
-        while (in_buffer_.size() >= frame_size_) {
-            std::vector<uint8_t> opus(MAX_OPUS_PACKET_SIZE);
+        while (in_buffer_.size() >= frame_size_ * numChannels) {
+            std::vector<uint8_t> opus(frame_size_ * numChannels, 0);
             auto ret = opus_encode(encoder, in_buffer_.data(), frame_size_, opus.data(), opus.size());
             if (ret < 0) {
                 // ESP_LOGE(TAG, "Failed to encode audio, error code: %ld", ret);
@@ -89,13 +89,13 @@ public:
         }
     }
 
-    bool decode(std::vector<uint8_t>&& opus, std::vector<int16_t>& pcm) {
+    bool decode(std::vector<unsigned char> opus, std::vector<int16_t>& pcm) {
         if (decoder == nullptr) {
             return false;
         }
 
-        pcm.resize(frame_size_);
-        auto ret = opus_decode(decoder, opus.data(), opus.size(), pcm.data(), pcm.size(), 0);
+        pcm.resize(frame_size_ * numChannels);
+        auto ret = opus_decode(decoder, opus.data(), opus.size(), pcm.data(), frame_size_ * numChannels, 1);
         if (ret < 0) {
             return false;
         }

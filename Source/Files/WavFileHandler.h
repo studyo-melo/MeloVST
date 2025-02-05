@@ -18,7 +18,7 @@ public:
     bool create(const std::string& filename) {
         std::string filepath = getFilePath(filename);
         std::remove(filepath.c_str());
-        juce::Logger::outputDebugString("Creating file: " + filename);
+        juce::Logger::outputDebugString("Creating wav file: " + filename);
         file = new std::ofstream(filepath, std::ios::binary);
         if (!file->is_open()) {
             std::cerr << "Erreur : Impossible d'ouvrir le fichier." << std::endl;
@@ -37,7 +37,7 @@ public:
 
     void close() {
         if (file && file->is_open()) {
-            juce::Logger::outputDebugString("Closing file");
+            juce::Logger::outputDebugString("Closing Wav file");
             finalizeWavHeader();
             file->close();
             delete file;

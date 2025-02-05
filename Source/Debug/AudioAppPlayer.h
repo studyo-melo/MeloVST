@@ -3,13 +3,14 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 #include "../Events/EventListener.h"
 #include "../Events/EventManager.h"
-#include "../Rtc/OpusCodecWrapper.h"
+#include "../Encoders/OpusCodecWrapper.h"
+#include "../Encoders/OpusEncoderJuce.h"
 #include "../Utils/AudioSettings.h"
 #include "../Utils/ResamplerWrapper.h"
 #include <fstream>
 
-#include "OpusFileHandler.h"
-#include "WavFileHandler.h"
+#include "../Files/OpusFileHandler.h"
+#include "../Files/WavFileHandler.h"
 
 class AudioAppPlayer : public juce::AudioAppComponent, public EventListener {
 public:
@@ -36,6 +37,7 @@ private:
     WavFileHandler vanillaWavFile;
     OpusFileHandler encodedOpusFileHandler;
     WavFileHandler decodedWavFileHandler;
+    OpusEncoderJUCE opus_encoder_juce_;
     // std::fstream wavFile;
     // std::fstream opusFile;
     // std::fstream decodedWavFile;

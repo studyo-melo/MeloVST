@@ -21,7 +21,7 @@ public:
     bool create(const std::string& filename) {
         std::string filepath = getFilePath(filename);
         std::remove(filepath.c_str());
-        juce::Logger::outputDebugString("Creating file: " + filename);
+        juce::Logger::outputDebugString("Creating opus file: " + filename);
         file = new std::ofstream(filepath, std::ios::binary);
         if (!file->is_open()) {
             std::cerr << "Erreur : Impossible d'ouvrir le fichier." << std::endl;
@@ -41,19 +41,17 @@ public:
         return true;
     }
 
-    void write(const std::vector<int16_t>& samples) {
+    void write(const std::vector<unsigned char>& samples) {
         if (!file || !file->is_open() || !encoder) return;
-        juce::Logger::outputDebugString("Writing in opus file");
-
-        unsigned char output[4000];
-        int numBytes = opus_encode(encoder, samples.data(), samples.size(), output, sizeof(output));
-        if (numBytes > 0) {
-            file->write(reinterpret_cast<const char*>(output), numBytes);
-        }
+        if (samples.empty()) return;
+        juce::Logger::outputDebugString("Writing in " + juce::String(samples.size()) + " bytes in opus file");
+        file->write(reinterpret_cast<const std::ostream::char_type *>(samples.data()), samples.size());
+        file->flush();
     }
 
     void close() {
         if (file && file->is_open()) {
+            juce::Logger::outputDebugString("Closing opus file");
             file->close();
             delete file;
             file = nullptr;

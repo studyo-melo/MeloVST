@@ -5,7 +5,7 @@
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 
-#include "OpusCodecWrapper.h"
+#include "../Encoders/OpusCodecWrapper.h"
 #include "../Socket/WebSocketService.h"
 #include "../Events/EventListener.h"
 #include "../Models/Session.h"

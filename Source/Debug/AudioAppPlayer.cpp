@@ -14,6 +14,7 @@
 AudioAppPlayer::AudioAppPlayer(): vanillaWavFile(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
                                   decodedWavFileHandler(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
                                   encodedOpusFileHandler(SAMPLE_RATE, BITRATE, NUM_CHANNELS),
+                                  opus_encoder_juce_(SAMPLE_RATE, NUM_CHANNELS, BITRATE),
                                   opusCodec(SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE),
                                   resampler(OPUS_SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS) {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
@@ -29,7 +30,7 @@ AudioAppPlayer::~AudioAppPlayer() {
 
 void AudioAppPlayer::createFiles() {
     vanillaWavFile.create("1_base_audio.wav");
-    encodedOpusFileHandler.create("1_encoded_opus_audio.opus");
+    encodedOpusFileHandler.create("2_encoded_opus_audio.opus");
     decodedWavFileHandler.create("1_decoded_opus_audio.wav");
 }
 
@@ -52,24 +53,21 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo &buffe
         return;
     }
 
-    std::vector<float> resampledDoubleAudioBlock = resampler.resampleFromFloat(audioBlock);
+    // std::vector<float> resampledDoubleAudioBlock = resampler.resampleFromFloat(audioBlock);
 
-    std::vector<int16_t> audioBlockInt16 = VectorUtils::convertFloatToInt16(resampledDoubleAudioBlock.data(), resampledDoubleAudioBlock.size());
+    std::vector<int16_t> audioBlockInt16 = VectorUtils::convertFloatToInt16(audioBlock.data(), audioBlock.size());
     vanillaWavFile.write(audioBlockInt16);
-    const std::vector<unsigned char> opusEncodedAudioBlock = opusCodec.encode_float(audioBlock);
-    std::vector<int16_t> encodedBlockInt16 = VectorUtils::convertCharToInt16(opusEncodedAudioBlock.data(), opusEncodedAudioBlock.size());
-    encodedOpusFileHandler.write(encodedBlockInt16);
-    // opusData.resize(opusData.size() + opusEncodedAudioBlock.size());
-    // opusData.insert(opusData.end(), opusEncodedAudioBlock.begin(), opusEncodedAudioBlock.end());
-    // FileUtils::appendOpusData(opusFile, opusEncodedAudioBlock);
-    // const std::vector<float> decodedAudioBlock = opusCodec.decode_float(opusEncodedAudioBlock);
-    // //
-    // std::vector<int16_t> decodedAudioBlock = opusCodec.decode(opusEncodedAudioBlock);
-    // if (decodedAudioBlock.empty()) {
-    //     bufferToFill.clearActiveBufferRegion();
-    //     return;
-    // }
-    //
+    // auto encodedData = opus_encoder_juce_.processAudioBlock(audioBlock);
+    std::vector<unsigned char> opusEncodedAudioBlock;
+    opusCodec.encode(audioBlockInt16, [this, &opusEncodedAudioBlock](std::vector<unsigned char> opus) {
+        opusEncodedAudioBlock = opus;
+    });
+    // std::vector<unsigned char> opusEncodedAudioBlock = opusCodec.encode_float(audioBlock);
+    encodedOpusFileHandler.write(opusEncodedAudioBlock);
+    // std::vector<int16_t> decodedAudioBlock(MAX_OPUS_PACKET_SIZE);
+    // opusCodec.decode(opusEncodedAudioBlock, decodedAudioBlock);
+    // vanillaWavFile.write(decodedAudioBlock);
+
     // FileUtils::appendWavData(decodedWavFile, decodedAudioBlock);
 
     // auto* leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
