@@ -36,10 +36,8 @@ void WebRTCAudioService::processingThreadFunction() {
     const int frameSamples = static_cast<int>(SAMPLE_RATE * OPUS_FRAME_SIZE / 1000.0); // 48000 * 20/1000 = 960
     const int totalFrameSamples = frameSamples * NUM_CHANNELS; // Pour un signal interleaved
     while (threadRunning) {
-        juce::Logger::outputDebugString("Running Thread Audio");
         bool frameAvailable = false;
         std::vector<float> frameData(totalFrameSamples); {
-            // Protéger l'accès au tampon circulaire
             juce::ScopedLock sl(circularBufferLock);
             if (circularBuffer.getNumAvailableSamples() >= totalFrameSamples) {
                 circularBuffer.popSamples(frameData.data(), totalFrameSamples);
@@ -48,23 +46,33 @@ void WebRTCAudioService::processingThreadFunction() {
         }
 
         if (frameAvailable) {
-            // (1) Écriture du signal d'origine dans le fichier WAV
             vanillaWavFile.write(frameData, totalFrameSamples);
+            std::vector<unsigned char> opusPacket = opusCodec.encode_float(frameData, frameSamples);
+            if (opusPacket.empty()) {
+                return;
+            }
+            encodedOpusFileHandler.write(opusPacket);
+            try {
+                std::vector<float> decodedFrame = opusCodec.decode_float(opusPacket);
+                if (!decodedFrame.empty()) {
+                    decodedWavFileHandler.write(decodedFrame, decodedFrame.size());
+                }
+            } catch (std::exception &e) {
+                juce::Logger::outputDebugString("Error decoding opus packet: " + std::string(e.what()));
+            }
+            if (audioTrack) {
+                try {
+                    auto rtpPacket = RTPWrapper::createRTPPacket(opusPacket, seqNum++, timestamp, ssrc);
+                    timestamp += opusPacket.size() / 2;
+                    juce::Logger::outputDebugString(
+                        "Sending audio data: " + std::to_string(rtpPacket.size()) + " bytes");
+                    DebugRTPWrapper::debugPacket(rtpPacket);
 
-            // // (2) Encodage Opus (la fonction encode attend le nombre d'échantillons par canal)
-            // std::vector<unsigned char> opusPacket = opusCodec.encode_float(frameData, frameSamples);
-            //
-            // if (!opusPacket.empty()) {
-            //     // (3) Écriture du paquet Opus dans le fichier .opus
-            //     encodedOpusFileHandler.write(opusPacket);
-            //
-            //     // (4) Optionnel : décodage pour vérification
-            //     std::vector<float> decodedFrame = opusCodec.decode_float(opusPacket);
-            //     if (!decodedFrame.empty())
-            //         decodedWavFileHandler.write(decodedFrame, decodedFrame.size());
-            // } else {
-            //     // Gestion d'erreur d'encodage : éventuellement journaliser ou notifier
-            // }
+                    audioTrack->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
+                } catch (const std::exception &e) {
+                    juce::Logger::outputDebugString("Error sending audio data: " + std::string(e.what()));
+                }
+            }
         } else {
             // Si pas assez d'échantillons, on attend un peu
             std::this_thread::sleep_for(std::chrono::milliseconds(5));

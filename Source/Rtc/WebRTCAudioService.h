@@ -16,7 +16,7 @@
 #include "../Utils/ResamplerWrapper.h"
 #include "ReconnectTimer.h"
 #include "WebRTCConnexionHandler.h"
-#include "../Debug/CircularBuffer.h"
+#include "../Utils/CircularBuffer.h"
 #include "../Files/OpusFileHandler.h"
 #include "../Files/WavFileHandler.h"
 

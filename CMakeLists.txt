@@ -79,8 +79,8 @@ set(SourceFiles
         Source/Utils/json.hpp
         Source/Utils/AudioSettings.h
         Source/Utils/ResamplerWrapper.h
+        Source/Utils/CircularBuffer.h
         Source/Debug/DebugAudioCallback.h
-        Source/Debug/CircularBuffer.h
         Source/Debug/DebugRTPWrapper.h
         Source/Files/WavFileHandler.h
         Source/Files/OpusFileHandler.h
