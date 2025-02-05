@@ -635,7 +635,7 @@ int32_t aoo::source::process(const aoo_sample **data, int32_t n, uint64_t t){
     // back calling with fewer samples. More importantly, this allows us to better decouple 
     // the audio process blocksize from the audioqueue blocksize (which matches the codec blocksize).
 
-    //if (encoder_->blocksize() != blocksize_ || encoder_->samplerate() != samplerate_)
+    if (encoder_->blocksize() != blocksize_ || encoder_->samplerate() != samplerate_)
     {
         // go through resampler
         auto samplesleft = insamples;

@@ -16,29 +16,13 @@ public:
         return numChannels;
     }
 
-    [[nodiscard]] int getBlockSize() const noexcept {
-        return blockSize;
-    }
-
     [[nodiscard]] int getBitDepth() const noexcept {
         return bitDepth;
-    }
-
-    [[nodiscard]] int getOpusSampleRate() const noexcept {
-        return opusSampleRate;
     }
 
     // Mutateurs pour définir les paramètres audio
     void setSampleRate(int newSampleRate) noexcept {
         sampleRate = newSampleRate;
-    }
-
-    void setOpusSampleRate(int newOpusSampleRate) noexcept {
-        opusSampleRate = newOpusSampleRate;
-    }
-
-    void setBlockSize(int newBlockSize) noexcept {
-        blockSize = newBlockSize;
     }
 
     void setNumChannels(int newNumChannels) noexcept {
@@ -47,6 +31,30 @@ public:
 
     void setBitDepth(int newBitDepth) noexcept {
         bitDepth = newBitDepth;
+    }
+
+    void setSamplePerBlock(int newSamplePerBlock) noexcept {
+        samplePerBlock = newSamplePerBlock;
+    }
+
+    [[nodiscard]] int getSamplePerBlock() const noexcept {
+        return samplePerBlock;
+    }
+
+    void setBitrate(int newBitrate) noexcept {
+        bitrate = newBitrate;
+    }
+
+    [[nodiscard]] int getBitrate() const noexcept {
+        return bitrate;
+    }
+
+    void setOpusSampleRate(int newOpusSampleRate) noexcept {
+        opusSampleRate = newOpusSampleRate;
+    }
+
+    [[nodiscard]] int getOpusSampleRate() const noexcept {
+        return opusSampleRate;
     }
 
 
@@ -61,8 +69,9 @@ private:
 
     // Données membres pour stocker les paramètres audio
     int sampleRate = 0;
-    int blockSize = 0;
+    int samplePerBlock = 0;
     int numChannels = 0;
-    int bitDepth = 0;
+    int bitrate = 0;
     int opusSampleRate = 0;
+    int bitDepth = 0;
 };

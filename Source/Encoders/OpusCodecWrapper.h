@@ -3,24 +3,30 @@
 #include <vector>
 #include <stdexcept>
 #include <juce_core/juce_core.h>
-#include "aoo/aoo.hpp"
+
+#include "../Utils/AudioSettings.h"
 #define MAX_OPUS_PACKET_SIZE 1500
 
 class OpusCodecWrapper {
 public:
-    OpusCodecWrapper(int sample_rate, int channels, int duration_ms): frameDurationInMs(duration_ms), numChannels(channels), sampleRate(sample_rate) {
+    OpusCodecWrapper(int duration_ms = 20):
+    frameDurationInMs(duration_ms),
+    numChannels(AudioSettings::getInstance().getNumChannels()),
+    sampleRate(AudioSettings::getInstance().getOpusSampleRate())
+    {
         int error;
-        source = aoo::isource::create(0);
-        encoder = opus_encoder_create(sample_rate, channels, OPUS_APPLICATION_VOIP, &error);
+        juce::Logger::outputDebugString("SampleRate: " + std::to_string(sampleRate));
+        juce::Logger::outputDebugString("NumChannels: " + std::to_string(numChannels));
+        encoder = opus_encoder_create(sampleRate, numChannels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK)
             throw std::runtime_error("Failed to create Opus encoder: " + std::string(opus_strerror(error)));
 
-        decoder = opus_decoder_create(sample_rate, channels, &error);
+        decoder = opus_decoder_create(sampleRate, numChannels, &error);
         if (decoder == nullptr) {
             return;
         }
         // Configuration de l'encodeur
-        opus_encoder_ctl(encoder, OPUS_SET_BITRATE(64000));
+        opus_encoder_ctl(encoder, OPUS_SET_BITRATE(AudioSettings::getInstance().getBitrate()));
         // opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
         // opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(0));
         // opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(5));
@@ -29,7 +35,7 @@ public:
         // opus_decoder_ctl(decoder, OPUS_SET_GAIN(1));
 
         frameSizePerChannel = sampleRate / 1000 * frameDurationInMs;
-        frame_size_ = sample_rate / 1000 * channels * duration_ms;
+        frame_size_ = sampleRate / 1000 * numChannels * duration_ms;
     }
 
     ~OpusCodecWrapper() {
@@ -46,7 +52,8 @@ public:
         // Opus attend nbSamples échantillons par canal.
         int ret = opus_encode_float(encoder, pcm.data(), nbSamples, res.data(), static_cast<int>(res.size()));
         if (ret < 0) {
-            throw std::runtime_error("Encoding failed with error code: " + std::to_string(ret));
+            return res;
+            //throw std::runtime_error("Encoding failed with error code: " + std::to_string(ret));
         }
 
         res.resize(ret);
@@ -58,7 +65,8 @@ public:
         std::vector<float> pcm(frameSizePerChannel * numChannels);
         int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
         if (ret < 0) {
-            throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
+            return pcm;
+            //throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
         }
         // Ret est le nombre d'échantillons par canal, on redimensionne donc pour ret * numChannels échantillons au total
         pcm.resize(ret * numChannels);
@@ -124,7 +132,6 @@ public:
     }
 
 private:
-    aoo_source *source = nullptr;
     std::vector<int16_t> in_buffer_;
     OpusEncoder *encoder = nullptr;
     OpusDecoder *decoder = nullptr;

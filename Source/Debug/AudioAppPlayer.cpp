@@ -6,13 +6,13 @@
 #include <stdio.h>
 #include <vector>
 
+#include "../Utils/AudioSettings.h"
+
 AudioAppPlayer::AudioAppPlayer()
-    : circularBuffer(SAMPLE_RATE * NUM_CHANNELS),
-      vanillaWavFile(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
-      decodedWavFileHandler(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
-      encodedOpusFileHandler(SAMPLE_RATE, BITRATE, NUM_CHANNELS),
-      opusCodec(SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE)
-// resampler(OPUS_SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS)
+    : circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels()),
+      vanillaWavFile(AudioSettings::getInstance().getSampleRate(), AudioSettings::getInstance().getBitDepth(), AudioSettings::getInstance().getNumChannels()),
+      decodedWavFileHandler(AudioSettings::getInstance().getSampleRate(), AudioSettings::getInstance().getBitDepth(), AudioSettings::getInstance().getNumChannels()),
+      encodedOpusFileHandler(AudioSettings::getInstance().getSampleRate(), AudioSettings::getInstance().getBitrate(), AudioSettings::getInstance().getNumChannels())
 {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
     EventManager::getInstance().addListener(this);
@@ -75,8 +75,8 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo &buffe
 
 void AudioAppPlayer::processingThreadFunction() {
     // Calcul du nombre d'échantillons par canal pour une trame de 20 ms
-    const int frameSamples = static_cast<int>(SAMPLE_RATE * OPUS_FRAME_SIZE / 1000.0); // 48000 * 20/1000 = 960
-    const int totalFrameSamples = frameSamples * NUM_CHANNELS; // Pour un signal interleaved
+    const int frameSamples = static_cast<int>(AudioSettings::getInstance().getSampleRate() * 20 / 1000.0); // 48000 * 20/1000 = 960
+    const int totalFrameSamples = frameSamples * AudioSettings::getInstance().getNumChannels(); // Pour un signal interleaved
 
     while (threadRunning) {
         bool frameAvailable = false;

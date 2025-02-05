@@ -6,7 +6,7 @@
 
 #include "aoo.h"
 
-#include <opus/opus_multistream.h>
+#include <opus_multistream.h>
 
 #ifdef __cplusplus
 extern "C"
