@@ -16,29 +16,51 @@
 #include "../Utils/ResamplerWrapper.h"
 #include "ReconnectTimer.h"
 #include "WebRTCConnexionHandler.h"
+#include "../Debug/CircularBuffer.h"
+#include "../Files/OpusFileHandler.h"
+#include "../Files/WavFileHandler.h"
+
+#define SAMPLE_RATE 48000
+#define BITRATE 64000
+#define NUM_CHANNELS 2
+#define BIT_DEPTH 16
+#define OPUS_FRAME_SIZE 20
+#define OPUS_SAMPLE_RATE 44100
 
 class WebRTCAudioService : public WebRTCConnexionHandler {
 public:
     WebRTCAudioService();
     ~WebRTCAudioService();
-
+    void createFiles();
+    void finalizeFiles();
 private:
+    void stopAudioThread();
+    void startAudioThread();
+    void onRTCStateChanged(const RTCStateChangeEvent &event);
+    void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event);
+    void processingThreadFunction();
+
     OpusCodecWrapper opusCodec;
     ResamplerWrapper resampler;
     uint16_t seqNum = 1; // Numéro de séquence RTP
     uint32_t timestamp = 0; // Timestamp RTP (incrementé à chaque trame)
     uint32_t ssrc = 12345; // Identifiant SSRC unique
-    // Audio Thread
-    std::thread audioThread;
-    std::queue<std::vector<float>> audioQueue;
-    std::mutex queueMutex;
-    std::condition_variable queueCondition;
-    bool audioThreadRunning = false;
-    bool stopThread = false;
 
-    void stopAudioThread();
-    void startAudioThread();
-    void onRTCStateChanged(const RTCStateChangeEvent &event);
-    void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event);
-    void sendAudioData();
+    // Variables pour gérer le thread d'encodage
+    std::atomic<bool> threadRunning { true };
+    std::thread encodingThread;
+
+    // Tampon circulaire pour stocker les données audio (interleaved)
+    CircularBuffer<float> circularBuffer;  // implémentation à fournir ou basée sur juce::AbstractFifo
+    juce::CriticalSection circularBufferLock;
+
+    // Utilitaires de fichiers
+    WavFileHandler vanillaWavFile;
+    WavFileHandler decodedWavFileHandler;
+    OpusFileHandler encodedOpusFileHandler;
+
+    int currentNumSamples = 0;
+    int currentSampleIndex = 0;
+
+    double currentSampleRate = SAMPLE_RATE;
 };

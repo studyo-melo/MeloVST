@@ -51,12 +51,12 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService())
 
     finalizeButton.setButtonText("Finalizer les fichiers");
     finalizeButton.onClick = [this] {
-        debugAudioBlockPlayer.finalizeFiles();
+        webRTCAudioService.finalizeFiles();
     };
 
     createButton.setButtonText(juce::String::fromUTF8("Créer les fichiers"));
     createButton.onClick = [this] {
-        debugAudioBlockPlayer.createFiles();
+        webRTCAudioService.createFiles();
     };
 
     auto res = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions);
