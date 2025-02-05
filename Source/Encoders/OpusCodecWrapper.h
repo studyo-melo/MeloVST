@@ -3,14 +3,12 @@
 #include <vector>
 #include <stdexcept>
 #include <juce_core/juce_core.h>
-#include "aoo/aoo.hpp"
 #define MAX_OPUS_PACKET_SIZE 1500
 
 class OpusCodecWrapper {
 public:
     OpusCodecWrapper(int sample_rate, int channels, int duration_ms): frameDurationInMs(duration_ms), numChannels(channels), sampleRate(sample_rate) {
         int error;
-        source = aoo::isource::create(0);
         encoder = opus_encoder_create(sample_rate, channels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK)
             throw std::runtime_error("Failed to create Opus encoder: " + std::string(opus_strerror(error)));
@@ -58,10 +56,11 @@ public:
         std::vector<float> pcm(frameSizePerChannel * numChannels);
         int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
         if (ret < 0) {
+            return pcm;
             throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
         }
         // Ret est le nombre d'échantillons par canal, on redimensionne donc pour ret * numChannels échantillons au total
-        pcm.resize(ret * numChannels);
+         pcm.resize(ret * numChannels);
 
         return pcm;
     }
@@ -124,8 +123,8 @@ public:
     }
 
 private:
-    aoo_source *source = nullptr;
     std::vector<int16_t> in_buffer_;
+    std::vector<float> in_buffer_float_;
     OpusEncoder *encoder = nullptr;
     OpusDecoder *decoder = nullptr;
     int frame_size_;

@@ -82,6 +82,7 @@ set(SourceFiles
         Source/Debug/DebugAudioCallback.h
         Source/Debug/AudioAppPlayer.h
         Source/Debug/AudioAppPlayer.cpp
+        Source/Debug/CircularBuffer.h
         Source/Debug/DebugRTPWrapper.h
         Source/Files/WavFileHandler.h
         Source/Files/OpusFileHandler.h
