@@ -78,6 +78,7 @@ set(SourceFiles
         Source/Debug/AudioAppPlayer.h
         Source/Debug/AudioAppPlayer.cpp
         Source/Debug/DebugRTPWrapper.h
+        Source/Debug/WavFileHandler.h
         Source/MainApplication.cpp
         Source/MainApplication.h
         Source/CrashHandler.h
@@ -144,6 +145,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_ADD_R8BRAIN=1
+        PREFER_SYSTEM_LIB=0
 )
 
 

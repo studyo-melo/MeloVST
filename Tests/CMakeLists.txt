@@ -32,11 +32,13 @@ endfunction()
 # Ajouter les tests individuellement
 add_unit_test(OpusCodecWrapperTest OpusCodecWrapperTest.cpp)
 add_unit_test(RTPWrapperTest RTPWrapperTest.cpp)
+add_unit_test(WavFileHandlerTest WavFileHandlerTest.cpp)
 
 add_executable(RunAllTests
         OpusCodecWrapperTest.cpp
         RTPWrapperTest.cpp
         TestMain.cpp
+        WavFileHandlerTest.cpp
 )
 
 target_link_libraries(RunAllTests

@@ -63,7 +63,7 @@ namespace FileUtils {
     }
 
     // Ajoute des données Opus au fichier
-    inline void appendOpusData(std::fstream& opusFile, const std::vector<int8_t>& opusData) {
+    inline void appendOpusData(std::fstream& opusFile, const std::vector<unsigned char>& opusData) {
         if (!opusFile.is_open()) {
             throw std::runtime_error("Opus file is not open for writing.");
         }
@@ -91,7 +91,7 @@ namespace FileUtils {
     // Finalise le fichier Ogg Opus
     inline void finalizeOpusFile(std::fstream& opusFile, std::streamsize opusDataSize, opus_int32 bitstreamSerialNumber = 12345) {
         if (!opusFile.is_open()) {
-            throw std::runtime_error("Opus file is not open for finalization.");
+            return;
         }
 
         // Retourner au début pour mettre à jour l'en-tête
@@ -119,7 +119,8 @@ namespace FileUtils {
         std::remove(filepath.c_str()); // Supprime le fichier s'il existe déjà
 
         std::fstream wavFile(filepath, std::ios::binary | std::ios::out);
-        if (!wavFile) {
+        wavFile.open(filepath, std::ios::binary | std::ios::out);
+        if (!wavFile.is_open()) {
             throw std::runtime_error("Failed to create WAV file.");
         }
 
@@ -153,18 +154,15 @@ namespace FileUtils {
         wavFile.write(reinterpret_cast<const char*>(&bitsPerSample), 2);
         wavFile.write("data", 4);
         wavFile.write(reinterpret_cast<const char*>(&dataSize), 4);
-
-        std::cout << "Initialized WAV file: " << filepath << std::endl;
         return wavFile;
     }
 
     // Ajoute des données WAV au fichier
     inline void appendWavData(std::fstream& wavFile, const std::vector<int16_t>& pcmData) {
         if (!wavFile.is_open()) {
-            throw std::runtime_error("WAV file is not open for writing.");
+            return;
         }
 
-        // Écrire les données PCM
         wavFile.write(reinterpret_cast<const char*>(pcmData.data()), pcmData.size() * sizeof(int16_t));
     }
 
