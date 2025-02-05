@@ -12,7 +12,21 @@ MainAudioProcessor::MainAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        )
-{}
+{
+    resampler = new ResamplerWrapper(44100, 48000, 2);
+    AudioSettings::getInstance().setBitDepth(16);
+    AudioSettings::getInstance().setOpusSampleRate(48000);
+    AudioSettings::getInstance().setSampleRate(44100);
+    AudioSettings::getInstance().setBlockSize(getBlockSize());
+    AudioSettings::getInstance().setNumChannels(getMainBusNumOutputChannels());
+
+    juce::Logger::outputDebugString("Bit depth: " + std::to_string(AudioSettings::getInstance().getBitDepth()));
+    juce::Logger::outputDebugString("Opus Sample rate: " + std::to_string(AudioSettings::getInstance().getOpusSampleRate()));
+    juce::Logger::outputDebugString("Sample rate: " + std::to_string(AudioSettings::getInstance().getSampleRate()));
+    juce::Logger::outputDebugString("Block Size: " + std::to_string(AudioSettings::getInstance().getBlockSize()));
+    juce::Logger::outputDebugString("Num Channels: " + std::to_string(AudioSettings::getInstance().getNumChannels()));
+
+}
 
 MainAudioProcessor::~MainAudioProcessor()
 = default;
@@ -87,17 +101,9 @@ void MainAudioProcessor::changeProgramName (int index, const juce::String& newNa
 //==============================================================================
 void MainAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    AudioSettings::getInstance().setSampleRate(sampleRate);
-    AudioSettings::getInstance().setSamplePerBlock(samplesPerBlock);
-    AudioSettings::getInstance().setNumChannels(getMainBusNumOutputChannels());
-    AudioSettings::getInstance().setBitDepth(16);
-    AudioSettings::getInstance().setBitrate(64000);
-    AudioSettings::getInstance().setOpusSampleRate(48000);
-    juce::Logger::outputDebugString("Bit depth: " + std::to_string(AudioSettings::getInstance().getBitDepth()));
-    juce::Logger::outputDebugString("Sample rate: " + std::to_string(AudioSettings::getInstance().getSampleRate()));
-    juce::Logger::outputDebugString("Sample per block: " + std::to_string(AudioSettings::getInstance().getSamplePerBlock()));
-    juce::Logger::outputDebugString("Num Channels: " + std::to_string(AudioSettings::getInstance().getNumChannels()));
-    juce::Logger::outputDebugString("Bitrate: " + std::to_string(AudioSettings::getInstance().getBitrate()));
+    // Use this method as the place to do any pre-playback
+    // initialisation that you need..
+    juce::ignoreUnused (sampleRate, samplesPerBlock);
 }
 
 void MainAudioProcessor::releaseResources()

@@ -4,7 +4,10 @@
 #include "../Utils/AudioSettings.h"
 #include "../Utils/AudioUtils.h"
 
-WebRTCAudioService::WebRTCAudioService(): resampler(44100, 48000, 2) {
+WebRTCAudioService::WebRTCAudioService():
+opusCodec(48000, 2, 20),
+resampler(44100, 48000, 2)
+{
 }
 
 WebRTCAudioService::~WebRTCAudioService() {
@@ -14,7 +17,8 @@ WebRTCAudioService::~WebRTCAudioService() {
 void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
     if (!audioTrack || !audioTrack->isOpen()) {
         return;
-    } {
+    }
+    {
         std::unique_lock<std::mutex> lock(queueMutex);
         audioQueue.push(event.data);
     }
@@ -23,7 +27,9 @@ void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEve
 
 void WebRTCAudioService::sendAudioData() {
     while (!stopThread) {
-        std::vector<float> pcmData; {
+        std::vector<float> pcmData;
+
+        {
             std::unique_lock<std::mutex> lock(queueMutex);
             queueCondition.wait(lock, [this]() { return !audioQueue.empty() || stopThread; });
             if (stopThread) break;
@@ -73,7 +79,8 @@ void WebRTCAudioService::stopAudioThread() {
     if (!audioThreadRunning) {
         return;
     }
-    juce::Logger::outputDebugString("Stopping audio thread"); {
+    juce::Logger::outputDebugString("Stopping audio thread");
+    {
         std::unique_lock<std::mutex> lock(queueMutex);
         stopThread = true;
         audioThreadRunning = false;
@@ -87,7 +94,8 @@ void WebRTCAudioService::stopAudioThread() {
 void WebRTCAudioService::onRTCStateChanged(const RTCStateChangeEvent &event) {
     if (event.state == rtc::PeerConnection::State::Connected && !audioThreadRunning) {
         startAudioThread();
-    } else {
+    }
+    else {
         stopAudioThread();
     }
 }

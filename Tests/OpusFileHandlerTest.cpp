@@ -1,5 +1,5 @@
 #include <juce_core/juce_core.h>
-#include "Files/OpusFileHandler.h"
+#include "../Source/Debug/OpusFileHandler.h"
 
 class OpusFileHandlerTest : public juce::UnitTest {
 public:
@@ -16,7 +16,7 @@ public:
         {
             OpusFileHandler opusHandler(48000, 64000, 2);
             expect(opusHandler.create("test.opus"), "Failed to create Opus file");
-            std::vector<unsigned char> samples(960, 0);
+            std::vector<int16_t> samples(960, 0);
             opusHandler.write(samples);
             expect(samples.size() == 960, "Incorrect number of samples written");
         }
