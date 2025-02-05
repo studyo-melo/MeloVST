@@ -8,6 +8,7 @@
 #include "../Utils/ResamplerWrapper.h"
 #include <fstream>
 
+#include "OpusFileHandler.h"
 #include "WavFileHandler.h"
 
 class AudioAppPlayer : public juce::AudioAppComponent, public EventListener {
@@ -33,6 +34,7 @@ private:
     double currentSampleRate = 0.0;
 
     WavFileHandler vanillaWavFile;
+    OpusFileHandler encodedOpusFileHandler;
     WavFileHandler decodedWavFileHandler;
     // std::fstream wavFile;
     // std::fstream opusFile;

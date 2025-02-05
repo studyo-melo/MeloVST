@@ -30,7 +30,6 @@ public:
 
     void write(const std::vector<int16_t>& samples) {
         if (file && file->is_open()) {
-            juce::Logger::outputDebugString("Writing in file");
             file->write(reinterpret_cast<const char*>(samples.data()), samples.size() * sizeof(int16_t));
             dataSize += samples.size() * sizeof(int16_t);
         }

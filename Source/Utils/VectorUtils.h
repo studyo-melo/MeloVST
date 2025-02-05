@@ -38,4 +38,12 @@ namespace VectorUtils {
 
         return int16Data;
     }
+
+    static std::vector<int16_t> convertCharToInt16(const unsigned char* data, size_t size) {
+        std::vector<int16_t> int16Data(size / 2);
+        for (size_t i = 0; i < size; i += 2) {
+            int16Data[i / 2] = static_cast<int16_t>(data[i] | (data[i + 1] << 8));
+        }
+        return int16Data;
+    }
 }

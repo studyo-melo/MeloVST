@@ -79,6 +79,7 @@ set(SourceFiles
         Source/Debug/AudioAppPlayer.cpp
         Source/Debug/DebugRTPWrapper.h
         Source/Debug/WavFileHandler.h
+        Source/Debug/OpusFileHandler.h
         Source/MainApplication.cpp
         Source/MainApplication.h
         Source/CrashHandler.h

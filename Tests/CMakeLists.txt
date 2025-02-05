@@ -33,6 +33,7 @@ endfunction()
 add_unit_test(OpusCodecWrapperTest OpusCodecWrapperTest.cpp)
 add_unit_test(RTPWrapperTest RTPWrapperTest.cpp)
 add_unit_test(WavFileHandlerTest WavFileHandlerTest.cpp)
+add_unit_test(OpusFileHandlerTest OpusFileHandlerTest.cpp)
 
 add_executable(RunAllTests
         OpusCodecWrapperTest.cpp
