@@ -5,7 +5,7 @@
 #include "../Utils/AudioUtils.h"
 
 WebRTCAudioService::WebRTCAudioService():
-opusCodec(48000, 2, 20),
+opusCodec(48000, 44100, 2, 20),
 resampler(44100, 48000, 2)
 {
 }

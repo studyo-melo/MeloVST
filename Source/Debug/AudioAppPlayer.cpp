@@ -10,8 +10,8 @@ AudioAppPlayer::AudioAppPlayer()
     : circularBuffer(SAMPLE_RATE * NUM_CHANNELS),
       vanillaWavFile(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
       decodedWavFileHandler(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
-      encodedOpusFileHandler(SAMPLE_RATE, BITRATE, NUM_CHANNELS),
-      opusCodec(SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE)
+      encodedOpusFileHandler(OPUS_SAMPLE_RATE, BITRATE, NUM_CHANNELS),
+      opusCodec(OPUS_SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE)
 // resampler(OPUS_SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS)
 {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo

@@ -8,14 +8,19 @@
 
 class OpusCodecWrapper {
 public:
-    OpusCodecWrapper(int sample_rate, int channels, int duration_ms): frameDurationInMs(duration_ms), numChannels(channels), sampleRate(sample_rate) {
+    OpusCodecWrapper(int opus_sample_rate, int daw_sample_rate, int channels, int duration_ms):
+    frameDurationInMs(duration_ms),
+    numChannels(channels),
+    opusSampleRate(opus_sample_rate),
+    dawSampleRate(daw_sample_rate)
+    {
         int error;
         source = aoo::isource::create(0);
-        encoder = opus_encoder_create(sample_rate, channels, OPUS_APPLICATION_VOIP, &error);
+        encoder = opus_encoder_create(opusSampleRate, channels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK)
             throw std::runtime_error("Failed to create Opus encoder: " + std::string(opus_strerror(error)));
 
-        decoder = opus_decoder_create(sample_rate, channels, &error);
+        decoder = opus_decoder_create(dawSampleRate, channels, &error);
         if (decoder == nullptr) {
             return;
         }
@@ -28,8 +33,10 @@ public:
         // opus_encoder_ctl(encoder, OPUS_SET_DTX(0));
         // opus_decoder_ctl(decoder, OPUS_SET_GAIN(1));
 
-        frameSizePerChannel = sampleRate / 1000 * frameDurationInMs;
-        frame_size_ = sample_rate / 1000 * channels * duration_ms;
+        encoderFrameSizePerChannel = opusSampleRate / 1000 * frameDurationInMs;
+        encoder_frame_size_ = opusSampleRate / 1000 * channels * duration_ms;
+        decoderFrameSizePerChannel = dawSampleRate / 1000 * frameDurationInMs;
+        decoder_frame_size_ = dawSampleRate / 1000 * channels * duration_ms;
     }
 
     ~OpusCodecWrapper() {
@@ -44,9 +51,10 @@ public:
         std::vector<unsigned char> res(4000);
 
         // Opus attend nbSamples échantillons par canal.
-        int ret = opus_encode_float(encoder, pcm.data(), nbSamples, res.data(), static_cast<int>(res.size()));
+        int ret = opus_encode_float(encoder, pcm.data(), encoder_frame_size_, res.data(), static_cast<int>(res.size()));
         if (ret < 0) {
-            throw std::runtime_error("Encoding failed with error code: " + std::to_string(ret));
+            return res;
+            //throw std::runtime_error("Encoding failed with error code: " + std::to_string(ret));
         }
 
         res.resize(ret);
@@ -55,10 +63,11 @@ public:
 
     std::vector<float> decode_float(const std::vector<unsigned char>& opus) const {
         // Allocation initiale pour frameSizePerChannel * numChannels échantillons
-        std::vector<float> pcm(frameSizePerChannel * numChannels);
-        int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
+        std::vector<float> pcm(decoderFrameSizePerChannel * numChannels);
+        int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), decoder_frame_size_, 0);
         if (ret < 0) {
-            throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
+            return pcm;
+            //throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
         }
         // Ret est le nombre d'échantillons par canal, on redimensionne donc pour ret * numChannels échantillons au total
         pcm.resize(ret * numChannels);
@@ -80,9 +89,9 @@ public:
             in_buffer_.insert(in_buffer_.end(), pcm.begin(), pcm.end());
         }
 
-        while (in_buffer_.size() >= frame_size_ * numChannels) {
-            std::vector<uint8_t> opus(frame_size_ * numChannels, 0);
-            auto ret = opus_encode(encoder, in_buffer_.data(), frame_size_, opus.data(), opus.size());
+        while (in_buffer_.size() >= encoderFrameSizePerChannel * numChannels) {
+            std::vector<uint8_t> opus(encoder_frame_size_ * numChannels, 0);
+            auto ret = opus_encode(encoder, in_buffer_.data(), encoder_frame_size_, opus.data(), opus.size());
             if (ret < 0) {
                 // ESP_LOGE(TAG, "Failed to encode audio, error code: %ld", ret);
                 return;
@@ -93,7 +102,7 @@ public:
                 handler(std::move(opus));
             }
 
-            in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + frame_size_);
+            in_buffer_.erase(in_buffer_.begin(), in_buffer_.begin() + encoder_frame_size_);
         }
     }
 
@@ -102,21 +111,13 @@ public:
             return false;
         }
 
-        pcm.resize(frame_size_ * numChannels);
-        auto ret = opus_decode(decoder, opus.data(), opus.size(), pcm.data(), frame_size_ * numChannels, 1);
+        pcm.resize(decoder_frame_size_ * numChannels);
+        auto ret = opus_decode(decoder, opus.data(), opus.size(), pcm.data(), decoder_frame_size_ * numChannels, 1);
         if (ret < 0) {
             return false;
         }
 
         return true;
-    }
-
-    int getFrameSize() const {
-        return static_cast<int>(frameDurationInMs * sampleRate);
-    }
-
-    int getSampleRate() const {
-        return sampleRate;
     }
 
     int getChannels() const {
@@ -128,10 +129,13 @@ private:
     std::vector<int16_t> in_buffer_;
     OpusEncoder *encoder = nullptr;
     OpusDecoder *decoder = nullptr;
-    int frame_size_;
-    int frameSizePerChannel;
+    int encoder_frame_size_;
+    int decoder_frame_size_;
+    int encoderFrameSizePerChannel;
+    int decoderFrameSizePerChannel;
     int frameDurationInMs;
     int numChannels;
-    int sampleRate;
+    int opusSampleRate;
+    int dawSampleRate;
     int maxPacketSize = 4000;
 };
