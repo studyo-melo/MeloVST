@@ -3,30 +3,36 @@
 
 #include "../Utils/FileUtils.h"
 #include "../Utils/VectorUtils.h"
+#include <stdio.h>
+#include <vector>
 
-#define SAMPLE_RATE 48000
-#define BITRATE 64000
-#define NUM_CHANNELS 2
-#define BIT_DEPTH 16
-#define OPUS_FRAME_SIZE 20
-#define OPUS_SAMPLE_RATE 44100
-
-AudioAppPlayer::AudioAppPlayer(): vanillaWavFile(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
-                                  decodedWavFileHandler(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
-                                  encodedOpusFileHandler(SAMPLE_RATE, BITRATE, NUM_CHANNELS),
-                                  opus_encoder_juce_(SAMPLE_RATE, NUM_CHANNELS, BITRATE),
-                                  opusCodec(SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE),
-                                  resampler(OPUS_SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS) {
+AudioAppPlayer::AudioAppPlayer()
+    : circularBuffer(SAMPLE_RATE * NUM_CHANNELS),
+      vanillaWavFile(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
+      decodedWavFileHandler(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
+      encodedOpusFileHandler(SAMPLE_RATE, BITRATE, NUM_CHANNELS),
+      opusCodec(SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE)
+// resampler(OPUS_SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS)
+{
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
     EventManager::getInstance().addListener(this);
-
     createFiles();
+
+    // Démarrer le thread d'encodage
+    encodingThread = std::thread(&AudioAppPlayer::processingThreadFunction, this);
 }
 
 AudioAppPlayer::~AudioAppPlayer() {
+    // Indiquer l'arrêt du thread et attendre sa fin
+    threadRunning = false;
+    if (encodingThread.joinable())
+        encodingThread.join();
+
     shutdownAudio();
     EventManager::getInstance().removeListener(this);
+    finalizeFiles();
 }
+
 
 void AudioAppPlayer::createFiles() {
     vanillaWavFile.create("1_base_audio.wav");
@@ -48,45 +54,65 @@ void AudioAppPlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRat
 
 
 void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) {
-    if (audioBlock.empty() || !bufferToFill.buffer) {
+    if (bufferToFill.buffer == nullptr) {
         bufferToFill.clearActiveBufferRegion();
         return;
     }
 
-    // std::vector<float> resampledDoubleAudioBlock = resampler.resampleFromFloat(audioBlock);
+    // On vérifie que le buffer audio (audioBlock) contient des données
+    if (!audioBlock.empty()) {
+        const int numSamples = static_cast<int>(audioBlock.size()); {
+            juce::ScopedLock sl(circularBufferLock);
+            circularBuffer.pushSamples(audioBlock.data(), numSamples);
+        }
+        // On vide le buffer temporaire pour éviter une réécriture multiple
+        audioBlock.clear();
+    }
 
-    std::vector<int16_t> audioBlockInt16 = VectorUtils::convertFloatToInt16(audioBlock.data(), audioBlock.size());
-    vanillaWavFile.write(audioBlockInt16);
-    // auto encodedData = opus_encoder_juce_.processAudioBlock(audioBlock);
-    std::vector<unsigned char> opusEncodedAudioBlock;
-    opusCodec.encode(audioBlockInt16, [this, &opusEncodedAudioBlock](std::vector<unsigned char> opus) {
-        opusEncodedAudioBlock = opus;
-    });
-    // std::vector<unsigned char> opusEncodedAudioBlock = opusCodec.encode_float(audioBlock);
-    encodedOpusFileHandler.write(opusEncodedAudioBlock);
-    // std::vector<int16_t> decodedAudioBlock(MAX_OPUS_PACKET_SIZE);
-    // opusCodec.decode(opusEncodedAudioBlock, decodedAudioBlock);
-    // vanillaWavFile.write(decodedAudioBlock);
-
-    // FileUtils::appendWavData(decodedWavFile, decodedAudioBlock);
-
-    // auto* leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    // auto* rightChannel = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample);
-    //
-    // int samplesToCopy = std::min(decodedAudioBlock.size() / 2, static_cast<size_t>(bufferToFill.numSamples));
-    //
-    // for (int sample = 0; sample < samplesToCopy; ++sample) {
-    //     leftChannel[sample] = decodedAudioBlock[sample];
-    //     rightChannel[sample] = decodedAudioBlock[sample];
-    // }
-    //
-    // // Remplir le reste avec des zéros si besoin
-    // for (int sample = samplesToCopy; sample < bufferToFill.numSamples; ++sample) {
-    //     leftChannel[sample] = 0.0f;
-    //     rightChannel[sample] = 0.0f;
-    // }
+    // Le callback n'envoie pas de son vers la sortie
+    bufferToFill.clearActiveBufferRegion();
 }
 
+void AudioAppPlayer::processingThreadFunction() {
+    // Calcul du nombre d'échantillons par canal pour une trame de 20 ms
+    const int frameSamples = static_cast<int>(SAMPLE_RATE * OPUS_FRAME_SIZE / 1000.0); // 48000 * 20/1000 = 960
+    const int totalFrameSamples = frameSamples * NUM_CHANNELS; // Pour un signal interleaved
+
+    while (threadRunning) {
+        bool frameAvailable = false;
+        std::vector<float> frameData(totalFrameSamples); {
+            // Protéger l'accès au tampon circulaire
+            juce::ScopedLock sl(circularBufferLock);
+            if (circularBuffer.getNumAvailableSamples() >= totalFrameSamples) {
+                circularBuffer.popSamples(frameData.data(), totalFrameSamples);
+                frameAvailable = true;
+            }
+        }
+
+        if (frameAvailable) {
+            // (1) Écriture du signal d'origine dans le fichier WAV
+            vanillaWavFile.write(frameData, totalFrameSamples);
+
+            // (2) Encodage Opus (la fonction encode attend le nombre d'échantillons par canal)
+            std::vector<unsigned char> opusPacket = opusCodec.encode_float(frameData, frameSamples);
+
+            if (!opusPacket.empty()) {
+                // (3) Écriture du paquet Opus dans le fichier .opus
+                encodedOpusFileHandler.write(opusPacket);
+
+                // (4) Optionnel : décodage pour vérification
+                std::vector<float> decodedFrame = opusCodec.decode_float(opusPacket);
+                if (!decodedFrame.empty())
+                    decodedWavFileHandler.write(decodedFrame, decodedFrame.size());
+            } else {
+                // Gestion d'erreur d'encodage : éventuellement journaliser ou notifier
+            }
+        } else {
+            // Si pas assez d'échantillons, on attend un peu
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+    }
+}
 
 void AudioAppPlayer::releaseResources() {
     audioBlock.clear();

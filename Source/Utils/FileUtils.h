@@ -6,6 +6,7 @@
 #include <sstream>
 #include <chrono>
 #include <iomanip>
+#include <opus_types.h>
 
 namespace FileUtils {
     // Génère un nom de fichier avec un horodatage
