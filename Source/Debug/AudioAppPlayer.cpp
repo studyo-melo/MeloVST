@@ -46,5 +46,5 @@ void AudioAppPlayer::releaseResources() {
 }
 
 void AudioAppPlayer::onAudioBlockSent(const AudioBlockSentEvent &event) {
-    audioBlock = event.data;
+    // audioBlock = event.data;
 }

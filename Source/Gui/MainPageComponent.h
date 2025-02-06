@@ -29,7 +29,7 @@ private:
     juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText;
     juce::TextButton logoutButton, connectButton, finalizeButton, createButton;
     WebRTCAudioService webRTCAudioService;
-    AudioAppPlayer audioAppPlayer;
+    // AudioAppPlayer audioAppPlayer;
     WebSocketService webSocketService;
     juce::Array<PopulatedSession> ongoingSessions;
     PopulatedSession currentOngoingSession;
