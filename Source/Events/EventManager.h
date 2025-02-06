@@ -69,6 +69,14 @@ public:
         }
     }
 
+    void notifyOnAudioBlockSent(const AudioBlockSentEvent &event)
+    {
+        for (auto* listener : listeners)
+        {
+            listener->onAudioBlockSent(event);
+        }
+    }
+
 private:
     juce::Array<EventListener*> listeners;
     EventManager() = default; // Constructeur privé

@@ -57,6 +57,7 @@ void WebRTCAudioService::processingThreadFunction() {
                 if (!decodedFrame.empty()) {
                     decodedWavFileHandler.write(decodedFrame, decodedFrame.size());
                 }
+                EventManager::getInstance().notifyOnAudioBlockSent(AudioBlockSentEvent{decodedFrame});
             } catch (std::exception &e) {
                 juce::Logger::outputDebugString("Error decoding opus packet: " + std::string(e.what()));
             }

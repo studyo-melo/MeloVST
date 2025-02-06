@@ -81,6 +81,8 @@ set(SourceFiles
         Source/Utils/ResamplerWrapper.h
         Source/Utils/CircularBuffer.h
         Source/Debug/DebugAudioCallback.h
+        Source/Debug/AudioAppPlayer.h
+        Source/Debug/AudioAppPlayer.cpp
         Source/Debug/DebugRTPWrapper.h
         Source/Files/WavFileHandler.h
         Source/Files/OpusFileHandler.h

@@ -11,6 +11,10 @@ struct AudioBlockProcessedEvent {
     double sampleRate;
 };
 
+struct AudioBlockSentEvent {
+    const std::vector<float> data;
+};
+
 struct LoginEvent {
     juce::String accessToken;
 };
