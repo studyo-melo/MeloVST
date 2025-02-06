@@ -123,52 +123,6 @@ set(SourceFiles
         Source/Events/EventManager.h
         Source/Events/Events.h
 )
-set(AOOSourceFiles
-        deps/aoo/lib/src/SLIP.hpp
-        deps/aoo/lib/src/client.cpp
-        deps/aoo/lib/src/client.hpp
-        deps/aoo/lib/src/codec_opus.cpp
-        deps/aoo/lib/src/codec_pcm.cpp
-        deps/aoo/lib/src/common.cpp
-        deps/aoo/lib/src/common.hpp
-        deps/aoo/lib/src/lockfree.hpp
-        deps/aoo/lib/src/net_utils.cpp
-        deps/aoo/lib/src/net_utils.hpp
-        deps/aoo/lib/src/server.cpp
-        deps/aoo/lib/src/server.hpp
-        deps/aoo/lib/src/sink.cpp
-        deps/aoo/lib/src/sink.hpp
-        deps/aoo/lib/src/source.cpp
-        deps/aoo/lib/src/source.hpp
-        deps/aoo/lib/src/sync.cpp
-        deps/aoo/lib/src/sync.hpp
-        deps/aoo/lib/src/time.cpp
-        deps/aoo/lib/src/time.hpp
-        deps/aoo/lib/src/time_dll.hpp
-        deps/aoo/lib/aoo/aoo.h
-        deps/aoo/lib/aoo/aoo.hpp
-        deps/aoo/lib/aoo/aoo_net.h
-        deps/aoo/lib/aoo/aoo_net.hpp
-        deps/aoo/lib/aoo/aoo_opus.h
-        deps/aoo/lib/aoo/aoo_pcm.h
-        deps/aoo/lib/aoo/aoo_types.h
-        deps/aoo/lib/aoo/aoo_utils.hpp
-
-        deps/aoo/deps/md5/md5.c
-        deps/aoo/deps/md5/md5.h
-        deps/aoo/deps/oscpack/osc/OscOutboundPacketStream.cpp
-        deps/aoo/deps/oscpack/osc/OscPrintReceivedElements.cpp
-        deps/aoo/deps/oscpack/osc/OscReceivedElements.cpp
-        deps/aoo/deps/oscpack/osc/OscTypes.cpp
-        deps/aoo/deps/oscpack/osc/MessageMappingOscPacketListener.h
-        deps/aoo/deps/oscpack/osc/OscException.h
-        deps/aoo/deps/oscpack/osc/OscHostEndianness.h
-        deps/aoo/deps/oscpack/osc/OscOutboundPacketStream.h
-        deps/aoo/deps/oscpack/osc/OscPacketListener.h
-        deps/aoo/deps/oscpack/osc/OscPrintReceivedElements.h
-        deps/aoo/deps/oscpack/osc/OscReceivedElements.h
-        deps/aoo/deps/oscpack/osc/OscTypes.h
-)
 
 # Change these to your own preferences
 juce_add_plugin(${PROJECT_NAME}
@@ -190,7 +144,7 @@ juce_add_plugin(${PROJECT_NAME}
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 
 # Make the SourceFiles buildable
-target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles} ${AOOSourceFiles})
+target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
 
 # These are some toggleable options from the JUCE CMake API
 target_compile_definitions(${PROJECT_NAME}
