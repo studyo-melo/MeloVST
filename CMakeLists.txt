@@ -33,13 +33,17 @@ CPMAddPackage(
         NAME libdatachannel
         GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
         GIT_TAG v0.22.4
-        OPTIONS "PREFER_SYSTEM_LIB=0"
+        OPTIONS
+        "PREFER_SYSTEM_LIB=0"
 )
 
 CPMAddPackage(
         NAME ixwebsocket
         GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
         GIT_TAG origin/master
+        OPTIONS
+        "USE_TLS=1"
+        "IXWEBSOCKET_USE_TLS=1"
 )
 CPMAddPackage(
         NAME r8brain
@@ -53,8 +57,14 @@ CPMAddPackage(
         GIT_TAG v1.5.2
 )
 
+find_package(OpenSSL REQUIRED)
+
+include_directories(/opt/homebrew/opt/openssl/include)
+include_directories(/opt/homebrew/opt/ffmpeg/include)
 include_directories(${libopus_SOURCE_DIR}/include)
 include_directories(${r8brain_SOURCE_DIR})
+include_directories(${OPENSSL_INCLUDE_DIR})
+
 add_library(r8brain STATIC)
 target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
 add_library(
@@ -64,10 +74,9 @@ target_link_libraries(
         datachannel_static INTERFACE datachannel
 )
 
-include_directories(
-        deps/aoo/lib
-        deps/aoo/deps
-)
+
+message(STATUS "OPENSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
+message(STATUS "OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
 # Make sure you include any new source files here
 set(SourceFiles
         Source/Utils/StringUtils.h
@@ -154,6 +163,8 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_ADD_R8BRAIN=1
         PREFER_SYSTEM_LIB=1
+        IXWEBSOCKET_USE_TLS=1
+        USE_TLS=1
 )
 
 
@@ -165,6 +176,7 @@ target_link_libraries(${PROJECT_NAME}
         r8brain
         ixwebsocket
         datachannel_static INTERFACE datachannel
+        ${OPENSSL_LIBRARIES}
         PUBLIC
         juce::juce_analytics
         juce::juce_audio_basics
