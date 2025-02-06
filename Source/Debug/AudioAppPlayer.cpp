@@ -46,6 +46,5 @@ void AudioAppPlayer::releaseResources() {
 }
 
 void AudioAppPlayer::onAudioBlockSent(const AudioBlockSentEvent &event) {
-//    audioBlock = event.data;
-//    juce::Logger::outputDebugString("AudioAppPlayer::onAudioBlockSent: " + juce::String(audioBlock.size()));
+    audioBlock = event.data;
 }

@@ -44,9 +44,9 @@ public:
     // Écriture des échantillons en float directement dans le fichier
     void write(const std::vector<float>& samples, int nbSamples) {
         if (file && file->is_open()) {
-            std::vector<int16_t> int16FrameData = VectorUtils::convertFloatToInt16(samples.data(), samples.size());
+            std::vector<int16_t> int16FrameData = VectorUtils::convertFloatToInt16(samples.data(), nbSamples);
             file->write(reinterpret_cast<const char*>(int16FrameData.data()), int16FrameData.size() * sizeof(int16_t));
-            dataSize += samples.size() * sizeof(int16_t);
+            dataSize += nbSamples * sizeof(int16_t);
         }
     }
 

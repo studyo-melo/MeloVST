@@ -4,12 +4,19 @@
 #include "../Utils/AudioSettings.h"
 #include "../Utils/AudioUtils.h"
 
+#define SAMPLE_RATE 48000
+#define BITRATE 64000
+#define NUM_CHANNELS 2
+#define BIT_DEPTH 16
+#define OPUS_FRAME_SIZE 20
+#define OPUS_SAMPLE_RATE 48000
+
 WebRTCAudioService::WebRTCAudioService(): circularBuffer(SAMPLE_RATE * NUM_CHANNELS),
                                           vanillaWavFile(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
                                           decodedWavFileHandler(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
                                           encodedOpusFileHandler(SAMPLE_RATE, BITRATE, NUM_CHANNELS),
-                                          opusCodec(48000, 2, 20),
-                                          resampler(44100, 48000, 2) {
+                                          opusCodec(OPUS_SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE),
+                                          resampler(SAMPLE_RATE, OPUS_SAMPLE_RATE, NUM_CHANNELS) {
 }
 
 WebRTCAudioService::~WebRTCAudioService() {
@@ -47,6 +54,8 @@ void WebRTCAudioService::processingThreadFunction() {
 
         if (frameAvailable) {
             vanillaWavFile.write(frameData, totalFrameSamples);
+            EventManager::getInstance().notifyOnAudioBlockSent(AudioBlockSentEvent{frameData});
+
             std::vector<unsigned char> opusPacket = opusCodec.encode_float(frameData, frameSamples);
             if (opusPacket.empty()) {
                 return;
@@ -57,14 +66,13 @@ void WebRTCAudioService::processingThreadFunction() {
                 if (!decodedFrame.empty()) {
                     decodedWavFileHandler.write(decodedFrame, decodedFrame.size());
                 }
-                EventManager::getInstance().notifyOnAudioBlockSent(AudioBlockSentEvent{decodedFrame});
             } catch (std::exception &e) {
                 juce::Logger::outputDebugString("Error decoding opus packet: " + std::string(e.what()));
             }
             if (audioTrack) {
                 try {
                     auto rtpPacket = RTPWrapper::createRTPPacket(opusPacket, seqNum++, timestamp, ssrc);
-                    timestamp += opusPacket.size() / 2;
+                    timestamp += frameSamples;
                     juce::Logger::outputDebugString(
                         "Sending audio data: " + std::to_string(rtpPacket.size()) + " bytes");
                     DebugRTPWrapper::debugPacket(rtpPacket);

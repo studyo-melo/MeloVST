@@ -20,13 +20,6 @@
 #include "../Files/OpusFileHandler.h"
 #include "../Files/WavFileHandler.h"
 
-#define SAMPLE_RATE 48000
-#define BITRATE 64000
-#define NUM_CHANNELS 2
-#define BIT_DEPTH 16
-#define OPUS_FRAME_SIZE 20
-#define OPUS_SAMPLE_RATE 44100
-
 class WebRTCAudioService : public WebRTCConnexionHandler {
 public:
     WebRTCAudioService();
@@ -62,5 +55,5 @@ private:
     int currentNumSamples = 0;
     int currentSampleIndex = 0;
 
-    double currentSampleRate = SAMPLE_RATE;
+    double currentSampleRate = 48000;
 };

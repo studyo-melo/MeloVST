@@ -8,7 +8,7 @@ namespace Constants
     static const juce::String websocketUrl = "ws://localhost:5055";
     static constexpr int websocketPort = 5055;
     // static const juce::String apiUrl = "https://staging.studio-melo.com/api";
-    // static const juce::String websocketUrl = "ws://staging.studio-melo.com";
+    // static const juce::String websocketUrl = "wss://staging.studio-melo.com";
 
     static const juce::String appName = "MeloVST";
     static constexpr int timeoutDuration = 3000; // en millisecondes

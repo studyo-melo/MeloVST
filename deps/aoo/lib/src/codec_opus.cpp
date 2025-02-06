@@ -137,6 +137,7 @@ int32_t encoder_encode(void *enc,
                        const aoo_sample *s, int32_t n,
                        char *buf, int32_t size)
 {
+
     auto c = static_cast<encoder *>(enc);
     if (c->state){
         auto framesize = n / c->format.header.nchannels;
