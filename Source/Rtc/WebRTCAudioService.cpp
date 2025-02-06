@@ -12,8 +12,8 @@
 #define OPUS_SAMPLE_RATE 48000
 
 WebRTCAudioService::WebRTCAudioService(): circularBuffer(SAMPLE_RATE * NUM_CHANNELS),
-                                          vanillaWavFile(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
-                                          decodedWavFileHandler(SAMPLE_RATE, BIT_DEPTH, NUM_CHANNELS),
+                                          vanillaWavFile(SAMPLE_RATE, NUM_CHANNELS),
+                                          decodedWavFileHandler(SAMPLE_RATE, NUM_CHANNELS),
                                           encodedOpusFileHandler(SAMPLE_RATE, BITRATE, NUM_CHANNELS),
                                           opusCodec(OPUS_SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE),
                                           resampler(SAMPLE_RATE, OPUS_SAMPLE_RATE, NUM_CHANNELS) {
@@ -27,6 +27,8 @@ void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEve
     std::vector<float> audioBlock = event.data;
     currentNumSamples = event.numSamples;
     currentSampleIndex = 0;
+    vanillaWavFile.write(event.data, event.data.size());
+
     // On vérifie que le buffer audio (audioBlock) contient des données
     if (!audioBlock.empty()) {
         const int numSamples = static_cast<int>(audioBlock.size()); {
@@ -41,7 +43,7 @@ void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEve
 void WebRTCAudioService::processingThreadFunction() {
     // Calcul du nombre d'échantillons par canal pour une trame de 20 ms
     const int frameSamples = static_cast<int>(SAMPLE_RATE * OPUS_FRAME_SIZE / 1000.0); // 48000 * 20/1000 = 960
-    const int totalFrameSamples = frameSamples * NUM_CHANNELS; // Pour un signal interleaved
+    const int totalFrameSamples = 512;//frameSamples * NUM_CHANNELS; // Pour un signal interleaved
     while (threadRunning) {
         bool frameAvailable = false;
         std::vector<float> frameData(totalFrameSamples); {
@@ -53,7 +55,6 @@ void WebRTCAudioService::processingThreadFunction() {
         }
 
         if (frameAvailable) {
-            vanillaWavFile.write(frameData, totalFrameSamples);
             EventManager::getInstance().notifyOnAudioBlockSent(AudioBlockSentEvent{frameData});
 
             std::vector<unsigned char> opusPacket = opusCodec.encode_float(frameData, frameSamples);

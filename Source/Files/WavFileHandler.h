@@ -13,10 +13,10 @@
 
 class WavFileHandler {
 public:
-    WavFileHandler(int sampleRate, int bitsPerSample, int numChannels)
+    WavFileHandler(int sampleRate, int numChannels)
         : file(nullptr),
           sampleRate(sampleRate),
-          bitsPerSample(bitsPerSample),
+          bitsPerSample(32),
           numChannels(numChannels),
           dataSize(0) {}
 
@@ -44,9 +44,8 @@ public:
     // Écriture des échantillons en float directement dans le fichier
     void write(const std::vector<float>& samples, int nbSamples) {
         if (file && file->is_open()) {
-            std::vector<int16_t> int16FrameData = VectorUtils::convertFloatToInt16(samples.data(), nbSamples);
-            file->write(reinterpret_cast<const char*>(int16FrameData.data()), int16FrameData.size() * sizeof(int16_t));
-            dataSize += nbSamples * sizeof(int16_t);
+            file->write(reinterpret_cast<const char*>(samples.data()), samples.size() * sizeof(float));
+            dataSize += nbSamples * sizeof(float);
         }
     }
 
@@ -80,7 +79,7 @@ private:
         uint32_t subChunk1Size = 16;
         std::memcpy(header + 16, &subChunk1Size, 4);
         // Pour des données float, audioFormat doit être 3 (WAVE_FORMAT_IEEE_FLOAT)
-        uint16_t audioFormat = (bitsPerSample == 32) ? 3 : 1;
+        uint16_t audioFormat = 3;
         std::memcpy(header + 20, &audioFormat, 2);
         std::memcpy(header + 22, &numChannels, 2);
         std::memcpy(header + 24, &sampleRate, 4);
