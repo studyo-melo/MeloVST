@@ -42,10 +42,30 @@ public:
     }
 
     // Écriture des échantillons en float directement dans le fichier
-    void write(const std::vector<float>& samples, int nbSamples) {
+    void write(const std::vector<float>& samples, bool isMono) {
         if (file && file->is_open()) {
-            file->write(reinterpret_cast<const char*>(samples.data()), samples.size() * sizeof(float));
-            dataSize += nbSamples * sizeof(float);
+            std::vector<float> processedSamples;
+
+            if (isMono) {
+                // Convertir mono → stéréo (dupliquer chaque échantillon)
+                processedSamples.reserve(samples.size() * 2);
+                for (float sample : samples) {
+                    processedSamples.push_back(sample); // Gauche
+                    processedSamples.push_back(sample); // Droite
+                }
+            } else {
+                // Vérifier que l'entrée stéréo a un nombre d'échantillons pair
+                if (samples.size() % 2 != 0) {
+                    std::cerr << "Erreur : Nombre d'échantillons impair pour un format stéréo !" << std::endl;
+                    return;
+                }
+                processedSamples = samples; // Utiliser directement les données
+            }
+
+            // Écriture dans le fichier
+            file->write(reinterpret_cast<const char*>(processedSamples.data()), processedSamples.size() * sizeof(float));
+            dataSize += processedSamples.size() * sizeof(float);
+            file->flush();
         }
     }
 

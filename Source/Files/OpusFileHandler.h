@@ -46,7 +46,9 @@ public:
         if (samples.empty()) return;
         juce::Logger::outputDebugString("Writing in " + juce::String(samples.size()) + " bytes in opus file");
         file->write(reinterpret_cast<const std::ostream::char_type *>(samples.data()), samples.size());
-        file->flush();
+        if (file->is_open()) {
+            file->flush();
+        }
     }
 
     void close() {

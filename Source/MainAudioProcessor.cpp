@@ -146,23 +146,26 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
 
+    if (numChannels == 0 || numSamples == 0) {
+        return; // Rien à traiter
+    }
+
+    // Optimisation mémoire : éviter les réallocations fréquentes
     std::vector<float> pcmData;
-
     pcmData.reserve(static_cast<size_t>(numChannels * numSamples));
-    for (int channel = 0; channel < numChannels; ++channel)
-    {
-        const float* channelData = buffer.getReadPointer(channel);
-        if (channelData == nullptr) continue;
-        for (int sample = 0; sample < numSamples; ++sample) pcmData.push_back(channelData[sample]);
-    }
-    
-    if (pcmData.size() <= 0) {
-        return;
+
+    // Copier les échantillons dans un format interleaved (L, R, L, R...)
+    for (int sample = 0; sample < numSamples; ++sample) {
+        for (int channel = 0; channel < numChannels; ++channel) {
+            pcmData.push_back(buffer.getReadPointer(channel)[sample]);
+        }
     }
 
-    // Notifie l'EventManager qu'un bloc audio a été traité
+    if (pcmData.empty()) return; // Vérification plus explicite
+
+    // Envoyer l'événement avec std::move pour éviter les copies inutiles
     EventManager::getInstance().notifyAudioBlockProcessed(AudioBlockProcessedEvent{
-        std::move(pcmData), // Transfert des données pour éviter une copie
+        std::move(pcmData), // Transfert des données
         numChannels,
         numSamples,
         getSampleRate()

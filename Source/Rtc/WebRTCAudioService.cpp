@@ -27,7 +27,6 @@ void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEve
     std::vector<float> audioBlock = event.data;
     currentNumSamples = event.numSamples;
     currentSampleIndex = 0;
-    vanillaWavFile.write(event.data, event.data.size());
 
     // On vérifie que le buffer audio (audioBlock) contient des données
     if (!audioBlock.empty()) {
@@ -43,7 +42,7 @@ void WebRTCAudioService::onAudioBlockProcessedEvent(const AudioBlockProcessedEve
 void WebRTCAudioService::processingThreadFunction() {
     // Calcul du nombre d'échantillons par canal pour une trame de 20 ms
     const int frameSamples = static_cast<int>(SAMPLE_RATE * OPUS_FRAME_SIZE / 1000.0); // 48000 * 20/1000 = 960
-    const int totalFrameSamples = 512;//frameSamples * NUM_CHANNELS; // Pour un signal interleaved
+    const int totalFrameSamples = frameSamples * NUM_CHANNELS; // Pour un signal interleaved
     while (threadRunning) {
         bool frameAvailable = false;
         std::vector<float> frameData(totalFrameSamples); {
@@ -55,6 +54,7 @@ void WebRTCAudioService::processingThreadFunction() {
         }
 
         if (frameAvailable) {
+            vanillaWavFile.write(frameData, false);
             EventManager::getInstance().notifyOnAudioBlockSent(AudioBlockSentEvent{frameData});
 
             std::vector<unsigned char> opusPacket = opusCodec.encode_float(frameData, frameSamples);
@@ -65,7 +65,7 @@ void WebRTCAudioService::processingThreadFunction() {
             try {
                 std::vector<float> decodedFrame = opusCodec.decode_float(opusPacket);
                 if (!decodedFrame.empty()) {
-                    decodedWavFileHandler.write(decodedFrame, decodedFrame.size());
+                    decodedWavFileHandler.write(decodedFrame, false);
                 }
             } catch (std::exception &e) {
                 juce::Logger::outputDebugString("Error decoding opus packet: " + std::string(e.what()));
