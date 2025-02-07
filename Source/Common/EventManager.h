@@ -77,6 +77,22 @@ public:
         }
     }
 
+    void notifyOnAudioBlockReceived(const AudioBlockReceivedEvent &event)
+    {
+        for (auto* listener : listeners)
+        {
+            listener->onAudioBlockReceived(event);
+        }
+    }
+
+    void notifyOnAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event)
+    {
+        for (auto* listener : listeners)
+        {
+            listener->onAudioBlockReceivedDecoded(event);
+        }
+    }
+
 private:
     juce::Array<EventListener*> listeners;
     EventManager() = default; // Constructeur privé

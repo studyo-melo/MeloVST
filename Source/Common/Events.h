@@ -15,6 +15,15 @@ struct AudioBlockSentEvent {
     const std::vector<float> data;
 };
 
+struct AudioBlockReceivedEvent {
+    rtc::binary data;
+    rtc::FrameInfo frameInfo;
+};
+
+struct AudioBlockReceivedDecodedEvent {
+    std::vector<float> data;
+};
+
 struct LoginEvent {
     juce::String accessToken;
 };
