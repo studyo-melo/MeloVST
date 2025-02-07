@@ -2,11 +2,12 @@
 #include "opus.h"
 #include <vector>
 #include <stdexcept>
+
 #define MAX_OPUS_PACKET_SIZE 1500
 
 class OpusCodecWrapper {
 public:
-    OpusCodecWrapper(int sample_rate, int channels, int duration_ms): frameDurationInMs(duration_ms), numChannels(channels), sampleRate(sample_rate) {
+    OpusCodecWrapper(int sample_rate, int channels, int duration_ms, int bitrate): frameDurationInMs(duration_ms), numChannels(channels), sampleRate(sample_rate) {
         int error;
         encoder = opus_encoder_create(sample_rate, channels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK)
@@ -17,7 +18,7 @@ public:
             return;
         }
         // Configuration de l'encodeur
-        opus_encoder_ctl(encoder, OPUS_SET_BITRATE(64000));
+        opus_encoder_ctl(encoder, OPUS_SET_BITRATE(bitrate));
         // opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
         // opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(0));
         // opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(5));

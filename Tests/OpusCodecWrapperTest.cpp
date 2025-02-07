@@ -1,10 +1,9 @@
 #include <CDSPResampler.h>
 
-#include "Rtc/OpusCodecWrapper.h"
+#include "Common/OpusCodecWrapper.h"
 #include <juce_core/juce_core.h>
 #include <vector>
 
-#include "Utils/AudioUtils.h"
 #include "Utils/VectorUtils.h"
 #include <cmath>
 

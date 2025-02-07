@@ -49,6 +49,21 @@ public:
         bitDepth = newBitDepth;
     }
 
+    void setLatency(int newLatency) noexcept {
+        latency = newLatency;
+    }
+
+    [[nodiscard]] int getLatency() const noexcept {
+        return latency;
+    }
+
+    void setOpusBitRate(int newOpusBitRate) noexcept {
+        opusBitRate = newOpusBitRate;
+    }
+
+    [[nodiscard]] int getOpusBitRate() const noexcept {
+        return opusBitRate;
+    }
 
 private:
     // Constructeur et destructeur privés pour le Singleton
@@ -65,4 +80,6 @@ private:
     int numChannels = 0;
     int bitDepth = 0;
     int opusSampleRate = 0;
+    int latency = 0;
+    int opusBitRate = 0;
 };

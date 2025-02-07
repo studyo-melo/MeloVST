@@ -12,6 +12,7 @@
 #include "../Common/EventManager.h"
 #include "../ThirdParty/json.hpp"
 #include "../Common/ReconnectTimer.h"
+#include "../AudioSettings.h"
 
 class WebRTCConnexionHandler : EventListener {
 public:

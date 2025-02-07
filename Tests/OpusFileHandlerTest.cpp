@@ -1,5 +1,5 @@
 #include <juce_core/juce_core.h>
-#include "../Source/Debug/OpusFileHandler.h"
+#include "Common/OpusFileHandler.h"
 
 class OpusFileHandlerTest : public juce::UnitTest {
 public:

@@ -69,8 +69,8 @@ juce::String ApiService::makeHttpRequest(const ApiRoute route, RequestConfig con
             case 404:
             case 405:
             {
-                juce::String message = jsonResponse["error"].toString();
-                juce::Logger::outputDebugString("Exception lors de la requête HTTP : " + res);
+                // juce::String message = jsonResponse["error"].toString();
+                // juce::Logger::outputDebugString("Exception lors de la requête HTTP : " + res);
                 return "";
             }
             default:

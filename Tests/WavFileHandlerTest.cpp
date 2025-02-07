@@ -1,5 +1,5 @@
 #include <juce_core/juce_core.h>
-#include "../Source/Debug/WavFileHandler.h"
+#include "Common/WavFileHandler.h"
 class WavFileHandlerTest : public juce::UnitTest {
 public:
     WavFileHandlerTest() : juce::UnitTest("WavFileHandler Test") {}

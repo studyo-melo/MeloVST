@@ -14,18 +14,6 @@ MainAudioProcessor::MainAudioProcessor()
                        )
 {
     resampler = new ResamplerWrapper(44100, 48000, 2);
-    AudioSettings::getInstance().setBitDepth(16);
-    AudioSettings::getInstance().setOpusSampleRate(48000);
-    AudioSettings::getInstance().setSampleRate(44100);
-    AudioSettings::getInstance().setBlockSize(getBlockSize());
-    AudioSettings::getInstance().setNumChannels(getMainBusNumOutputChannels());
-
-    juce::Logger::outputDebugString("Bit depth: " + std::to_string(AudioSettings::getInstance().getBitDepth()));
-    juce::Logger::outputDebugString("Opus Sample rate: " + std::to_string(AudioSettings::getInstance().getOpusSampleRate()));
-    juce::Logger::outputDebugString("Sample rate: " + std::to_string(AudioSettings::getInstance().getSampleRate()));
-    juce::Logger::outputDebugString("Block Size: " + std::to_string(AudioSettings::getInstance().getBlockSize()));
-    juce::Logger::outputDebugString("Num Channels: " + std::to_string(AudioSettings::getInstance().getNumChannels()));
-
 }
 
 MainAudioProcessor::~MainAudioProcessor()
@@ -101,11 +89,21 @@ void MainAudioProcessor::changeProgramName (int index, const juce::String& newNa
 //==============================================================================
 void MainAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::Logger::outputDebugString("[prepareToPlay] Sample rate: " + std::to_string(sampleRate));
-    juce::Logger::outputDebugString("[prepareToPlay] samplesPerBlock: " + std::to_string(samplesPerBlock));
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+    AudioSettings::getInstance().setSampleRate(sampleRate);
+    AudioSettings::getInstance().setBlockSize(samplesPerBlock);
+    AudioSettings::getInstance().setNumChannels(getMainBusNumOutputChannels());
+    AudioSettings::getInstance().setBitDepth(16);
+    AudioSettings::getInstance().setOpusSampleRate(48000);
+    AudioSettings::getInstance().setLatency(20); // 20 ms
+    AudioSettings::getInstance().setOpusBitRate(96000);
+
+    juce::Logger::outputDebugString("Sample rate: " + std::to_string(sampleRate));
+    juce::Logger::outputDebugString("Block Size: " + std::to_string(samplesPerBlock));
+    juce::Logger::outputDebugString("Num Channels: " + std::to_string(getMainBusNumOutputChannels()));
+    juce::Logger::outputDebugString("Bit depth: " + std::to_string(AudioSettings::getInstance().getBitDepth()));
+    juce::Logger::outputDebugString("Opus Sample rate: " + std::to_string(AudioSettings::getInstance().getOpusSampleRate()));
+    juce::Logger::outputDebugString("Latency: " + std::to_string(AudioSettings::getInstance().getLatency()));
+    juce::Logger::outputDebugString("Opus Bit rate: " + std::to_string(AudioSettings::getInstance().getOpusBitRate()));
 }
 
 void MainAudioProcessor::releaseResources()

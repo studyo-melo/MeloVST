@@ -1,17 +1,11 @@
 #include "WebRTCAudioSenderService.h"
 
-#define SAMPLE_RATE 48000
-#define BITRATE 64000
-#define NUM_CHANNELS 2
-#define BIT_DEPTH 16
-#define OPUS_FRAME_SIZE 20
-#define OPUS_SAMPLE_RATE 48000
 
 WebRTCAudioSenderService::WebRTCAudioSenderService(): WebRTCConnexionHandler(WsRoute::GetOngoingSessionRTC,
                                                                              rtc::Description::Direction::SendOnly),
-                                                      circularBuffer(SAMPLE_RATE * NUM_CHANNELS),
-                                                      opusCodec(OPUS_SAMPLE_RATE, NUM_CHANNELS, OPUS_FRAME_SIZE),
-                                                      resampler(SAMPLE_RATE, OPUS_SAMPLE_RATE, NUM_CHANNELS) {
+                                                      circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels()),
+                                                      opusCodec(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels(), AudioSettings::getInstance().getLatency(), AudioSettings::getInstance().getOpusBitRate()),
+                                                      resampler(AudioSettings::getInstance().getSampleRate(), AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels()) {
 }
 
 WebRTCAudioSenderService::~WebRTCAudioSenderService() {
@@ -34,8 +28,8 @@ void WebRTCAudioSenderService::onAudioBlockProcessedEvent(const AudioBlockProces
 
 void WebRTCAudioSenderService::processingThreadFunction() {
     // Calcul du nombre d'échantillons par canal pour une trame de 20 ms
-    const int frameSamples = static_cast<int>(SAMPLE_RATE * OPUS_FRAME_SIZE / 1000.0); // 48000 * 20/1000 = 960
-    const int totalFrameSamples = frameSamples * NUM_CHANNELS; // Pour un signal interleaved
+    const int frameSamples = static_cast<int>(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getLatency() / 1000.0); // 48000 * 20/1000 = 960
+    const int totalFrameSamples = frameSamples * AudioSettings::getInstance().getNumChannels(); // Pour un signal interleaved
     while (threadRunning) {
         bool frameAvailable = false;
         std::vector<float> frameData(totalFrameSamples); {

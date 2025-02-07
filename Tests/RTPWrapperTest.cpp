@@ -2,7 +2,7 @@
 // Created by Padoa on 24/01/2025.
 //
 #include <juce_core/juce_core.h>
-#include "../Source/Common/RTPWrapper.h"
+#include "Common/RTPWrapper.h"
 
 class RTPWrapperTest : public juce::UnitTest
 {
