@@ -3,10 +3,10 @@
 #include "Config.h"
 
 MainApplication::MainApplication(MainAudioProcessor &p): AudioProcessorEditor(&p) {
-#ifdef IN_RECEIVING_MODE
-    mainWindow = std::make_unique<MainWindow>(Config::appNameReceiver);
+#ifdef MELO_PLUGIN_NAME
+    mainWindow = std::make_unique<MainWindow>(MELO_PLUGIN_NAME);
 #else
-    mainWindow = std::make_unique<MainWindow>(Config::appNameSender);
+    mainWindow = std::make_unique<MainWindow>("MeloVST");
 #endif
 
     addAndMakeVisible(mainWindow.get());

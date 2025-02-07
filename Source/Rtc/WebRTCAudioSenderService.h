@@ -16,9 +16,6 @@ public:
     WebRTCAudioSenderService();
     ~WebRTCAudioSenderService() override;
 
-    static void createFiles();
-    static void finalizeFiles();
-
 private:
     void stopAudioThread();
     void startAudioThread();

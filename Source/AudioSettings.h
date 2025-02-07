@@ -75,11 +75,11 @@ private:
     AudioSettings& operator=(const AudioSettings&) = delete;
 
     // Données membres pour stocker les paramètres audio
-    int sampleRate = 0;
-    int blockSize = 0;
-    int numChannels = 0;
-    int bitDepth = 0;
-    int opusSampleRate = 0;
-    int latency = 0;
-    int opusBitRate = 0;
+    int sampleRate = 44100;
+    int blockSize = 256;
+    int numChannels = 2;
+    int bitDepth = 16;
+    int opusSampleRate = 48000;
+    int latency = 20;
+    int opusBitRate = 64000;
 };

@@ -9,9 +9,6 @@ namespace Config
     // static const juce::String apiUrl = "https://staging.studio-melo.com/api";
     // static const juce::String websocketUrl = "wss://staging.studio-melo.com";
 
-    static const juce::String appNameSender = "MeloVST";
-    static const juce::String appNameReceiver = "MeloVSTReceiver";
-
     // Couleurs
     static const auto primaryColor = juce::Colour(0xFF1A1A1A);
     static const juce::Colour gray900 = juce::Colour::fromFloatRGBA(12, 17, 29, 1.0f);

@@ -6,18 +6,24 @@ project(MeloVST VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")# -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
 #set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(IN_RECEIVING_MODE "Build Receiver VST plugin" OFF)
+option(MELO_PLUGIN_NAME "Nom du plugin" "MeloVST")
+set(IN_RECEIVING_MODE ON)
+
 if (IN_RECEIVING_MODE)
-    set(PRODUCT_NAME "MeloVSTReceiver")
+    set(MELO_PLUGIN_NAME "MeloVSTVoice")
+    add_definitions(-DIN_RECEIVING_MODE)
 else ()
-    set(PRODUCT_NAME "MeloVSTSender")
+    set(MELO_PLUGIN_NAME "MeloVSTInstru")
 endif ()
 
-message(STATUS "Building ${PRODUCT_NAME}")
+message(STATUS "Building ${MELO_PLUGIN_NAME}")
+message(STATUS "PROJECT_NAME ${PROJECT_NAME}")
+message(STATUS "IN_RECEIVING_MODE ${IN_RECEIVING_MODE}")
 
 # We're going to use CPM as our package manager to bring in JUCE
 # Check to see if we have CPM installed already.  Bring it in if we don't.
@@ -161,7 +167,7 @@ juce_add_plugin(${PROJECT_NAME}
         PLUGIN_MANUFACTURER_CODE Tap1
         PLUGIN_CODE Reg0
         FORMATS VST3 AU Standalone
-        PRODUCT_NAME ${PRODUCT_NAME}
+        PRODUCT_NAME ${MELO_PLUGIN_NAME}
 )
 
 # How we want our SourceFiles to appear in our IDE

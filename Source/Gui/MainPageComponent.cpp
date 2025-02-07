@@ -7,12 +7,16 @@
 #include "../Api/SocketRoutes.h"
 #include "../Api/ApiService.h"
 
-MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderService()),
-                                        webSocketService(WebSocketService(getWsRouteString(WsRoute::GetOngoingSession)))
+MainPageComponent::MainPageComponent():
+#ifdef IN_RECEIVING_MODE
+    webRTCAudioService(WebRTCAudioReceiverService()),
+#else
+    webRTCAudioService(WebRTCAudioSenderService()),
+#endif
+    webSocketService(WebSocketService(getWsRouteString(WsRoute::GetOngoingSession)))
 {
     setSize(600, 400);
-    addAndMakeVisible(finalizeButton);
-    addAndMakeVisible(createButton);
+    addAndMakeVisible(appName);
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
     addAndMakeVisible(mainText);
@@ -22,6 +26,14 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderServ
     addAndMakeVisible(RTCIceCandidateStateText);
 
     const auto userContext = AuthService::getInstance().getUserContext();
+#ifdef MELO_PLUGIN_NAME
+    appName.setText(juce::String::fromUTF8(MELO_PLUGIN_NAME), juce::dontSendNotification);
+#else
+    appName.setText(juce::String::fromUTF8("MeloVST"), juce::dontSendNotification);
+#endif
+    appName.setJustificationType(juce::Justification::centred);
+    appName.setFont(30.0f);
+
     title.setText(juce::String::fromUTF8(("Bienvenue " + userContext->user.firstname).c_str()),
                   juce::dontSendNotification);
     title.setJustificationType(juce::Justification::centred);
@@ -53,16 +65,6 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderServ
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
     logoutButton.onClick = [] { onLogoutButtonClick(); };
 
-    finalizeButton.setButtonText("Finalizer les fichiers");
-    finalizeButton.onClick = [this] {
-        webRTCAudioService.finalizeFiles();
-    };
-
-    createButton.setButtonText(juce::String::fromUTF8("Créer les fichiers"));
-    createButton.onClick = [this] {
-        webRTCAudioService.createFiles();
-    };
-
     if (const auto res = ApiService::makeGETRequest(ApiRoute::GetMyOngoingSessions); res.isNotEmpty()) {
         ongoingSessions = PopulatedSession::parseArrayFromJsonString(res);
         if (ongoingSessions.size() > 0) {
@@ -84,38 +86,38 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderServ
 
 void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
     juce::MessageManager::callAsync([this, event] {
-    switch (event.state) {
-        case rtc::PeerConnection::State::Connected: {
-            connectButton.setButtonText(juce::String::fromUTF8("Déconnecter la connexion avec l'artiste"));
-            RTCStateText.setText(juce::String::fromUTF8("Vous êtes connecté avec l'artiste."),
-                                 juce::dontSendNotification);
-            break;
+        switch (event.state) {
+            case rtc::PeerConnection::State::Connected: {
+                connectButton.setButtonText(juce::String::fromUTF8("Déconnecter la connexion avec l'artiste"));
+                RTCStateText.setText(juce::String::fromUTF8("Vous êtes connecté avec l'artiste."),
+                                     juce::dontSendNotification);
+                break;
+            }
+            case rtc::PeerConnection::State::Connecting: {
+                connectButton.setButtonText(juce::String::fromUTF8(("Stopper la demande de connexion")));
+                RTCStateText.setText("En cours de connexion avec l'artiste...", juce::dontSendNotification);
+                break;
+            }
+            case rtc::PeerConnection::State::Closed:
+            case rtc::PeerConnection::State::Failed: {
+                connectButton.setVisible(true);
+                connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
+                RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
+                                     juce::dontSendNotification);
+                break;
+            }
+            default: {
+                connectButton.setVisible(true);
+                connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
+                RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
+                                     juce::dontSendNotification);
+                break;
+            }
         }
-        case rtc::PeerConnection::State::Connecting: {
-            connectButton.setButtonText(juce::String::fromUTF8(("Stopper la demande de connexion")));
-            RTCStateText.setText("En cours de connexion avec l'artiste...", juce::dontSendNotification);
-            break;
-        }
-        case rtc::PeerConnection::State::Closed:
-        case rtc::PeerConnection::State::Failed: {
-            connectButton.setVisible(true);
-            connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
-            RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
-                                 juce::dontSendNotification);
-            break;
-        }
-        default: {
-            connectButton.setVisible(true);
-            connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
-            RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
-                                 juce::dontSendNotification);
-            break;
-        }
-    }
 
-    RTCIceCandidateStateText.setText(webRTCAudioService.getIceCandidateStateLabel(), juce::dontSendNotification);
-    RTCSignalingStateText.setText(webRTCAudioService.getSignalingStateLabel(),
-                                  juce::dontSendNotification);
+        RTCIceCandidateStateText.setText(webRTCAudioService.getIceCandidateStateLabel(), juce::dontSendNotification);
+        RTCSignalingStateText.setText(webRTCAudioService.getSignalingStateLabel(),
+                                      juce::dontSendNotification);
     });
 }
 
@@ -146,8 +148,7 @@ void MainPageComponent::resized() {
         .withMargin(juce::FlexItem::Margin(5, 5, 0, 0))
         .withAlignSelf(juce::FlexItem::AlignSelf::flexEnd)
     );
-    titleFlexbox.items.add(juce::FlexItem(createButton).withFlex(1).withMargin(juce::FlexItem::Margin(10, 0, 0, 0)));
-    titleFlexbox.items.add(juce::FlexItem(finalizeButton).withFlex(1).withMargin(juce::FlexItem::Margin(10, 0, 0, 0)));
+    titleFlexbox.items.add(juce::FlexItem(appName).withFlex(1).withMargin(juce::FlexItem::Margin(10, 0, 0, 0)));
     titleFlexbox.items.add(juce::FlexItem(title).withFlex(1).withMargin(juce::FlexItem::Margin(10, 0, 0, 0)));
     titleFlexbox.items.add(juce::FlexItem(mainText).withFlex(1).withMargin(juce::FlexItem::Margin(0, 0, 0, 0)));
 

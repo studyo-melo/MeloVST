@@ -86,18 +86,8 @@ void WebRTCAudioSenderService::stopAudioThread() {
 
 void WebRTCAudioSenderService::onRTCStateChanged(const RTCStateChangeEvent &event) {
     if (event.state == rtc::PeerConnection::State::Connected && !threadRunning) {
-        createFiles();
         startAudioThread();
     } else {
         stopAudioThread();
     }
-}
-
-
-void WebRTCAudioSenderService::createFiles() {
-    return;
-}
-
-void WebRTCAudioSenderService::finalizeFiles() {
-    return;
 }

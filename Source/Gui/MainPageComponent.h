@@ -28,8 +28,8 @@ public:
     void paint(juce::Graphics &g) override;
 
 private:
-    juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText;
-    juce::TextButton logoutButton, connectButton, finalizeButton, createButton;
+    juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText, appName;
+    juce::TextButton logoutButton, connectButton;
 #ifdef IN_RECEIVING_MODE
     WebRTCAudioReceiverService webRTCAudioService;
 #else

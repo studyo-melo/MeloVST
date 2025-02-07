@@ -9,7 +9,11 @@ class JuceLocalStorage
 public:
     static JuceLocalStorage& getInstance()
     {
-        static JuceLocalStorage instance(Config::appNameSender);
+#ifdef MELO_PLUGIN_NAME
+        static JuceLocalStorage instance(MELO_PLUGIN_NAME);
+#else
+        static JuceLocalStorage instance("MeloVST");
+#endif
         return instance;
     }
 

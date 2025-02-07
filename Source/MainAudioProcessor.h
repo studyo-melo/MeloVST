@@ -3,8 +3,8 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <fstream>
 
+#include "Common/CircularBuffer.h"
 #include "Common/EventListener.h"
-#include "Common/ResamplerWrapper.h"
 
 //==============================================================================
 class MainAudioProcessor final : public juce::AudioProcessor, EventListener
