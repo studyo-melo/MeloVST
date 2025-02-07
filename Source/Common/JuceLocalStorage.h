@@ -40,7 +40,7 @@ public:
     }
 
 private:
-    JuceLocalStorage(const juce::String& appName)
+    explicit JuceLocalStorage(const juce::String& appName)
     {
         // Configure les options de fichier de propriétés
         juce::PropertiesFile::Options options;

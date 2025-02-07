@@ -9,15 +9,12 @@
 #include "../Common/EventListener.h"
 #include "../Models/Session.h"
 #include "../Api/SocketEvents.h"
-#include "../Common/EventManager.h"
-#include "../ThirdParty/json.hpp"
 #include "../Common/ReconnectTimer.h"
-#include "../AudioSettings.h"
 
 class WebRTCConnexionHandler : EventListener {
 public:
     WebRTCConnexionHandler(WsRoute wsRoute, rtc::Description::Direction trackDirection);
-    ~WebRTCConnexionHandler();
+    ~WebRTCConnexionHandler() override;
 
     virtual void setupConnection();
     void disconnect() const;

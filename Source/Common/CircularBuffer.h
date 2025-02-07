@@ -16,7 +16,7 @@ public:
 
     // Ajoute des échantillons dans le tampon
     // Renvoie le nombre d'échantillons effectivement ajoutés (si le tampon est plein, certains échantillons ne seront pas ajoutés)
-    int pushSamples(const T* data, int numSamples)
+    int pushSamples(const T* data, const int numSamples)
     {
         int samplesPushed = 0;
         for (int i = 0; i < numSamples; ++i)
@@ -39,7 +39,7 @@ public:
 
     // Retire des échantillons du tampon et les copie dans destination.
     // Renvoie le nombre d'échantillons effectivement lus.
-    int popSamples(T* destination, int numSamples)
+    int popSamples(T* destination, const int numSamples)
     {
         int samplesPopped = 0;
         for (int i = 0; i < numSamples; ++i)

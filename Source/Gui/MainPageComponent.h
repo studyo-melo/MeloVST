@@ -5,12 +5,9 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../Api/AuthService.h"
 #include "../Common/EventListener.h"
-#include "../Common/EventManager.h"
 #include "../Rtc/WebRTCAudioSenderService.h"
 #include "../Api/WebSocketService.h"
-#include "../Api/ApiRoutes.h"
 #include "../Models/Session.h"
-#include "../Api/SocketEvents.h"
 #include "../Debug/DebugAudioAppPlayer.h"
 
 class MainPageComponent final : public juce::Component, EventListener

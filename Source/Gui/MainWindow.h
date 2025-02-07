@@ -4,11 +4,8 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-#include "LoginPageComponent.h"
 #include "MainPageComponent.h"
 #include "../Common/EventListener.h"
-#include "../Common/EventManager.h"
-#include "../Common/JuceLocalStorage.h"
 
 class MainWindow final : public juce::Component, public EventListener
 {

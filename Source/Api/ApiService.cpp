@@ -1,4 +1,5 @@
 #include "ApiService.h"
+#include "../Common/JuceLocalStorage.h"
 
 ApiService &ApiService::getInstance() {
     static ApiService instance;
@@ -10,7 +11,6 @@ juce::String ApiService::makeGETRequest(const ApiRoute route)
 {
     return makeHttpRequest(route, [](juce::URL& url, const juce::URL::InputStreamOptions& options) {
         options.withHttpRequestCmd("GET");
-        // Pas besoin de modifier l'URL pour GET
     });
 }
 
@@ -21,7 +21,6 @@ juce::String ApiService::makePOSTRequest(const ApiRoute route, const nlohmann::j
         options.withHttpRequestCmd("POST")
               .withExtraHeaders("Content-Type: application/json\r\n");
         url = url.withPOSTData(StringUtils::convertJsonToPOSTData(body));
-       // Configurer les en-têtes nécessaires pour une requête POST JSON
     });
 }
 
@@ -29,7 +28,7 @@ juce::String ApiService::makePOSTRequest(const ApiRoute route, const nlohmann::j
 template <typename RequestConfig>
 juce::String ApiService::makeHttpRequest(const ApiRoute route, RequestConfig configureRequest)
 {
-    juce::String apiUrl = buildApiUrl(route);
+    const juce::String apiUrl = buildApiUrl(route);
     juce::Logger::outputDebugString("Making HTTP request to " + apiUrl);
 
     try
@@ -45,7 +44,7 @@ juce::String ApiService::makeHttpRequest(const ApiRoute route, RequestConfig con
         }
 
         auto res = stream->readEntireStreamAsString();
-        auto jsonResponse = juce::JSON::parse(res);
+        const auto jsonResponse = juce::JSON::parse(res);
         if (!jsonResponse.isObject())
         {
             juce::Logger::outputDebugString("Réponse non valide : " + res);
@@ -87,10 +86,9 @@ juce::String ApiService::makeHttpRequest(const ApiRoute route, RequestConfig con
 
 juce::URL::InputStreamOptions ApiService::buildOptions()
 {
-    const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
-    if (!accessToken.isEmpty()) {
+    if (const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token"); !accessToken.isEmpty()) {
         constexpr juce::URL::ParameterHandling parameterHandling{};
-        juce::URL::InputStreamOptions options(parameterHandling);
+        const juce::URL::InputStreamOptions options(parameterHandling);
         return options.withExtraHeaders("Authorization: Bearer " + accessToken);
         ;
     }

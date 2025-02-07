@@ -1,12 +1,10 @@
 #pragma once
 #include "DebugAudioAppPlayer.h"
 #include <juce_audio_utils/juce_audio_utils.h>
-#include "../Utils/FileUtils.h"
 #include <vector>
 #include "../Common/EventListener.h"
-#include "../Common/EventManager.h"
 
-class DebugAudioAppPlayer : public juce::AudioAppComponent, public EventListener {
+class DebugAudioAppPlayer final : public juce::AudioAppComponent, public EventListener {
 public:
     DebugAudioAppPlayer();
     ~DebugAudioAppPlayer() override;

@@ -4,7 +4,7 @@
 #include <juce_core/juce_core.h>
 
 namespace VectorUtils {
-    static rtc::binary convertFloatToBinary(const float* data, size_t size) {
+    static rtc::binary convertFloatToBinary(const float* data, const size_t size) {
         // Allouer suffisamment d'espace pour contenir les données binaires
         rtc::binary binaryData(size * sizeof(float));
 
@@ -27,7 +27,7 @@ namespace VectorUtils {
         return floatData;
     }
 
-    static std::vector<int16_t> convertFloatToInt16(const float* data, size_t size) {
+    static std::vector<int16_t> convertFloatToInt16(const float* data, const size_t size) {
         // Allouer suffisamment d'espace pour contenir les données int16_t
         std::vector<int16_t> int16Data(size);
 
@@ -39,7 +39,7 @@ namespace VectorUtils {
         return int16Data;
     }
 
-    static std::vector<int16_t> convertCharToInt16(const unsigned char* data, size_t size) {
+    static std::vector<int16_t> convertCharToInt16(const unsigned char* data, const size_t size) {
         std::vector<int16_t> int16Data(size / 2);
         for (size_t i = 0; i < size; i += 2) {
             int16Data[i / 2] = static_cast<int16_t>(data[i] | (data[i + 1] << 8));

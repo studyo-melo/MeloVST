@@ -68,8 +68,7 @@ void LoginPageComponent::resized() {
 }
 
 void LoginPageComponent::onLoginButtonClick() {
-    const auto res = AuthService::getInstance().login(usernameField.getText(), passwordField.getText());
-    if (res.isEmpty()) {
+    if (const auto res = AuthService::getInstance().login(usernameField.getText(), passwordField.getText()); res.isEmpty()) {
         errorLabel.setVisible(true);
     }
 }

@@ -11,7 +11,7 @@
 
 class ResamplerWrapper {
 public:
-    ResamplerWrapper(double sourceSR, double targetSR, int nChan) {
+    ResamplerWrapper(double sourceSR, double targetSR, const int nChan) {
         resampler = std::make_unique<r8b::CDSPResampler>(sourceSR, targetSR, 512);
         sourceSampleRate = sourceSR;
         targetSampleRate = targetSR;
@@ -35,14 +35,13 @@ public:
         }
         return outVector;
     }
-    std::vector<int16_t> resampleFromInt16(const std::vector<int16_t>& sourceVector)
-    {
+    std::vector<int16_t> resampleFromInt16(const std::vector<int16_t>& sourceVector) const {
         std::vector<double> doubleAudioBlock(sourceVector.size());
         for (auto i = 0; i < sourceVector.size(); ++i) {
             doubleAudioBlock[i] = static_cast<double>(sourceVector[i] / 32768.0);
         }
 
-        std::vector<double> resampledDoubleAudioBlock = resampleFromDouble(doubleAudioBlock);
+        const std::vector<double> resampledDoubleAudioBlock = resampleFromDouble(doubleAudioBlock);
 
         std::vector<int16_t> resampledAudioBlock(resampledDoubleAudioBlock.size());
         for (auto i = 0; i < resampledDoubleAudioBlock.size(); ++i) {

@@ -1,56 +1,40 @@
 #pragma once
 
 #include <iostream>
-#include <rtc/rtc.hpp>
-#include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 
 #include "../Common/OpusCodecWrapper.h"
 #include "../Api/WebSocketService.h"
 #include "../Common/EventListener.h"
-#include "../Models/Session.h"
-#include "../Api/SocketEvents.h"
-#include "../Common/EventManager.h"
-#include "../ThirdParty/json.hpp"
+
 #include "../Common/ResamplerWrapper.h"
-#include "../Common/ReconnectTimer.h"
 #include "WebRTCConnexionHandler.h"
 #include "../Common/CircularBuffer.h"
-#include "../Debug/DebugRTPWrapper.h"
-#include "../AudioSettings.h"
 
-class WebRTCAudioSenderService : public WebRTCConnexionHandler {
+class WebRTCAudioSenderService final : public WebRTCConnexionHandler {
 public:
     WebRTCAudioSenderService();
+    ~WebRTCAudioSenderService() override;
 
-    ~WebRTCAudioSenderService();
-
-    void createFiles();
-
-    void finalizeFiles();
+    static void createFiles();
+    static void finalizeFiles();
 
 private:
     void stopAudioThread();
-
     void startAudioThread();
-
-    void onRTCStateChanged(const RTCStateChangeEvent &event);
-
-    void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event);
-
+    void onRTCStateChanged(const RTCStateChangeEvent &event) override;
+    void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
     void processingThreadFunction();
 
     OpusCodecWrapper opusCodec;
     ResamplerWrapper resampler;
-    uint16_t seqNum = 1; // Numéro de séquence RTP
-    uint32_t timestamp = 0; // Timestamp RTP (incrementé à chaque trame)
-    uint32_t ssrc = 12345; // Identifiant SSRC unique
+    uint16_t seqNum = 1;
+    uint32_t timestamp = 0;
+    uint32_t ssrc = 12345;
 
-    // Variables pour gérer le thread d'encodage
     std::atomic<bool> threadRunning{true};
     std::thread encodingThread;
 
-    // Tampon circulaire pour stocker les données audio (interleaved)
-    CircularBuffer<float> circularBuffer; // implémentation à fournir ou basée sur juce::AbstractFifo
+    CircularBuffer<float> circularBuffer;
     juce::CriticalSection circularBufferLock;
 };

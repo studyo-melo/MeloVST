@@ -13,7 +13,7 @@ public:
     int nbReviews;
 
     static Seller fromJsonString(const juce::String& jsonString) {
-        auto keyPair = StringUtils::parseJsonStringToKeyPair(jsonString);
+        const auto keyPair = StringUtils::parseJsonStringToKeyPair(jsonString);
         Seller seller;
         seller._id = keyPair.getValue("_id", "").toStdString();
         seller.userId = keyPair.getValue("userId", "").toStdString();

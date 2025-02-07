@@ -7,15 +7,15 @@ public:
     DebugAudioCallback() : currentSampleRate(0.0), currentAngle(0.0), angleDelta(0.0) {}
 
     void audioDeviceIOCallback(const float** inputChannelData, int numInputChannels,
-                               float** outputChannelData, int numOutputChannels,
-                               int numSamples)
+                               float** outputChannelData, const int numOutputChannels,
+                               const int numSamples)
     {
         for (int channel = 0; channel < numOutputChannels; ++channel)
         {
             auto* channelData = outputChannelData[channel];
             for (int sample = 0; sample < numSamples; ++sample)
             {
-                auto currentSample = (float) std::sin(currentAngle);
+                const auto currentSample = static_cast<float>(std::sin(currentAngle));
                 currentAngle += angleDelta;
 
                 channelData[sample] = currentSample;

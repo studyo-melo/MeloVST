@@ -1,9 +1,12 @@
 #include "WebSocketService.h"
+#include "../Common/JuceLocalStorage.h"
+#include "../Config.h"
+#include "../ThirdParty/json.hpp"
+#include "../Common/EventManager.h"
 
-WebSocketService::WebSocketService(const juce::String &wsRoute): webSocket(ix::WebSocket()), wsRoute(wsRoute) {
+WebSocketService::WebSocketService(const juce::String &wsRoute): wsRoute(wsRoute), webSocket(ix::WebSocket()) {
     juce::Logger::outputDebugString(juce::String::fromUTF8("WebSocket initialisé."));
-    auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
-    if (accessToken.isNotEmpty()) {
+    if (const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token"); accessToken.isNotEmpty()) {
         webSocket.setExtraHeaders({{"Authorization", "Bearer " + accessToken.toStdString()}});
     }
 
@@ -33,7 +36,7 @@ WebSocketService::~WebSocketService() {
 }
 
 void WebSocketService::connectToServer() {
-    auto url = juce::String(Config::websocketUrl + wsRoute).toStdString();
+    const auto url = juce::String(Config::websocketUrl + wsRoute).toStdString();
     juce::Logger::outputDebugString("Connecting to WebSocket server at " + url);
 
     webSocket.setUrl(url);
@@ -71,7 +74,7 @@ void WebSocketService::disconnectToServer() {
     webSocket.stop();
 }
 
-void WebSocketService::sendMessage(const std::string &message, int retryCounter) {
+void WebSocketService::sendMessage(const std::string &message, const int retryCounter) {
     if (retryCounter > 3) {
         std::cerr << "Tentatives d'envoi de message épuisées." << std::endl;
         return;

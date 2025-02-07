@@ -13,7 +13,7 @@ namespace Config
     static const juce::String appNameReceiver = "MeloVSTReceiver";
 
     // Couleurs
-    static const juce::Colour primaryColor = juce::Colour(0xFF1A1A1A);
+    static const auto primaryColor = juce::Colour(0xFF1A1A1A);
     static const juce::Colour gray900 = juce::Colour::fromFloatRGBA(12, 17, 29, 1.0f);
     static const juce::Colour gray90080 = juce::Colour::fromFloatRGBA(12, 17, 29, 0.8f);
 

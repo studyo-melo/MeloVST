@@ -2,6 +2,8 @@
 // Created by Padoa on 08/01/2025.
 //
 #include "MainPageComponent.h"
+#include "../Common/EventManager.h"
+#include "../Api/ApiRoutes.h"
 
 MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderService()),
                                         webSocketService(WebSocketService(getWsRouteString(WsRoute::GetOngoingSession)))
@@ -17,7 +19,7 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderServ
     addAndMakeVisible(RTCSignalingStateText);
     addAndMakeVisible(RTCIceCandidateStateText);
 
-    auto userContext = AuthService::getInstance().getUserContext();
+    const auto userContext = AuthService::getInstance().getUserContext();
     title.setText(juce::String::fromUTF8(("Bienvenue " + userContext->user.firstname).c_str()),
                   juce::dontSendNotification);
     title.setJustificationType(juce::Justification::centred);
@@ -59,8 +61,7 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderServ
         webRTCAudioService.createFiles();
     };
 
-    auto res = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions);
-    if (res.isNotEmpty()) {
+    if (const auto res = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions); res.isNotEmpty()) {
         ongoingSessions = PopulatedSession::parseArrayFromJsonString(res);
         if (ongoingSessions.size() > 0) {
             currentOngoingSession = ongoingSessions[0];

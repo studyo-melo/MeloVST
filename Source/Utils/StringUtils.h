@@ -14,7 +14,7 @@ namespace StringUtils {
             // Assurez-vous que la valeur est une chaîne ou convertible en chaîne
             if (it->is_string() || it->is_number() || it->is_boolean())
             {
-                juce::String key = juce::URL::addEscapeChars(it.key(), true); // Échapper la clé
+                const juce::String key = juce::URL::addEscapeChars(it.key(), true); // Échapper la clé
                 juce::String value = it->get<std::string>(); // Échapper la valeur
 
                 parameterStrings.add(key + "=" + value);

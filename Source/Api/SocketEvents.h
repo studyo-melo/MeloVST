@@ -28,7 +28,7 @@ public:
     }
 };
 
-class RTCOfferSentEvent : SocketEvent {
+class RTCOfferSentEvent final : SocketEvent {
 public:
     RTCOfferSentEvent(const rtc::Description &sdp, const PopulatedSession &ongoingSession) : sdp(sdp), ongoingSession(ongoingSession) {}
     std::string type = "offer";

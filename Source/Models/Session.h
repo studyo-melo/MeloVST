@@ -43,8 +43,8 @@ public:
   }
 
   static juce::Array<PopulatedSession> parseArrayFromJsonString(const juce::String& jsonString) {
-    auto json = juce::JSON::parse(jsonString);
-    auto array = json.getArray();
+    const auto json = juce::JSON::parse(jsonString);
+    const auto array = json.getArray();
     juce::Array<PopulatedSession> sessions;
     for (int i = 0; i < array->size(); i++) {
       sessions.add(fromJSON(array->getReference(i)));

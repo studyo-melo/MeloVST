@@ -27,7 +27,7 @@ public:
     std::string updatedAt;
 
     static User fromJsonString(const juce::String& jsonString) {
-        auto keyPair = StringUtils::parseJsonStringToKeyPair(jsonString);
+        const auto keyPair = StringUtils::parseJsonStringToKeyPair(jsonString);
         User user;
         user._id = keyPair.getValue("_id", "").toStdString();
         user.email = keyPair.getValue("email", "").toStdString();

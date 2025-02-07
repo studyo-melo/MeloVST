@@ -1,7 +1,6 @@
 #pragma once
 #include <juce_core/juce_core.h>  // Pour manipuler les chaînes de caractères
 
-// Enumération des routes API
 enum class ApiRoute
 {
     PostLogin,
@@ -11,7 +10,6 @@ enum class ApiRoute
     GetHealth
 };
 
-// Fonction pour obtenir le nom de la route sous forme de chaîne
 inline juce::String getApiRouteString(const ApiRoute route)
 {
     switch (route)

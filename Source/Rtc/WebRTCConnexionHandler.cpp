@@ -1,8 +1,11 @@
 #include "WebRTCConnexionHandler.h"
+#include "../Common/EventManager.h"
+#include "../ThirdParty/json.hpp"
+#include "../AudioSettings.h"
 
-WebRTCConnexionHandler::WebRTCConnexionHandler(WsRoute ws_route, rtc::Description::Direction track_direction):
-    trackDirection(track_direction),
-    meloWebSocketService(WebSocketService(getWsRouteString(ws_route))),
+WebRTCConnexionHandler::WebRTCConnexionHandler(const WsRoute wsRoute, const rtc::Description::Direction trackDirection):
+    meloWebSocketService(WebSocketService(getWsRouteString(wsRoute))),
+    trackDirection(trackDirection),
     reconnectTimer([this]() { attemptReconnect(); })
 {
     EventManager::getInstance().addListener(this);
@@ -28,7 +31,7 @@ void WebRTCConnexionHandler::setupConnection() {
     newAudioTrack.setDirection(trackDirection);
     newAudioTrack.addSSRC(12345, "CNAME");;
 
-    peerConnection->onLocalDescription([this](rtc::Description sdp) {
+    peerConnection->onLocalDescription([this](const rtc::Description &sdp) {
         if (!peerConnection->remoteDescription()) {
             sendOfferToRemote(sdp);
         }
@@ -56,10 +59,11 @@ void WebRTCConnexionHandler::setupConnection() {
     });
 
     peerConnection->onTrack([this](std::shared_ptr<rtc::Track> track) {
+        juce::ignoreUnused(track);
         juce::Logger::outputDebugString("Track received");
     });
 
-    peerConnection->onIceStateChange([this](rtc::PeerConnection::IceState state) {
+    peerConnection->onIceStateChange([this](const rtc::PeerConnection::IceState state) {
         notifyRTCStateChanged();
         switch (state) {
             case rtc::PeerConnection::IceState::New:
@@ -129,10 +133,10 @@ void WebRTCConnexionHandler::onWsMessageReceived(const MessageWsReceivedEvent &e
             return;
         }
         juce::Logger::outputDebugString("Received ICE candidate ->" + event.data["candidate"]);
-        std::string candidate = event.data["candidate"];
-        std::string sdpMid = event.data["sdpMid"];
+        const std::string candidate = event.data["candidate"];
+        const std::string sdpMid = event.data["sdpMid"];
 
-        rtc::Candidate iceCandidate(rtc::Candidate(candidate, sdpMid));
+        const auto iceCandidate(rtc::Candidate(candidate, sdpMid));
         peerConnection->addRemoteCandidate(iceCandidate);
     }
 }

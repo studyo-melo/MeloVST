@@ -1,11 +1,14 @@
 #include "WebRTCAudioSenderService.h"
-
+#include "../Debug/DebugRTPWrapper.h"
+#include "../AudioSettings.h"
+#include "../Common/EventManager.h"
+#include <rtc/rtc.hpp>
 
 WebRTCAudioSenderService::WebRTCAudioSenderService(): WebRTCConnexionHandler(WsRoute::GetOngoingSessionRTC,
                                                                              rtc::Description::Direction::SendOnly),
-                                                      circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels()),
                                                       opusCodec(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels(), AudioSettings::getInstance().getLatency(), AudioSettings::getInstance().getOpusBitRate()),
-                                                      resampler(AudioSettings::getInstance().getSampleRate(), AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels()) {
+                                                      resampler(AudioSettings::getInstance().getSampleRate(), AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels()),
+                                                      circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels()) {
 }
 
 WebRTCAudioSenderService::~WebRTCAudioSenderService() {
@@ -17,7 +20,8 @@ void WebRTCAudioSenderService::onAudioBlockProcessedEvent(const AudioBlockProces
 
     // On vérifie que le buffer audio (audioBlock) contient des données
     if (!audioBlock.empty()) {
-        const int numSamples = static_cast<int>(audioBlock.size()); {
+        {
+            const int numSamples = static_cast<int>(audioBlock.size());
             juce::ScopedLock sl(circularBufferLock);
             circularBuffer.pushSamples(audioBlock.data(), numSamples);
         }

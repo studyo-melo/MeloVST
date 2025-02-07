@@ -26,14 +26,14 @@ namespace DebugRTPWrapper {
         } srtp_hdr_t;
 
         try {
-            auto data = reinterpret_cast<const std::byte *>(encodedData.data());
+            const auto data = reinterpret_cast<const std::byte *>(encodedData.data());
             auto bin = rtc::binary(data, data + encodedData.size()); // message_variant
-            auto message = rtc::make_message(std::move(bin));
+            const auto message = rtc::make_message(std::move(bin));
 
-            int size = int(message->size());
-            auto message2 = rtc::make_message(size + 16 + 128, message);
+            const int size = static_cast<int>(message->size());
+            const auto message2 = rtc::make_message(size + 16 + 128, message);
             void *message2Data = message2->data();
-            auto hdr = (srtp_hdr_t *) message2Data;
+            const auto hdr = static_cast<srtp_hdr_t *>(message2Data);
             std::cout << "RTP Header:" << std::endl;
             std::cout << "  Version: " << static_cast<int>(hdr->version)
                     << " (0x" << std::hex << static_cast<int>(hdr->version) << std::dec << ")" << std::endl;

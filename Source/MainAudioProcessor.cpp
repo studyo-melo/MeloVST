@@ -19,7 +19,7 @@ MainAudioProcessor::MainAudioProcessor()
 MainAudioProcessor::~MainAudioProcessor()
 = default;
 
-const juce::String MainAudioProcessor::getProgramName (int index)
+const juce::String MainAudioProcessor::getProgramName (const int index)
 {
     if (index == 0) return "MeloVST Send";
     if (index == 1) return "MeloVST Receive";
@@ -87,7 +87,7 @@ void MainAudioProcessor::changeProgramName (int index, const juce::String& newNa
 }
 
 //==============================================================================
-void MainAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void MainAudioProcessor::prepareToPlay (const double sampleRate, const int samplesPerBlock)
 {
     AudioSettings::getInstance().setSampleRate(sampleRate);
     AudioSettings::getInstance().setBlockSize(samplesPerBlock);

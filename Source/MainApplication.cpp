@@ -5,10 +5,9 @@ MainApplication::MainApplication(MainAudioProcessor &p): AudioProcessorEditor(&p
     addAndMakeVisible(mainWindow.get());
 
     std::set_terminate(CrashHandler::customTerminateHandler);
-    const auto hostDescription = juce::String(juce::PluginHostType().getHostDescription());
-    if (hostDescription.equalsIgnoreCase("Unknown")) {
+    if (const auto hostDescription = juce::String(juce::PluginHostType().getHostDescription()); hostDescription.equalsIgnoreCase("Unknown")) {
         juce::AudioDeviceManager deviceManager;
-        DebugAudioCallback audioCallback = DebugAudioCallback();
+        auto audioCallback = DebugAudioCallback();
 
         deviceManager.initialise(0, 2, nullptr, true); // 0 entrées, 2 sorties
         deviceManager.addAudioCallback(&audioCallback);

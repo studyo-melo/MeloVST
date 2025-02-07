@@ -2,11 +2,13 @@
 // Created by Padoa on 08/01/2025.
 //
 #include "MainWindow.h"
+#include "LoginPageComponent.h"
+#include "../Common/EventManager.h"
+#include "../Common/JuceLocalStorage.h"
 
 MainWindow::MainWindow(const juce::String& name): Component(name)
 {
-    const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
-    if (accessToken.isEmpty()) {
+    if (const auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token"); accessToken.isEmpty()) {
         navigateToLoginPage();
     }
     else {

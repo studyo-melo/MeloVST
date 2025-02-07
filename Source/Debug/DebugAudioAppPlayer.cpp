@@ -1,6 +1,7 @@
 #pragma once
 #include "DebugAudioAppPlayer.h"
-
+#include "../Utils/FileUtils.h"
+#include "../Common/EventManager.h"
 DebugAudioAppPlayer::DebugAudioAppPlayer()
 {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
@@ -11,7 +12,7 @@ DebugAudioAppPlayer::~DebugAudioAppPlayer() {
     EventManager::getInstance().removeListener(this);
 }
 
-void DebugAudioAppPlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRate) {
+void DebugAudioAppPlayer::prepareToPlay(int samplesPerBlockExpected, const double sampleRate) {
     juce::ignoreUnused(samplesPerBlockExpected);
     currentSampleRate = sampleRate;
     currentSampleIndex = 0;
@@ -27,7 +28,7 @@ void DebugAudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo &
     auto* leftChannel = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
     auto* rightChannel = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample);
 
-    int samplesToCopy = std::min(audioBlock.size() / 2, static_cast<size_t>(bufferToFill.numSamples));
+    const int samplesToCopy = std::min(audioBlock.size() / 2, static_cast<size_t>(bufferToFill.numSamples));
 
     for (int sample = 0; sample < samplesToCopy; ++sample) {
         leftChannel[sample] = audioBlock[sample];

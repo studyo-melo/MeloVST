@@ -7,7 +7,7 @@
 
 class OpusCodecWrapper {
 public:
-    OpusCodecWrapper(int sample_rate, int channels, int duration_ms, int bitrate): frameDurationInMs(duration_ms), numChannels(channels), sampleRate(sample_rate) {
+    OpusCodecWrapper(const int sample_rate, const int channels, const int duration_ms, const int bitrate): frameDurationInMs(duration_ms), numChannels(channels), sampleRate(sample_rate) {
         int error;
         encoder = opus_encoder_create(sample_rate, channels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK)
@@ -37,12 +37,12 @@ public:
             opus_decoder_destroy(decoder);
     }
 
-    std::vector<unsigned char> encode_float(const std::vector<float>& pcm, int nbSamples) const {
+    std::vector<unsigned char> encode_float(const std::vector<float>& pcm, const int nbSamples) const {
         // On définit une taille maximale pour le paquet de sortie (par exemple 4000 octets)
         std::vector<unsigned char> res(4000);
 
         // Opus attend nbSamples échantillons par canal.
-        int ret = opus_encode_float(encoder, pcm.data(), nbSamples, res.data(), static_cast<int>(res.size()));
+        const int ret = opus_encode_float(encoder, pcm.data(), nbSamples, res.data(), static_cast<int>(res.size()));
         if (ret < 0) {
             throw std::runtime_error("Encoding failed with error code: " + std::to_string(ret));
         }
@@ -54,7 +54,7 @@ public:
     std::vector<float> decode_float(const std::vector<unsigned char>& opus) const {
         // Allocation initiale pour frameSizePerChannel * numChannels échantillons
         std::vector<float> pcm(frameSizePerChannel * numChannels);
-        int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
+        const int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
         if (ret < 0) {
             return pcm;
         }
@@ -67,7 +67,7 @@ public:
     // Un paquet Opus contient :
     // Un en-tête : qui inclut des informations comme le type de trame, le débit binaire, et la taille des trames.
     // Les données encodées: même pour un silence, Opus insère des données encodées représentant le silence.
-    void encode(std::vector<int16_t> pcm, std::function<void(std::vector<unsigned char> opus)> handler) {
+    void encode(std::vector<int16_t> pcm, const std::function<void(std::vector<unsigned char> opus)> &handler) {
         if (encoder == nullptr) {
             return;
         }
@@ -80,7 +80,7 @@ public:
 
         while (in_buffer_.size() >= frame_size_ * numChannels) {
             std::vector<uint8_t> opus(frame_size_ * numChannels, 0);
-            auto ret = opus_encode(encoder, in_buffer_.data(), frame_size_, opus.data(), opus.size());
+            const auto ret = opus_encode(encoder, in_buffer_.data(), frame_size_, opus.data(), opus.size());
             if (ret < 0) {
                 // ESP_LOGE(TAG, "Failed to encode audio, error code: %ld", ret);
                 return;
@@ -95,14 +95,13 @@ public:
         }
     }
 
-    bool decode(std::vector<unsigned char> opus, std::vector<int16_t>& pcm) {
+    bool decode(const std::vector<unsigned char> &opus, std::vector<int16_t>& pcm) const {
         if (decoder == nullptr) {
             return false;
         }
 
         pcm.resize(frame_size_ * numChannels);
-        auto ret = opus_decode(decoder, opus.data(), opus.size(), pcm.data(), frame_size_ * numChannels, 1);
-        if (ret < 0) {
+        if (const auto ret = opus_decode(decoder, opus.data(), opus.size(), pcm.data(), frame_size_ * numChannels, 1); ret < 0) {
             return false;
         }
 

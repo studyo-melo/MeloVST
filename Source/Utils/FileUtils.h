@@ -1,10 +1,8 @@
 #pragma once
 #include <juce_core/juce_core.h>
-#include <iostream>
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include <chrono>
 #include <iomanip>
 #include <opus_types.h>
 
@@ -12,9 +10,9 @@ namespace FileUtils {
     // Génère un nom de fichier avec un horodatage
     static std::string generateTimestampedFilename(const std::string& baseName, const std::string& extension) {
         // Obtenir l'heure actuelle
-        auto now = std::chrono::system_clock::now();
-        auto timeT = std::chrono::system_clock::to_time_t(now);
-        auto localTime = *std::localtime(&timeT);
+        const auto now = std::chrono::system_clock::now();
+        const auto timeT = std::chrono::system_clock::to_time_t(now);
+        const auto localTime = *std::localtime(&timeT);
 
         // Formater l'horodatage
         std::ostringstream oss;
@@ -37,7 +35,7 @@ namespace FileUtils {
 
     // Initialise un fichier Ogg Opus pour écrire les données
     inline std::fstream initializeOpusFile(const std::string& filename) {
-        std::string filepath = getFilePath(filename);
+        const std::string filepath = getFilePath(filename);
         std::remove(filepath.c_str()); // Supprime le fichier s'il existe déjà
 
         std::fstream opusFile(filepath, std::ios::binary | std::ios::out);
@@ -73,7 +71,7 @@ namespace FileUtils {
         opusFile.write(reinterpret_cast<const char*>(opusData.data()), opusData.size());
 
         // Mettre à jour les informations dans l'en-tête Ogg
-        std::streamsize opusDataSize = opusData.size();
+        const std::streamsize opusDataSize = opusData.size();
         opusFile.seekp(0, std::ios::beg); // Retourner au début pour modifier l'en-tête
 
         // Écrire à nouveau l'en-tête Ogg
@@ -90,7 +88,7 @@ namespace FileUtils {
     }
 
     // Finalise le fichier Ogg Opus
-    inline void finalizeOpusFile(std::fstream& opusFile, std::streamsize opusDataSize, opus_int32 bitstreamSerialNumber = 12345) {
+    inline void finalizeOpusFile(std::fstream& opusFile, const std::streamsize opusDataSize, const opus_int32 bitstreamSerialNumber = 12345) {
         if (!opusFile.is_open()) {
             return;
         }
@@ -116,7 +114,7 @@ namespace FileUtils {
 
     // Initialise un fichier WAV pour écrire les données
     inline std::fstream initializeWavFile(const std::string& filename) {
-        std::string filepath = getFilePath(filename);
+        const std::string filepath = getFilePath(filename);
         std::remove(filepath.c_str()); // Supprime le fichier s'il existe déjà
 
         std::fstream wavFile(filepath, std::ios::binary | std::ios::out);
@@ -125,16 +123,16 @@ namespace FileUtils {
             throw std::runtime_error("Failed to create WAV file.");
         }
 
-        int sampleRate = 44100; // Exemple : fréquence d'échantillonnage
-        int channels = 2; // Exemple : nombre de canaux
+        constexpr int sampleRate = 44100; // Exemple : fréquence d'échantillonnage
+        constexpr int channels = 2; // Exemple : nombre de canaux
         juce::Logger::outputDebugString(
             "Initializing WAV file with " + std::to_string(sampleRate) + "Hz, " + std::to_string(channels) + " channels");
 
         // Paramètres pour l'entête initial
-        int byteRate = sampleRate * channels * sizeof(int16_t);
-        int blockAlign = channels * sizeof(int16_t);
-        int dataSize = 0; // Initialement vide
-        int chunkSize = 36 + dataSize;
+        constexpr int byteRate = sampleRate * channels * sizeof(int16_t);
+        constexpr int blockAlign = channels * sizeof(int16_t);
+        constexpr int dataSize = 0; // Initialement vide
+        constexpr int chunkSize = 36 + dataSize;
 
         // Écrire un en-tête provisoire
         wavFile.write("RIFF", 4);
@@ -142,8 +140,8 @@ namespace FileUtils {
         wavFile.write("WAVE", 4);
         wavFile.write("fmt ", 4);
 
-        int subchunk1Size = 16; // PCM
-        int audioFormat = 1; // Linear PCM
+        constexpr int subchunk1Size = 16; // PCM
+        constexpr int audioFormat = 1; // Linear PCM
         wavFile.write(reinterpret_cast<const char*>(&subchunk1Size), 4);
         wavFile.write(reinterpret_cast<const char*>(&audioFormat), 2);
         wavFile.write(reinterpret_cast<const char*>(&channels), 2);
@@ -151,7 +149,7 @@ namespace FileUtils {
         wavFile.write(reinterpret_cast<const char*>(&byteRate), 4);
         wavFile.write(reinterpret_cast<const char*>(&blockAlign), 2);
 
-        int bitsPerSample = 16;
+        constexpr int bitsPerSample = 16;
         wavFile.write(reinterpret_cast<const char*>(&bitsPerSample), 2);
         wavFile.write("data", 4);
         wavFile.write(reinterpret_cast<const char*>(&dataSize), 4);
@@ -171,12 +169,12 @@ namespace FileUtils {
     inline void finalizeWavFile(std::fstream& wavFile) {
         // Aller à la fin pour calculer la taille des données
         wavFile.seekp(0, std::ios::end);
-        int fileSize = wavFile.tellp();
-        int dataSize = fileSize - 44; // Taille des données après l'en-tête
+        const int fileSize = wavFile.tellp();
+        const int dataSize = fileSize - 44; // Taille des données après l'en-tête
 
         // Mettre à jour la taille des données et le chunkSize
         wavFile.seekp(4, std::ios::beg);
-        int chunkSize = 36 + dataSize;
+        const int chunkSize = 36 + dataSize;
         wavFile.write(reinterpret_cast<const char*>(&chunkSize), 4);
         wavFile.seekp(40, std::ios::beg);
         wavFile.write(reinterpret_cast<const char*>(&dataSize), 4);

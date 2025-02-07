@@ -20,7 +20,7 @@ public:
         listeners.removeFirstMatchingValue(listener);
     }
 
-    void notifyAudioBlockProcessed(const AudioBlockProcessedEvent event)
+    void notifyAudioBlockProcessed(const AudioBlockProcessedEvent &event)
     {
         for (auto* listener : listeners)
         {

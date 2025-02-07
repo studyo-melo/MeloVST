@@ -1,4 +1,8 @@
 #include "AuthService.h"
+#include "ApiService.h"
+#include "../Utils/StringUtils.h"
+#include "../Common//JuceLocalStorage.h"
+#include "../Common/EventManager.h"
 
 AuthService &AuthService::getInstance() {
     static AuthService instance;
@@ -6,7 +10,7 @@ AuthService &AuthService::getInstance() {
 }
 
 juce::String AuthService::login(const juce::String &email, const juce::String &password) {
-    nlohmann::json jsonBody = {
+    const nlohmann::json jsonBody = {
         {"email",    email.toStdString()},
         {"password", password.toStdString()}
     };
@@ -28,7 +32,7 @@ juce::String AuthService::login(const juce::String &email, const juce::String &p
     }
 }
 std::optional<UserContext> AuthService::fetchUserContext() {
-    auto myUserContext = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyUserContext);
+    const auto myUserContext = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyUserContext);
     if (myUserContext.isEmpty()) {
         juce::Logger::outputDebugString("Aucun UserContext trouvé");
         logout();

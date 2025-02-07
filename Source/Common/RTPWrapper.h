@@ -46,10 +46,9 @@ public:
 
         // Décoder les champs de l'en-tête RTP
         const uint8_t v_p_x_cc = rtpPacket[0];
-        const uint8_t version = (v_p_x_cc >> 6) & 0x03;
 
         // Vérifier la version RTP (doit être 2)
-        if (version != RTP_VERSION) {
+        if (const uint8_t version = (v_p_x_cc >> 6) & 0x03; version != RTP_VERSION) {
             throw std::runtime_error("Invalid RTP packet: unsupported version");
         }
 
@@ -58,8 +57,7 @@ public:
         size_t headerSize = sizeof(RTPHeader) + (csrcCount * 4); // Taille minimale = 12 octets, plus 4 octets par CSRC
 
         // Vérifier s'il y a une extension RTP
-        const uint8_t extensionFlag = (v_p_x_cc >> 4) & 0x01;
-        if (extensionFlag) {
+        if (const uint8_t extensionFlag = (v_p_x_cc >> 4) & 0x01) {
             if (rtpPacket.size() < headerSize + 4) {
                 throw std::runtime_error("Invalid RTP packet: not enough data for extension header");
             }

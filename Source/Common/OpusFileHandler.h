@@ -8,7 +8,7 @@
 
 class OpusFileHandler {
 public:
-    OpusFileHandler(uint32_t sampleRate, int bitrate, int16_t numChannels) : file(nullptr), sampleRate(sampleRate), bitrate(bitrate), numChannels(numChannels), encoder(nullptr) {}
+    OpusFileHandler(const uint32_t sampleRate, const int bitrate, const int16_t numChannels): sampleRate(sampleRate), bitrate(bitrate), numChannels(numChannels), file(nullptr), encoder(nullptr) {}
     static std::string getFilePath(const std::string& filename) {
         const char* homeDir = getenv("HOME");
         if (!homeDir) {
@@ -19,7 +19,7 @@ public:
     }
 
     bool create(const std::string& filename) {
-        std::string filepath = getFilePath(filename);
+        const std::string filepath = getFilePath(filename);
         std::remove(filepath.c_str());
         juce::Logger::outputDebugString("Creating opus file: " + filename);
         file = new std::ofstream(filepath, std::ios::binary);
@@ -41,7 +41,7 @@ public:
         return true;
     }
 
-    void write(const std::vector<unsigned char>& samples) {
+    void write(const std::vector<unsigned char>& samples) const {
         if (!file || !file->is_open() || !encoder) return;
         if (samples.empty()) return;
         juce::Logger::outputDebugString("Writing in " + juce::String(samples.size()) + " bytes in opus file");

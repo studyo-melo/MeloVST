@@ -10,7 +10,7 @@ public:
     std::string updatedAt;
 
     static Artist fromJsonString(const juce::String& jsonString) {
-        auto keyPair = StringUtils::parseJsonStringToKeyPair(jsonString);
+        const auto keyPair = StringUtils::parseJsonStringToKeyPair(jsonString);
         Artist artist;
 
         artist._id = keyPair.getValue("_id", juce::String()).toStdString();
