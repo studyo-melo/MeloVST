@@ -3,11 +3,11 @@
 //
 
 #pragma once
-#include <CDSPResampler.h>
 #include <vector>
 #include <cmath>
 #include <memory>
 #include <algorithm>
+#include <CDSPResampler.h>
 
 class ResamplerWrapper {
 public:

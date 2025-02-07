@@ -4,14 +4,14 @@
 #pragma once
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../Api/AuthService.h"
-#include "../Events/EventListener.h"
-#include "../Events/EventManager.h"
+#include "../Common/EventListener.h"
+#include "../Common/EventManager.h"
 #include "../Rtc/WebRTCAudioSenderService.h"
-#include "../Socket/WebSocketService.h"
+#include "../Api/WebSocketService.h"
 #include "../Api/ApiRoutes.h"
 #include "../Models/Session.h"
-#include "../Socket/SocketEvents.h"
-#include "../Debug/AudioAppPlayer.h"
+#include "../Api/SocketEvents.h"
+#include "../Debug/DebugAudioAppPlayer.h"
 
 class MainPageComponent final : public juce::Component, EventListener
 {

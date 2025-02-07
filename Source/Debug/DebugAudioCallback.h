@@ -1,3 +1,4 @@
+#pragma once
 #include <juce_audio_devices/juce_audio_devices.h>
 
 class DebugAudioCallback : public juce::AudioIODeviceCallback

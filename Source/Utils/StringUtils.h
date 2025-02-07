@@ -1,7 +1,7 @@
 #pragma once
 #include <juce_core/juce_core.h>
 
-#include "json.hpp"
+#include "../ThirdParty/json.hpp"
 
 namespace StringUtils {
     static juce::String convertJsonToPOSTData(const nlohmann::json& jsonObject)

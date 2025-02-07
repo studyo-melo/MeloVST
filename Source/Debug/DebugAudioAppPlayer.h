@@ -1,19 +1,15 @@
 #pragma once
-#include "AudioAppPlayer.h"
+#include "DebugAudioAppPlayer.h"
 #include <juce_audio_utils/juce_audio_utils.h>
-#include <juce_core/juce_core.h>
 #include "../Utils/FileUtils.h"
-#include "../Utils/VectorUtils.h"
-#include <stdio.h>
 #include <vector>
-#include "../Events/EventListener.h"
-#include "../Events/EventManager.h"
-#include "../Utils/AudioSettings.h"
+#include "../Common/EventListener.h"
+#include "../Common/EventManager.h"
 
-class AudioAppPlayer : public juce::AudioAppComponent, public EventListener {
+class DebugAudioAppPlayer : public juce::AudioAppComponent, public EventListener {
 public:
-    AudioAppPlayer();
-    ~AudioAppPlayer() override;
+    DebugAudioAppPlayer();
+    ~DebugAudioAppPlayer() override;
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) override;

@@ -1,8 +1,8 @@
 #pragma once
-#include <juce_audio_processors/juce_audio_processors.h>
 
 #include "../Models/Session.h"
 #include <rtc/rtc.hpp>
+#include "../ThirdParty/json.hpp"
 
 struct AudioBlockProcessedEvent {
     const std::vector<float> data;

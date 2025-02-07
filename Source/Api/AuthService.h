@@ -3,8 +3,9 @@
 #include <juce_core/juce_core.h>
 #include "ApiService.h"
 #include "../Utils/StringUtils.h"
-#include "../Utils/JuceLocalStorage.h"
+#include "../Common//JuceLocalStorage.h"
 #include "../Models/UserContext.h"
+#include "../Common/EventManager.h"
 
 class AuthService
 {

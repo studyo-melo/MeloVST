@@ -1,8 +1,5 @@
 #include "WebSocketService.h"
 
-#include "../Events/EventManager.h"
-#include "../Utils/JuceLocalStorage.h"
-
 WebSocketService::WebSocketService(const juce::String &wsRoute): webSocket(ix::WebSocket()), wsRoute(wsRoute) {
     juce::Logger::outputDebugString(juce::String::fromUTF8("WebSocket initialisé."));
     auto accessToken = JuceLocalStorage::getInstance().loadValue("access_token");
@@ -36,7 +33,7 @@ WebSocketService::~WebSocketService() {
 }
 
 void WebSocketService::connectToServer() {
-    auto url = juce::String(Constants::websocketUrl + wsRoute).toStdString();
+    auto url = juce::String(Config::websocketUrl + wsRoute).toStdString();
     juce::Logger::outputDebugString("Connecting to WebSocket server at " + url);
 
     webSocket.setUrl(url);

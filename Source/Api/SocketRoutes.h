@@ -1,7 +1,7 @@
 #pragma once
-#include <juce_core/juce_core.h>  // Pour manipuler les chaînes de caractères
-#include "../Utils/Constants.h"
+#include "../Config.h"
 #include "../Utils/StringUtils.h"
+#include <juce_core/juce_core.h>
 
 enum class WsRoute
 {

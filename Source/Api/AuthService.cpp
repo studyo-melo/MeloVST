@@ -1,7 +1,5 @@
 #include "AuthService.h"
 
-#include "../Events/EventManager.h"
-
 AuthService &AuthService::getInstance() {
     static AuthService instance;
     return instance;

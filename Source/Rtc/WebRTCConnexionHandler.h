@@ -5,13 +5,13 @@
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 
-#include "../Socket/WebSocketService.h"
-#include "../Events/EventListener.h"
+#include "../Api/WebSocketService.h"
+#include "../Common/EventListener.h"
 #include "../Models/Session.h"
-#include "../Socket/SocketEvents.h"
-#include "../Events/EventManager.h"
-#include "../Utils/json.hpp"
-#include "../Utils/ReconnectTimer.h"
+#include "../Api/SocketEvents.h"
+#include "../Common/EventManager.h"
+#include "../ThirdParty/json.hpp"
+#include "../Common/ReconnectTimer.h"
 
 class WebRTCConnexionHandler : EventListener {
 public:

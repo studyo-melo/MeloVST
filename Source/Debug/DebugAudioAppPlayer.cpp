@@ -1,24 +1,24 @@
 #pragma once
-#include "AudioAppPlayer.h"
+#include "DebugAudioAppPlayer.h"
 
-AudioAppPlayer::AudioAppPlayer()
+DebugAudioAppPlayer::DebugAudioAppPlayer()
 {
     setAudioChannels(0, 2); // Pas d'entrée, sortie stéréo
     EventManager::getInstance().addListener(this);
 }
 
-AudioAppPlayer::~AudioAppPlayer() {
+DebugAudioAppPlayer::~DebugAudioAppPlayer() {
     EventManager::getInstance().removeListener(this);
 }
 
-void AudioAppPlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRate) {
+void DebugAudioAppPlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRate) {
     juce::ignoreUnused(samplesPerBlockExpected);
     currentSampleRate = sampleRate;
     currentSampleIndex = 0;
 }
 
 
-void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) {
+void DebugAudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) {
     if (bufferToFill.buffer == nullptr) {
         bufferToFill.clearActiveBufferRegion();
         return;
@@ -41,10 +41,10 @@ void AudioAppPlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo &buffe
     }
 }
 
-void AudioAppPlayer::releaseResources() {
+void DebugAudioAppPlayer::releaseResources() {
     audioBlock.clear();
 }
 
-void AudioAppPlayer::onAudioBlockSent(const AudioBlockSentEvent &event) {
+void DebugAudioAppPlayer::onAudioBlockSent(const AudioBlockSentEvent &event) {
     // audioBlock = event.data;
 }

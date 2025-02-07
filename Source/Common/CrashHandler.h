@@ -1,9 +1,8 @@
 #pragma once
 #include <exception>
-#include <iostream>
+#include "../Api/ApiService.h"
+#include "../Api/AuthService.h"
 #include <juce_core/juce_core.h>
-#include "Api/ApiService.h"
-#include "Api/AuthService.h"
 
 class CrashHandler {
 public:

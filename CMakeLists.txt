@@ -6,8 +6,8 @@ project(MeloVST VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
-set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
+#set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # We're going to use CPM as our package manager to bring in JUCE
@@ -29,18 +29,18 @@ CPMAddPackage(
         GIT_TAG origin/master
 )
 
-CPMAddPackage(
-        NAME ssl
-        GIT_REPOSITORY https://github.com/jimmy-park/openssl-cmake.git
-        GIT_TAG 3.4.0
-)
+#CPMAddPackage(
+#        NAME ssl
+#        GIT_REPOSITORY https://github.com/jimmy-park/openssl-cmake.git
+#        GIT_TAG 3.4.0
+#)
 
 CPMAddPackage(
         NAME libdatachannel
         GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
         GIT_TAG v0.22.4
-        OPTIONS
-        "PREFER_SYSTEM_LIB=0"
+#        OPTIONS
+#        "PREFER_SYSTEM_LIB=0"
 )
 
 CPMAddPackage(
@@ -61,7 +61,7 @@ CPMAddPackage(
 )
 
 include_directories(/opt/homebrew/opt/ffmpeg/include)
-include_directories(${ssl_SOURCE_DIR}/include)
+#include_directories(${ssl_SOURCE_DIR}/include)
 include_directories(${libopus_SOURCE_DIR}/include)
 include_directories(${r8brain_SOURCE_DIR})
 
@@ -77,59 +77,64 @@ target_link_libraries(
 
 # Make sure you include any new source files here
 set(SourceFiles
-        Source/Utils/StringUtils.h
-        Source/Utils/AudioUtils.h
-        Source/Utils/VectorUtils.h
-        Source/Utils/FileUtils.h
-        Source/Utils/Constants.h
-        Source/Utils/JuceLocalStorage.h
-        Source/Utils/json.hpp
-        Source/Utils/AudioSettings.h
-        Source/Utils/ResamplerWrapper.h
-        Source/Utils/CircularBuffer.h
-        Source/Utils/RTPWrapper.h
-        Source/Utils/ReconnectTimer.h
-        Source/Debug/DebugAudioCallback.h
-        Source/Debug/AudioAppPlayer.h
-        Source/Debug/AudioAppPlayer.cpp
-        Source/Debug/DebugRTPWrapper.h
-        Source/Files/WavFileHandler.h
-        Source/Files/OpusFileHandler.h
         Source/MainApplication.cpp
         Source/MainApplication.h
-        Source/CrashHandler.h
         Source/MainAudioProcessor.cpp
         Source/MainAudioProcessor.h
+        Source/Config.h
+        Source/AudioSettings.h
+
+        Source/Utils/FileUtils.h
+        Source/Utils/StringUtils.h
+        Source/Utils/VectorUtils.h
+
+        Source/ThirdParty/json.hpp
+
+        Source/Rtc/WebRTCAudioSenderService.h
+        Source/Rtc/WebRTCAudioSenderService.cpp
+        Source/Rtc/WebRTCConnexionHandler.cpp
+        Source/Rtc/WebRTCConnexionHandler.h
+
+        Source/Models/User.h
+        Source/Models/Session.h
+        Source/Models/Seller.h
+        Source/Models/Artist.h
+        Source/Models/UserContext.h
+
         Source/Gui/MainWindow.cpp
         Source/Gui/MainWindow.h
         Source/Gui/MainPageComponent.cpp
         Source/Gui/MainPageComponent.h
         Source/Gui/LoginPageComponent.cpp
         Source/Gui/LoginPageComponent.h
+
+        Source/Debug/DebugAudioCallback.h
+        Source/Debug/DebugAudioAppPlayer.h
+        Source/Debug/DebugAudioAppPlayer.cpp
+        Source/Debug/DebugRTPWrapper.h
+
+        Source/Common/CircularBuffer.h
+        Source/Common/CrashHandler.h
+        Source/Common/EventListener.h
+        Source/Common/EventManager.h
+        Source/Common/Events.h
+        Source/Common/JuceLocalStorage.h
+        Source/Common/OpusCodecWrapper.h
+        Source/Common/OpusFileHandler.h
+        Source/Common/ReconnectTimer.h
+        Source/Common/ResamplerWrapper.h
+        Source/Common/RTPWrapper.h
+        Source/Common/WavFileHandler.h
+
         Source/Api/ApiRoutes.h
         Source/Api/ApiService.cpp
         Source/Api/ApiService.h
         Source/Api/AuthService.cpp
         Source/Api/AuthService.h
-        Source/Socket/WebSocketService.cpp
-        Source/Socket/WebSocketService.h
-        Source/Socket/SocketEvents.h
-        Source/Socket/SocketRoutes.h
-        Source/Rtc/WebRTCAudioService.h
-        Source/Rtc/WebRTCAudioService.cpp
-        Source/Rtc/WebRTCConnexionHandler.cpp
-        Source/Rtc/WebRTCConnexionHandler.h
-        Source/Rtc/ReconnectTimer.h
-        Source/Encoders/OpusCodecWrapper.h
-        Source/Encoders/OpusEncoderJuce.h
-        Source/Models/User.h
-        Source/Models/Session.h
-        Source/Models/Seller.h
-        Source/Models/Artist.h
-        Source/Models/UserContext.h
-        Source/Events/EventListener.h
-        Source/Events/EventManager.h
-        Source/Events/Events.h
+        Source/Api/WebSocketService.cpp
+        Source/Api/WebSocketService.h
+        Source/Api/SocketEvents.h
+        Source/Api/SocketRoutes.h
 )
 
 # Change these to your own preferences
@@ -162,16 +167,16 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_ADD_R8BRAIN=1
         PREFER_SYSTEM_LIB=1
-        IXWEBSOCKET_USE_TLS=1
-        USE_TLS=1
-        IXWEBSOCKET_USE_OPEN_SSL=1
+#        IXWEBSOCKET_USE_TLS=1
+#        USE_TLS=1
+#        IXWEBSOCKET_USE_OPEN_SSL=1
 )
 
-target_link_libraries(ixwebsocket
-        PUBLIC
-        OpenSSL::SSL
-        OpenSSL::Crypto
-)
+#target_link_libraries(ixwebsocket
+#        PUBLIC
+#        OpenSSL::SSL
+#        OpenSSL::Crypto
+#)
 
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}

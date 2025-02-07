@@ -2,7 +2,6 @@
 #include "opus.h"
 #include <vector>
 #include <stdexcept>
-#include <juce_core/juce_core.h>
 #define MAX_OPUS_PACKET_SIZE 1500
 
 class OpusCodecWrapper {
@@ -57,7 +56,6 @@ public:
         int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
         if (ret < 0) {
             return pcm;
-            throw std::runtime_error("Failed to decode audio err code: " + std::to_string(ret));
         }
         // Ret est le nombre d'échantillons par canal, on redimensionne donc pour ret * numChannels échantillons au total
          pcm.resize(ret * numChannels);

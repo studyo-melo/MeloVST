@@ -3,8 +3,8 @@
 #include <fstream>
 #include <vector>
 #include <cstdint>
-#include <juce_core/juce_core.h>
 #include <opus.h>
+#include <juce_core/juce_core.h>
 
 class OpusFileHandler {
 public:

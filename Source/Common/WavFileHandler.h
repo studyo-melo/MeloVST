@@ -7,9 +7,7 @@
 #include <stdexcept>
 #include <cstdio>     // Pour std::remove
 #include <cstdlib>    // Pour getenv
-
-// Si vous utilisez JUCE, assurez-vous d'inclure le header approprié
-#include "juce_core/juce_core.h"
+#include <juce_core/juce_core.h>
 
 class WavFileHandler {
 public:

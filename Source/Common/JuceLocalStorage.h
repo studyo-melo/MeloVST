@@ -2,14 +2,14 @@
 
 #include <juce_core/juce_core.h>
 #include <memory>
-#include "Constants.h"
+#include "../Config.h"
 
 class JuceLocalStorage
 {
 public:
     static JuceLocalStorage& getInstance()
     {
-        static JuceLocalStorage instance(Constants::appName);
+        static JuceLocalStorage instance(Config::appNameSender);
         return instance;
     }
 

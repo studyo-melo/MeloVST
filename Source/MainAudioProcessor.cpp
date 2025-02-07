@@ -1,6 +1,6 @@
 #include "MainAudioProcessor.h"
 #include "MainApplication.h"
-#include "Utils/AudioSettings.h"
+#include "AudioSettings.h"
 
 //==============================================================================
 MainAudioProcessor::MainAudioProcessor()
