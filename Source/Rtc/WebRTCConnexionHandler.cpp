@@ -1,9 +1,10 @@
 #include "WebRTCConnexionHandler.h"
 
-WebRTCConnexionHandler::WebRTCConnexionHandler(): meloWebSocketService(
-                                                WebSocketService(
-                                                    getWsRouteString(WsRoute::GetOngoingSessionRTC))),
-                                            reconnectTimer([this]() { attemptReconnect(); }) {
+WebRTCConnexionHandler::WebRTCConnexionHandler(WsRoute ws_route, rtc::Description::Direction track_direction):
+    trackDirection(track_direction),
+    meloWebSocketService(WebSocketService(getWsRouteString(ws_route))),
+    reconnectTimer([this]() { attemptReconnect(); })
+{
     EventManager::getInstance().addListener(this);
 }
 
@@ -24,7 +25,7 @@ void WebRTCConnexionHandler::setupConnection() {
     rtc::Description::Audio newAudioTrack{};
     newAudioTrack.addOpusCodec(111, "minptime=10;useinbandfec=0");
     newAudioTrack.setBitrate(96000); // Débit binaire en bits par seconde
-    newAudioTrack.setDirection(rtc::Description::Direction::SendOnly);
+    newAudioTrack.setDirection(trackDirection);
     newAudioTrack.addSSRC(12345, "CNAME");;
 
     peerConnection->onLocalDescription([this](rtc::Description sdp) {
@@ -40,8 +41,7 @@ void WebRTCConnexionHandler::setupConnection() {
 
         if (peerConnection->remoteDescription()) {
             sendCandidateToRemote(candidate);
-        }
-        else {
+        } else {
             pendingCandidates.push_back(candidate);
             juce::Logger::outputDebugString("Candidate stored temporarily. Waiting for remote description.");
         }
@@ -75,7 +75,7 @@ void WebRTCConnexionHandler::setupConnection() {
                 break;
             }
             case rtc::PeerConnection::IceState::Checking:
-               break;
+                break;
             case rtc::PeerConnection::IceState::Completed:
             case rtc::PeerConnection::IceState::Connected: {
                 if (peerConnection->state() == rtc::PeerConnection::State::Connected) {
@@ -144,8 +144,7 @@ void WebRTCConnexionHandler::setOffer() {
     }
     if (peerConnection->localDescription().has_value()) {
         sendOfferToRemote(peerConnection->localDescription().value());
-    }
-    else {
+    } else {
         peerConnection->localDescription().reset();
         peerConnection->setLocalDescription(rtc::Description::Type::Offer);
     }
@@ -166,7 +165,7 @@ void WebRTCConnexionHandler::handleAnswer(const std::string &sdp) {
     juce::Logger::outputDebugString("Received answer");
     peerConnection->setRemoteDescription(rtc::Description(sdp, "answer"));
     answerReceived = true;
-    for (const auto &candidate : pendingCandidates) {
+    for (const auto &candidate: pendingCandidates) {
         sendCandidateToRemote(candidate);
     }
     pendingCandidates.clear();

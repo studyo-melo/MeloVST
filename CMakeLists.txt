@@ -6,8 +6,8 @@ project(MeloVST VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
-#set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
+set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # We're going to use CPM as our package manager to bring in JUCE
@@ -30,6 +30,12 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME ssl
+        GIT_REPOSITORY https://github.com/jimmy-park/openssl-cmake.git
+        GIT_TAG 3.4.0
+)
+
+CPMAddPackage(
         NAME libdatachannel
         GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
         GIT_TAG v0.22.4
@@ -41,9 +47,6 @@ CPMAddPackage(
         NAME ixwebsocket
         GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
         GIT_TAG origin/master
-        OPTIONS
-        "USE_TLS=1"
-        "IXWEBSOCKET_USE_TLS=1"
 )
 CPMAddPackage(
         NAME r8brain
@@ -57,13 +60,10 @@ CPMAddPackage(
         GIT_TAG v1.5.2
 )
 
-find_package(OpenSSL REQUIRED)
-
-include_directories(/opt/homebrew/opt/openssl/include)
 include_directories(/opt/homebrew/opt/ffmpeg/include)
+include_directories(${ssl_SOURCE_DIR}/include)
 include_directories(${libopus_SOURCE_DIR}/include)
 include_directories(${r8brain_SOURCE_DIR})
-include_directories(${OPENSSL_INCLUDE_DIR})
 
 add_library(r8brain STATIC)
 target_sources(r8brain PRIVATE "${r8brain_SOURCE_DIR}/r8bbase.cpp")
@@ -75,8 +75,6 @@ target_link_libraries(
 )
 
 
-message(STATUS "OPENSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
-message(STATUS "OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
 # Make sure you include any new source files here
 set(SourceFiles
         Source/Utils/StringUtils.h
@@ -89,6 +87,8 @@ set(SourceFiles
         Source/Utils/AudioSettings.h
         Source/Utils/ResamplerWrapper.h
         Source/Utils/CircularBuffer.h
+        Source/Utils/RTPWrapper.h
+        Source/Utils/ReconnectTimer.h
         Source/Debug/DebugAudioCallback.h
         Source/Debug/AudioAppPlayer.h
         Source/Debug/AudioAppPlayer.cpp
@@ -109,12 +109,12 @@ set(SourceFiles
         Source/Api/ApiRoutes.h
         Source/Api/ApiService.cpp
         Source/Api/ApiService.h
+        Source/Api/AuthService.cpp
+        Source/Api/AuthService.h
         Source/Socket/WebSocketService.cpp
         Source/Socket/WebSocketService.h
         Source/Socket/SocketEvents.h
         Source/Socket/SocketRoutes.h
-        Source/Api/AuthService.cpp
-        Source/Api/AuthService.h
         Source/Rtc/WebRTCAudioService.h
         Source/Rtc/WebRTCAudioService.cpp
         Source/Rtc/WebRTCConnexionHandler.cpp
@@ -122,7 +122,6 @@ set(SourceFiles
         Source/Rtc/ReconnectTimer.h
         Source/Encoders/OpusCodecWrapper.h
         Source/Encoders/OpusEncoderJuce.h
-        Source/Rtc/RTPWrapper.h
         Source/Models/User.h
         Source/Models/Session.h
         Source/Models/Seller.h
@@ -165,8 +164,14 @@ target_compile_definitions(${PROJECT_NAME}
         PREFER_SYSTEM_LIB=1
         IXWEBSOCKET_USE_TLS=1
         USE_TLS=1
+        IXWEBSOCKET_USE_OPEN_SSL=1
 )
 
+target_link_libraries(ixwebsocket
+        PUBLIC
+        OpenSSL::SSL
+        OpenSSL::Crypto
+)
 
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
@@ -176,7 +181,6 @@ target_link_libraries(${PROJECT_NAME}
         r8brain
         ixwebsocket
         datachannel_static INTERFACE datachannel
-        ${OPENSSL_LIBRARIES}
         PUBLIC
         juce::juce_analytics
         juce::juce_audio_basics

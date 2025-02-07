@@ -11,11 +11,11 @@
 #include "../Socket/SocketEvents.h"
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
-#include "ReconnectTimer.h"
+#include "../Utils/ReconnectTimer.h"
 
 class WebRTCConnexionHandler : EventListener {
 public:
-    WebRTCConnexionHandler();
+    WebRTCConnexionHandler(WsRoute wsRoute, rtc::Description::Direction trackDirection);
     ~WebRTCConnexionHandler();
 
     virtual void setupConnection();
@@ -39,6 +39,7 @@ private:
     std::shared_ptr<rtc::DataChannel> dataChannel;
     WebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
+    rtc::Description::Direction trackDirection;
 
 
     // Answer monitoring

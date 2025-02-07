@@ -12,18 +12,18 @@
 #include "../Socket/SocketEvents.h"
 #include "../Events/EventManager.h"
 #include "../Utils/json.hpp"
-#include "../Utils/FileUtils.h"
 #include "../Utils/ResamplerWrapper.h"
-#include "ReconnectTimer.h"
+#include "../Utils/ReconnectTimer.h"
 #include "WebRTCConnexionHandler.h"
 #include "../Utils/CircularBuffer.h"
-#include "../Files/OpusFileHandler.h"
-#include "../Files/WavFileHandler.h"
+#include "../Debug/DebugRTPWrapper.h"
+#include "../Utils/AudioSettings.h"
+#include "../Utils/AudioUtils.h"
 
-class WebRTCAudioService : public WebRTCConnexionHandler {
+class WebRTCAudioSenderService : public WebRTCConnexionHandler {
 public:
-    WebRTCAudioService();
-    ~WebRTCAudioService();
+    WebRTCAudioSenderService();
+    ~WebRTCAudioSenderService();
     void createFiles();
     void finalizeFiles();
 private:
@@ -46,14 +46,4 @@ private:
     // Tampon circulaire pour stocker les données audio (interleaved)
     CircularBuffer<float> circularBuffer;  // implémentation à fournir ou basée sur juce::AbstractFifo
     juce::CriticalSection circularBufferLock;
-
-    // Utilitaires de fichiers
-    WavFileHandler vanillaWavFile;
-    WavFileHandler decodedWavFileHandler;
-    OpusFileHandler encodedOpusFileHandler;
-
-    int currentNumSamples = 0;
-    int currentSampleIndex = 0;
-
-    double currentSampleRate = 48000;
 };

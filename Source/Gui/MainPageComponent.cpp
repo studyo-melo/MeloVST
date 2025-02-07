@@ -3,7 +3,7 @@
 //
 #include "MainPageComponent.h"
 
-MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioService()),
+MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderService()),
                                         webSocketService(WebSocketService(getWsRouteString(WsRoute::GetOngoingSession)))
 {
     setSize(600, 400);
