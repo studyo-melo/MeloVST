@@ -3,10 +3,11 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <fstream>
 
+#include "Common/EventListener.h"
 #include "Common/ResamplerWrapper.h"
 
 //==============================================================================
-class MainAudioProcessor final : public juce::AudioProcessor
+class MainAudioProcessor final : public juce::AudioProcessor, EventListener
 {
 public:
     //==============================================================================
@@ -21,7 +22,6 @@ public:
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
     using juce::AudioProcessor::processBlock;
-
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -46,7 +46,13 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
-    ResamplerWrapper *resampler;
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainAudioProcessor);
+
+#ifdef IN_RECEIVING_MODE
+    void onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) override;
+    CircularBuffer<float> circularBuffer;
+    juce::CriticalSection circularBufferLock;
+#endif
+
 };

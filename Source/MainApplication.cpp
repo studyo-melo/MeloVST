@@ -1,7 +1,14 @@
 #include "MainApplication.h"
 
+#include "Config.h"
+
 MainApplication::MainApplication(MainAudioProcessor &p): AudioProcessorEditor(&p) {
-    mainWindow = std::make_unique<MainWindow>("Melo");
+#ifdef IN_RECEIVING_MODE
+    mainWindow = std::make_unique<MainWindow>(Config::appNameReceiver);
+#else
+    mainWindow = std::make_unique<MainWindow>(Config::appNameSender);
+#endif
+
     addAndMakeVisible(mainWindow.get());
 
     std::set_terminate(CrashHandler::customTerminateHandler);

@@ -13,9 +13,7 @@ MainAudioProcessor::MainAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        )
-{
-    resampler = new ResamplerWrapper(44100, 48000, 2);
-}
+{}
 
 MainAudioProcessor::~MainAudioProcessor()
 = default;
@@ -137,6 +135,42 @@ bool MainAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
   #endif
 }
 
+#ifdef IN_RECEIVING_MODE
+void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
+                                       juce::MidiBuffer& midiMessages)
+{
+    const int totalFrameSamples = buffer.size() * AudioSettings::getInstance().getNumChannels();
+    bool frameAvailable = false;
+    std::vector<float> frameData(buffer.size()); {
+        juce::ScopedLock sl(circularBufferLock);
+        if (circularBuffer.getNumAvailableSamples() >= totalFrameSamples) {
+            circularBuffer.popSamples(frameData.data(), totalFrameSamples);
+            frameAvailable = true;
+        }
+    }
+    if (frameAvailable) {
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+            for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
+                buffer.getWritePointer(channel)[sample] = frameData[sample];
+            }
+        }
+    }
+}
+void MainAudioProcessor::onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event)
+{
+    std::vector<float> audioBlock = event.data;
+
+    if (!audioBlock.empty()) {
+        {
+            const int numSamples = static_cast<int>(audioBlock.size());
+            juce::ScopedLock sl(circularBufferLock);
+            circularBuffer.pushSamples(audioBlock.data(), numSamples);
+        }
+        audioBlock.clear();
+    }
+}
+
+#else
 void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                        juce::MidiBuffer& midiMessages)
 {
@@ -170,6 +204,7 @@ void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         getSampleRate()
     });
 }
+#endif
 
 
 //==============================================================================

@@ -4,7 +4,8 @@
 enum class WsRoute
 {
     GetOngoingSession,
-    GetOngoingSessionRTC,
+    GetOngoingSessionRTCInstru,
+    GetOngoingSessionRTCVoice,
 };
 
 
@@ -13,7 +14,8 @@ inline juce::String getWsRouteString(const WsRoute route)
     switch (route)
     {
         case WsRoute::GetOngoingSession:            return "/ongoing-session";
-        case WsRoute::GetOngoingSessionRTC:            return "/ongoing-session-rtc";
+        case WsRoute::GetOngoingSessionRTCInstru:            return "/ongoing-session-rtc-instru";
+        case WsRoute::GetOngoingSessionRTCVoice:            return "/ongoing-session-rtc-voice";
         default:                                    return "";
     }
 }

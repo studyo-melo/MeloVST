@@ -5,10 +5,15 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../Api/AuthService.h"
 #include "../Common/EventListener.h"
-#include "../Rtc/WebRTCAudioSenderService.h"
 #include "../Api/WebSocketService.h"
 #include "../Models/Session.h"
 #include "../Debug/DebugAudioAppPlayer.h"
+
+#ifdef IN_RECEIVING_MODE
+#include "../Rtc/WebRTCAudioReceiverService.h"
+#else
+#include "../Rtc/WebRTCAudioSenderService.h"
+#endif
 
 class MainPageComponent final : public juce::Component, EventListener
 {
@@ -25,7 +30,11 @@ public:
 private:
     juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText;
     juce::TextButton logoutButton, connectButton, finalizeButton, createButton;
+#ifdef IN_RECEIVING_MODE
+    WebRTCAudioReceiverService webRTCAudioService;
+#else
     WebRTCAudioSenderService webRTCAudioService;
+#endif
     // AudioAppPlayer audioAppPlayer;
     WebSocketService webSocketService;
     juce::Array<PopulatedSession> ongoingSessions;

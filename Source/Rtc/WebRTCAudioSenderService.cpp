@@ -5,7 +5,7 @@
 #include <rtc/rtc.hpp>
 #include "../Api/SocketRoutes.h"
 
-WebRTCAudioSenderService::WebRTCAudioSenderService(): WebRTCConnexionHandler(WsRoute::GetOngoingSessionRTC,
+WebRTCAudioSenderService::WebRTCAudioSenderService(): WebRTCConnexionHandler(WsRoute::GetOngoingSessionRTCInstru,
                                                                              rtc::Description::Direction::SendOnly),
                                                       opusCodec(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels(), AudioSettings::getInstance().getLatency(), AudioSettings::getInstance().getOpusBitRate()),
                                                       resampler(AudioSettings::getInstance().getSampleRate(), AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels()),
