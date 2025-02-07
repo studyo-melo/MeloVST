@@ -1,11 +1,6 @@
 #include "ApiService.h"
 #include "../Common/JuceLocalStorage.h"
 
-ApiService &ApiService::getInstance() {
-    static ApiService instance;
-    return instance;
-}
-
 // Méthode GET
 juce::String ApiService::makeGETRequest(const ApiRoute route)
 {

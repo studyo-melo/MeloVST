@@ -2,6 +2,7 @@
 #include "../Common/EventManager.h"
 #include "../ThirdParty/json.hpp"
 #include "../AudioSettings.h"
+#include "../Api/SocketRoutes.h"
 
 WebRTCConnexionHandler::WebRTCConnexionHandler(const WsRoute wsRoute, const rtc::Description::Direction trackDirection):
     meloWebSocketService(WebSocketService(getWsRouteString(wsRoute))),

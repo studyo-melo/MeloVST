@@ -4,6 +4,8 @@
 #include "MainPageComponent.h"
 #include "../Common/EventManager.h"
 #include "../Api/ApiRoutes.h"
+#include "../Api/SocketRoutes.h"
+#include "../Api/ApiService.h"
 
 MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderService()),
                                         webSocketService(WebSocketService(getWsRouteString(WsRoute::GetOngoingSession)))
@@ -35,7 +37,7 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderServ
     RTCSignalingStateText.setJustificationType(juce::Justification::centred);
 
     connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
-    connectButton.onClick = [this, meloWebRTCServerService = &webRTCAudioService] {
+    connectButton.onClick = [ meloWebRTCServerService = &webRTCAudioService] {
         if (meloWebRTCServerService->isConnecting()) {
             juce::Logger::outputDebugString("Already connecting...");
             meloWebRTCServerService->disconnect();
@@ -49,7 +51,7 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderServ
     };
 
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
-    logoutButton.onClick = [this] { onLogoutButtonClick(); };
+    logoutButton.onClick = [] { onLogoutButtonClick(); };
 
     finalizeButton.setButtonText("Finalizer les fichiers");
     finalizeButton.onClick = [this] {
@@ -61,7 +63,7 @@ MainPageComponent::MainPageComponent(): webRTCAudioService(WebRTCAudioSenderServ
         webRTCAudioService.createFiles();
     };
 
-    if (const auto res = ApiService::getInstance().makeGETRequest(ApiRoute::GetMyOngoingSessions); res.isNotEmpty()) {
+    if (const auto res = ApiService::makeGETRequest(ApiRoute::GetMyOngoingSessions); res.isNotEmpty()) {
         ongoingSessions = PopulatedSession::parseArrayFromJsonString(res);
         if (ongoingSessions.size() > 0) {
             currentOngoingSession = ongoingSessions[0];
@@ -92,6 +94,14 @@ void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
         case rtc::PeerConnection::State::Connecting: {
             connectButton.setButtonText(juce::String::fromUTF8(("Stopper la demande de connexion")));
             RTCStateText.setText("En cours de connexion avec l'artiste...", juce::dontSendNotification);
+            break;
+        }
+        case rtc::PeerConnection::State::Closed:
+        case rtc::PeerConnection::State::Failed: {
+            connectButton.setVisible(true);
+            connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
+            RTCStateText.setText(juce::String::fromUTF8("Vous n'êtes pas connecté avec l'artiste"),
+                                 juce::dontSendNotification);
             break;
         }
         default: {

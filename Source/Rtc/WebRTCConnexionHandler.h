@@ -11,6 +11,8 @@
 #include "../Api/SocketEvents.h"
 #include "../Common/ReconnectTimer.h"
 
+enum class WsRoute;
+
 class WebRTCConnexionHandler : EventListener {
 public:
     WebRTCConnexionHandler(WsRoute wsRoute, rtc::Description::Direction trackDirection);

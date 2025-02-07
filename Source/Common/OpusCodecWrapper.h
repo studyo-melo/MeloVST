@@ -130,5 +130,4 @@ private:
     int frameDurationInMs;
     int numChannels;
     int sampleRate;
-    int maxPacketSize = 4000;
 };

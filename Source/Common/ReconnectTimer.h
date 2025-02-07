@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <juce_events/juce_events.h>
 
 class ReconnectTimer : public juce::Timer {
 public:

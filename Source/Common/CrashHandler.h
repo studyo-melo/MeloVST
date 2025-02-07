@@ -16,7 +16,7 @@ public:
         if (AuthService::getInstance().getUserContext().has_value() ) {
             jsonBody["userId"] = AuthService::getInstance().getUserContext().value().user._id;
         }
-        auto res = ApiService::getInstance().makePOSTRequest(ApiRoute::CreateCrashReport, jsonBody);
+        auto res = ApiService::makePOSTRequest(ApiRoute::CreateCrashReport, jsonBody);
     }
 
     static void customTerminateHandler() {

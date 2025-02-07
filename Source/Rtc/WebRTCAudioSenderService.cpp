@@ -3,6 +3,7 @@
 #include "../AudioSettings.h"
 #include "../Common/EventManager.h"
 #include <rtc/rtc.hpp>
+#include "../Api/SocketRoutes.h"
 
 WebRTCAudioSenderService::WebRTCAudioSenderService(): WebRTCConnexionHandler(WsRoute::GetOngoingSessionRTC,
                                                                              rtc::Description::Direction::SendOnly),
