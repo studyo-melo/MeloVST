@@ -2,17 +2,15 @@ cmake_minimum_required(VERSION 3.24)
 
 # Change to your project name
 project(MeloVST VERSION 0.0.1)
-
+option(IN_RECEIVING_MODE "Build Receiver VST plugin" OFF)
+option(MELO_PLUGIN_NAME "Nom du plugin" "MeloVST")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")# -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
-#set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -DIXWEBSOCKET_USE_TLS=1 -DIXWEBSOCKET_USE_OPEN_SSL=1")
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-option(IN_RECEIVING_MODE "Build Receiver VST plugin" OFF)
-option(MELO_PLUGIN_NAME "Nom du plugin" "MeloVST")
+set(USE_OPEN_SSL ON)
+set(USE_TLS ON)
 set(IN_RECEIVING_MODE ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if (IN_RECEIVING_MODE)
     set(MELO_PLUGIN_NAME "MeloVSTVoice")
@@ -44,18 +42,18 @@ CPMAddPackage(
         GIT_TAG origin/master
 )
 
-#CPMAddPackage(
-#        NAME ssl
-#        GIT_REPOSITORY https://github.com/jimmy-park/openssl-cmake.git
-#        GIT_TAG 3.4.0
-#)
+CPMAddPackage(
+        NAME ssl
+        GIT_REPOSITORY https://github.com/jimmy-park/openssl-cmake.git
+        GIT_TAG 3.4.0
+)
 
 CPMAddPackage(
         NAME libdatachannel
         GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
         GIT_TAG v0.22.4
-#        OPTIONS
-#        "PREFER_SYSTEM_LIB=0"
+        OPTIONS
+        "PREFER_SYSTEM_LIB=0"
 )
 
 CPMAddPackage(
@@ -63,6 +61,13 @@ CPMAddPackage(
         GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
         GIT_TAG origin/master
 )
+message(STATUS "OpenSSL SSL library: ${OPENSSL_SSL_LIBRARY}")
+message(STATUS "OpenSSL CRYPTO library: ${OPENSSL_CRYPTO_LIBRARY}")
+message(STATUS "ixwebsocket SOURCE_DIR: ${ixwebsocket_SOURCE_DIR}")
+message(STATUS "ixwebsocket BUILD DIR: ${ixwebsocket_SOURCE_DIR}")
+find_package(OpenSSL REQUIRED)
+target_link_libraries(ixwebsocket PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+
 CPMAddPackage(
         NAME r8brain
         GIT_REPOSITORY https://github.com/avaneev/r8brain-free-src.git
@@ -75,9 +80,8 @@ CPMAddPackage(
         GIT_TAG v1.5.2
 )
 
-include_directories(/opt/homebrew/opt/ffmpeg/include)
-#include_directories(${ssl_SOURCE_DIR}/include)
-include_directories(${libopus_SOURCE_DIR}/include)
+include_directories(${ixwebsocket_SOURCE_DIR})
+include_directories(${libopus_SOURCE_DIR})
 include_directories(${r8brain_SOURCE_DIR})
 
 add_library(r8brain STATIC)
@@ -184,16 +188,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_ADD_R8BRAIN=1
         PREFER_SYSTEM_LIB=1
-#        IXWEBSOCKET_USE_TLS=1
-#        USE_TLS=1
-#        IXWEBSOCKET_USE_OPEN_SSL=1
 )
-
-#target_link_libraries(ixwebsocket
-#        PUBLIC
-#        OpenSSL::SSL
-#        OpenSSL::Crypto
-#)
 
 # JUCE libraries to bring into our project
 target_link_libraries(${PROJECT_NAME}
@@ -218,5 +213,26 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
+
+get_target_property(IXWEB_INCLUDE ixwebsocket INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "IXWEB_INCLUDE: ${IXWEB_INCLUDE}")
+
+if (IXWEB_INCLUDE)
+    # Sépare la chaîne en une liste d'arguments
+    separate_arguments(IXWEB_INCLUDE_LIST UNIX_COMMAND "${IXWEB_INCLUDE}")
+    set(new_includes "")
+    foreach(item IN LISTS IXWEB_INCLUDE_LIST)
+        message(STATUS "item: ${item}")
+        # Vérifie si item contient le chemin à supprimer
+        string(FIND "${item}" "${ixwebsocket_SOURCE_DIR}" pos)
+        if (pos EQUAL -1)
+            list(APPEND new_includes "${item}")
+        else()
+            message(STATUS "Removing: ${item}")
+        endif()
+    endforeach()
+    message(STATUS "new_includes: ${new_includes}")
+    set_target_properties(ixwebsocket PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${new_includes}")
+endif()
 
 add_subdirectory(Tests)

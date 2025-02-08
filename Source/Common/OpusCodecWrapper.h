@@ -1,7 +1,8 @@
 #pragma once
-#include "opus.h"
+#include <opus.h>
 #include <vector>
 #include <stdexcept>
+#include <functional>
 
 #define MAX_OPUS_PACKET_SIZE 1500
 
