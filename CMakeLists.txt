@@ -5,18 +5,23 @@ project(MeloVST VERSION 0.0.1)
 option(IN_RECEIVING_MODE "Build Receiver VST plugin" OFF)
 option(MELO_PLUGIN_NAME "Nom du plugin" "MeloVST")
 
+message(STATUS "Le répertoire IN_RECEIVING_MODE est : $ENV{IN_RECEIVING_MODE}")
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set(USE_OPEN_SSL ON)
 set(USE_TLS ON)
-set(IN_RECEIVING_MODE ON)
+set(JUCE_BUILD_VST3 ON)
+
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if (IN_RECEIVING_MODE)
-    set(MELO_PLUGIN_NAME "MeloVSTVoice")
+if ($ENV{IN_RECEIVING_MODE})
+    set(MELO_PLUGIN_NAME "MeloVSTReceive")
     add_definitions(-DIN_RECEIVING_MODE)
+    set(IN_RECEIVING_MODE ON)
 else ()
-    set(MELO_PLUGIN_NAME "MeloVSTInstru")
+    set(MELO_PLUGIN_NAME "MeloVSTSend")
 endif ()
 
 message(STATUS "Building ${MELO_PLUGIN_NAME}")
@@ -158,9 +163,9 @@ set(SourceFiles
         Source/Api/SocketRoutes.h
 )
 
-# Change these to your own preferences
+message(STATUS "PRODUCT_NAME: ${MELO_PLUGIN_NAME}")
 juce_add_plugin(${PROJECT_NAME}
-        COMPANY_NAME Melo
+        COMPANY_NAME melo
         IS_SYNTH FALSE
         NEEDS_MIDI_INPUT FALSE
         NEEDS_MIDI_OUTPUT FALSE
@@ -169,9 +174,8 @@ juce_add_plugin(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2 FALSE
         COPY_PLUGIN_AFTER_BUILD TRUE
         PLUGIN_MANUFACTURER_CODE Tap1
-        PLUGIN_CODE Reg0
+        PLUGIN_CODE MEL0
         FORMATS VST3 AU Standalone
-        PRODUCT_NAME ${MELO_PLUGIN_NAME}
 )
 
 # How we want our SourceFiles to appear in our IDE
@@ -187,6 +191,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_ADD_R8BRAIN=1
+        JUCE_BUILD_EXTRAS=ON
         PREFER_SYSTEM_LIB=1
 )
 

@@ -12,7 +12,11 @@ MainAudioProcessor::MainAudioProcessor()
 #endif
           .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-      ), circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels()) {
+      )
+#ifdef IN_RECEIVING_MODE
+,circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels())
+#endif
+{
 }
 
 MainAudioProcessor::~MainAudioProcessor()
