@@ -11,8 +11,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set(USE_OPEN_SSL ON)
 set(USE_TLS ON)
-set(JUCE_BUILD_VST3 ON)
-
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -44,7 +42,7 @@ include(${CPM_DOWNLOAD_LOCATION})
 CPMAddPackage(
         NAME juce
         GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
-        GIT_TAG origin/master
+        GIT_TAG 8.0.6
 )
 
 CPMAddPackage(
@@ -118,8 +116,10 @@ set(SourceFiles
         Source/Rtc/WebRTCAudioReceiverService.cpp
         Source/Rtc/WebRTCAudioSenderService.h
         Source/Rtc/WebRTCAudioSenderService.cpp
-        Source/Rtc/WebRTCConnexionHandler.cpp
-        Source/Rtc/WebRTCConnexionHandler.h
+        Source/Rtc/WebRTCReceiverConnexionHandler.cpp
+        Source/Rtc/WebRTCReceiverConnexionHandler.h
+        Source/Rtc/WebRTCSenderConnexionHandler.cpp
+        Source/Rtc/WebRTCSenderConnexionHandler.h
 
         Source/Models/User.h
         Source/Models/Session.h
@@ -164,7 +164,7 @@ set(SourceFiles
 )
 
 message(STATUS "PRODUCT_NAME: ${MELO_PLUGIN_NAME}")
-juce_add_plugin(${PROJECT_NAME}
+juce_add_plugin(${MELO_PLUGIN_NAME}
         COMPANY_NAME melo
         IS_SYNTH FALSE
         NEEDS_MIDI_INPUT FALSE
@@ -177,15 +177,14 @@ juce_add_plugin(${PROJECT_NAME}
         PLUGIN_CODE MEL0
         FORMATS VST3 AU Standalone
 )
-
 # How we want our SourceFiles to appear in our IDE
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 
 # Make the SourceFiles buildable
-target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
+target_sources(${MELO_PLUGIN_NAME} PRIVATE ${SourceFiles})
 
 # These are some toggleable options from the JUCE CMake API
-target_compile_definitions(${PROJECT_NAME}
+target_compile_definitions(${MELO_PLUGIN_NAME}
         PUBLIC
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0
@@ -193,10 +192,12 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_ADD_R8BRAIN=1
         JUCE_BUILD_EXTRAS=ON
         PREFER_SYSTEM_LIB=1
+        JUCE_COPY_PLUGIN_AFTER_BUILD=1
+
 )
 
 # JUCE libraries to bring into our project
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${MELO_PLUGIN_NAME}
         PRIVATE
         opus
         datachannel

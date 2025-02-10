@@ -13,10 +13,10 @@
 
 enum class WsRoute;
 
-class WebRTCConnexionHandler : EventListener {
+class WebRTCReceiverConnexionHandler : EventListener {
 public:
-    WebRTCConnexionHandler(WsRoute wsRoute, rtc::Description::Direction trackDirection);
-    ~WebRTCConnexionHandler() override;
+    WebRTCReceiverConnexionHandler(WsRoute wsRoute, rtc::Description::Direction trackDirection);
+    ~WebRTCReceiverConnexionHandler() override;
 
     virtual void setupConnection();
     void disconnect() const;

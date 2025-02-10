@@ -5,11 +5,17 @@
 #include <rtc/rtc.hpp>
 #include "../Api/SocketRoutes.h"
 
-WebRTCAudioSenderService::WebRTCAudioSenderService(): WebRTCConnexionHandler(WsRoute::GetOngoingSessionRTCInstru,
-                                                                             rtc::Description::Direction::SendOnly),
-                                                      opusCodec(AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels(), AudioSettings::getInstance().getLatency(), AudioSettings::getInstance().getOpusBitRate()),
-                                                      resampler(AudioSettings::getInstance().getSampleRate(), AudioSettings::getInstance().getOpusSampleRate(), AudioSettings::getInstance().getNumChannels()),
-                                                      circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels()) {
+WebRTCAudioSenderService::WebRTCAudioSenderService(): WebRTCSenderConnexionHandler(WsRoute::GetOngoingSessionRTCInstru),
+                                                      opusCodec(AudioSettings::getInstance().getOpusSampleRate(),
+                                                                AudioSettings::getInstance().getNumChannels(),
+                                                                AudioSettings::getInstance().getLatency(),
+                                                                AudioSettings::getInstance().getOpusBitRate()),
+                                                      resampler(AudioSettings::getInstance().getSampleRate(),
+                                                                AudioSettings::getInstance().getOpusSampleRate(),
+                                                                AudioSettings::getInstance().getNumChannels()),
+                                                      circularBuffer(
+                                                          AudioSettings::getInstance().getSampleRate() *
+                                                          AudioSettings::getInstance().getNumChannels()) {
 }
 
 WebRTCAudioSenderService::~WebRTCAudioSenderService() {
@@ -33,8 +39,11 @@ void WebRTCAudioSenderService::onAudioBlockProcessedEvent(const AudioBlockProces
 
 void WebRTCAudioSenderService::processingThreadFunction() {
     // Calcul du nombre d'échantillons par canal pour une trame de 20 ms
-    const int frameSamples = static_cast<int>(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getLatency() / 1000.0); // 48000 * 20/1000 = 960
-    const int totalFrameSamples = frameSamples * AudioSettings::getInstance().getNumChannels(); // Pour un signal interleaved
+    const int frameSamples = static_cast<int>(AudioSettings::getInstance().getSampleRate() *
+                                              AudioSettings::getInstance().getLatency() / 1000.0);
+    // 48000 * 20/1000 = 960
+    const int totalFrameSamples = frameSamples * AudioSettings::getInstance().getNumChannels();
+    // Pour un signal interleaved
     while (threadRunning) {
         bool frameAvailable = false;
         std::vector<float> frameData(totalFrameSamples); {

@@ -8,10 +8,10 @@
 #include "../Common/EventListener.h"
 
 #include "../Common/ResamplerWrapper.h"
-#include "WebRTCConnexionHandler.h"
+#include "WebRTCReceiverConnexionHandler.h"
 #include "../Common/CircularBuffer.h"
 
-class WebRTCAudioReceiverService final : public WebRTCConnexionHandler {
+class WebRTCAudioReceiverService final : public WebRTCReceiverConnexionHandler {
 public:
     WebRTCAudioReceiverService();
     ~WebRTCAudioReceiverService() override;
