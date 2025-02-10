@@ -4,8 +4,7 @@
 #include "../AudioSettings.h"
 #include "../Api/SocketRoutes.h"
 
-WebRTCSenderConnexionHandler::WebRTCSenderConnexionHandler(const WsRoute wsRoute): WebRTCConnexionState(wsRoute),
-    meloWebSocketService(WebSocketService(getWsRouteString(wsRoute))) {
+WebRTCSenderConnexionHandler::WebRTCSenderConnexionHandler(const WsRoute wsRoute): WebRTCConnexionState(wsRoute){
 }
 
 void WebRTCSenderConnexionHandler::setupConnection() {
@@ -104,9 +103,9 @@ void WebRTCSenderConnexionHandler::onWsMessageReceived(const MessageWsReceivedEv
         return;
     }
 
-    if (event.type == "answer" && event.data.contains("answerSdp")) {
-        handleAnswer(event.data["answerSdp"]);
-    } else if (event.type == "candidate") {
+    if (event.type == "answer" && event.data.contains("sdp")) {
+        handleAnswer(event.data["sdp"]);
+    } else if (event.type == "ice-candidate") {
         if (peerConnection->state() == rtc::PeerConnection::State::Connected) {
             return;
         }

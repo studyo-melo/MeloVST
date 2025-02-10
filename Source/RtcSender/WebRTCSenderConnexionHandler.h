@@ -5,14 +5,12 @@
 #include "../Utils/VectorUtils.h"
 #include <juce_core/juce_core.h>
 
-#include "../Api/WebSocketService.h"
 #include "../Common/EventListener.h"
-#include "../Models/Session.h"
 #include "../Api/SocketEvents.h"
+#include "../Api/SocketRoutes.h"
 #include "../Common/ReconnectTimer.h"
 #include "../Rtc/WebRTCConnexionState.h"
 
-enum class WsRoute;
 
 class WebRTCSenderConnexionHandler: public WebRTCConnexionState {
 public:
@@ -20,12 +18,7 @@ public:
     void setupConnection() override;
 protected:
     std::shared_ptr<rtc::Track> audioTrack;
-
 private:
-    std::vector<rtc::Candidate> pendingCandidates;
-    WebSocketService meloWebSocketService;
-    std::optional<PopulatedSession> ongoingSession;
-
     void setOffer();
     void handleAnswer(const std::string& sdp);
     void startAnswerReceivedCheckTimer();

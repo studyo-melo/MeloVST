@@ -43,6 +43,21 @@ public:
         });
     }
 };
+class RTCAnswerSentEvent final : SocketEvent {
+public:
+    std::string type = "answer";
+    std::string sdp;
+    PopulatedSession ongoingSession;
+    explicit RTCAnswerSentEvent(const std::string &sdp, const PopulatedSession &ongoingSession) : sdp(sdp), ongoingSession(ongoingSession) {}
+    std::string createMessage() override {
+        return StringUtils::createWsMessage(type, {
+            {"sdp", sdp },
+            {"sessionId", ongoingSession._id},
+            {"sellerUserId", ongoingSession.seller.user._id},
+            {"artistUserId", ongoingSession.reservedByArtist.user._id}
+        });
+    }
+};
 
 class RTCAnswerReceivedEvent final : SocketEvent {
 public:

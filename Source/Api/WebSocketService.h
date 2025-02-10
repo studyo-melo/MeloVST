@@ -9,6 +9,7 @@ public:
     explicit WebSocketService(const juce::String& wsRoute);
     ~WebSocketService();
 
+    bool isConnected() const;
     void connectToServer();
     void disconnectToServer();
     void sendMessage(const std::string& message, int retryCounter = 0);

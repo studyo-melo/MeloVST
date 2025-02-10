@@ -35,6 +35,10 @@ WebSocketService::~WebSocketService() {
     webSocket.stop();
 }
 
+bool WebSocketService::isConnected() const {
+    return webSocket.getReadyState() == ix::ReadyState::Open;
+}
+
 void WebSocketService::connectToServer() {
     const auto url = juce::String(Config::websocketUrl + wsRoute).toStdString();
     juce::Logger::outputDebugString("Connecting to WebSocket server at " + url);

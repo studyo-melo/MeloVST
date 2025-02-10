@@ -112,6 +112,8 @@ set(SourceFiles
 
         Source/ThirdParty/json.hpp
 
+        Source/Rtc/WebRTCConnexionState.h
+        Source/Rtc/WebRTCConnexionState.cpp
         Source/RtcReceiver/WebRTCAudioReceiverService.h
         Source/RtcReceiver/WebRTCAudioReceiverService.cpp
         Source/RtcReceiver/WebRTCReceiverConnexionHandler.cpp

@@ -10,12 +10,12 @@
 #include "../Api/SocketRoutes.h"
 #include "../Common/ReconnectTimer.h"
 
-class WebRTCConnexionState: public EventListener {
+class WebRTCConnexionState: public virtual EventListener {
 public:
     explicit WebRTCConnexionState(WsRoute wsRoute);
     ~WebRTCConnexionState() override;
 
-    virtual void setupConnection();
+    virtual void setupConnection() = 0;
     virtual void disconnect() const;
     virtual void resetConnection();
 
@@ -40,9 +40,9 @@ protected:
     const int maxReconnectAttempts = 5;
     const int reconnectDelayMs = 2000;
     ReconnectTimer reconnectTimer;
+    std::vector<rtc::Candidate> pendingCandidates;
 
 private:
-    std::vector<rtc::Candidate> pendingCandidates;
     WebSocketService meloWebSocketService;
     std::optional<PopulatedSession> ongoingSession;
 };

@@ -38,6 +38,9 @@ void WebRTCConnexionState::notifyRTCStateChanged() const {
 
 void WebRTCConnexionState::onOngoingSessionChanged(const OngoingSessionChangedEvent &event) {
     ongoingSession = event.ongoingSession;
+    if (meloWebSocketService.isConnected()) {
+        return;
+    }
     meloWebSocketService.connectToServer();
 }
 
@@ -86,7 +89,7 @@ bool WebRTCConnexionState::isConnecting() const {
 
 bool WebRTCConnexionState::sendAnswerToRemote(const rtc::Description &sdp) {
     if (ongoingSession.has_value()) {
-        const auto offerEvent = new RTCOfferSentEvent(sdp, ongoingSession.value());
+        const auto offerEvent = new RTCAnswerSentEvent(sdp, ongoingSession.value());
         meloWebSocketService.sendMessage(offerEvent->createMessage());
         return true;
     }
@@ -110,6 +113,7 @@ bool WebRTCConnexionState::sendCandidateToRemote(const rtc::Candidate &candidate
     if (!ongoingSession.has_value()) {
         return false;
     }
+    juce::Logger::outputDebugString("Sending candidate to remote");
     const auto candidateEvent = new RTCIceCandidateSentEvent(candidate, ongoingSession.value());
     meloWebSocketService.sendMessage(candidateEvent->createMessage());
     return true;
