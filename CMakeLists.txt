@@ -112,14 +112,14 @@ set(SourceFiles
 
         Source/ThirdParty/json.hpp
 
-        Source/Rtc/WebRTCAudioReceiverService.h
-        Source/Rtc/WebRTCAudioReceiverService.cpp
-        Source/Rtc/WebRTCAudioSenderService.h
-        Source/Rtc/WebRTCAudioSenderService.cpp
-        Source/Rtc/WebRTCReceiverConnexionHandler.cpp
-        Source/Rtc/WebRTCReceiverConnexionHandler.h
-        Source/Rtc/WebRTCSenderConnexionHandler.cpp
-        Source/Rtc/WebRTCSenderConnexionHandler.h
+        Source/RtcReceiver/WebRTCAudioReceiverService.h
+        Source/RtcReceiver/WebRTCAudioReceiverService.cpp
+        Source/RtcReceiver/WebRTCReceiverConnexionHandler.cpp
+        Source/RtcReceiver/WebRTCReceiverConnexionHandler.h
+        Source/RtcSender/WebRTCAudioSenderService.h
+        Source/RtcSender/WebRTCAudioSenderService.cpp
+        Source/RtcSender/WebRTCSenderConnexionHandler.cpp
+        Source/RtcSender/WebRTCSenderConnexionHandler.h
 
         Source/Models/User.h
         Source/Models/Session.h

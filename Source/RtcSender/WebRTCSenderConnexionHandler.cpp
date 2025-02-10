@@ -4,17 +4,8 @@
 #include "../AudioSettings.h"
 #include "../Api/SocketRoutes.h"
 
-WebRTCSenderConnexionHandler::WebRTCSenderConnexionHandler(const WsRoute wsRoute): meloWebSocketService(
-        WebSocketService(getWsRouteString(wsRoute))),
-    reconnectTimer([this]() { attemptReconnect(); }) {
-    EventManager::getInstance().addListener(this);
-}
-
-WebRTCSenderConnexionHandler::~WebRTCSenderConnexionHandler() {
-    EventManager::getInstance().removeListener(this);
-    if (peerConnection) {
-        peerConnection->close();
-    }
+WebRTCSenderConnexionHandler::WebRTCSenderConnexionHandler(const WsRoute wsRoute): WebRTCConnexionState(wsRoute),
+    meloWebSocketService(WebSocketService(getWsRouteString(wsRoute))) {
 }
 
 void WebRTCSenderConnexionHandler::setupConnection() {
@@ -28,7 +19,9 @@ void WebRTCSenderConnexionHandler::setupConnection() {
         juce::Logger::outputDebugString("Local description set");
         if (!peerConnection->remoteDescription()) {
             juce::Logger::outputDebugString("No remote description. Waiting for answer.");
-            sendOfferToRemote(sdp);
+            if (sendOfferToRemote(sdp)) {
+                startAnswerReceivedCheckTimer();
+            }
         }
     });
 
@@ -73,7 +66,7 @@ void WebRTCSenderConnexionHandler::setupConnection() {
             }
             case rtc::PeerConnection::IceState::Failed: {
                 juce::Logger::outputDebugString("ICE state changed to: Disconnected / Failed / Closed");
-                reconnectTimer.callAfterDelay(reconnectDelayMs, [this]() { attemptReconnect(); });
+                ReconnectTimer::callAfterDelay(reconnectDelayMs, [this]() { attemptReconnect(); });
                 break;
             }
             case rtc::PeerConnection::IceState::Checking:
@@ -100,24 +93,6 @@ void WebRTCSenderConnexionHandler::setupConnection() {
     newAudioTrack.addSSRC(12345, "CNAME");;
     audioTrack = peerConnection->addTrack(static_cast<rtc::Description::Media>(newAudioTrack));
     setOffer();
-}
-
-void WebRTCSenderConnexionHandler::disconnect() const {
-    if (peerConnection) {
-        peerConnection->close();
-    }
-}
-
-void WebRTCSenderConnexionHandler::resetConnection() {
-    disconnect();
-    setupConnection();
-}
-
-void WebRTCSenderConnexionHandler::notifyRTCStateChanged() const {
-    juce::Logger::outputDebugString("RTC state changed, notifying listeners");
-    EventManager::getInstance().notifyOnRTCStateChanged({
-        peerConnection->state(), peerConnection->iceState(), peerConnection->signalingState()
-    });
 }
 
 
@@ -180,41 +155,7 @@ void WebRTCSenderConnexionHandler::handleAnswer(const std::string &sdp) {
     pendingCandidates.clear();
 }
 
-void WebRTCSenderConnexionHandler::onOngoingSessionChanged(const OngoingSessionChangedEvent &event) {
-    ongoingSession = event.ongoingSession;
-    meloWebSocketService.connectToServer();
-}
-
-void WebRTCSenderConnexionHandler::attemptReconnect() {
-    if (!ongoingSession.has_value()) {
-        juce::Logger::outputDebugString("No ongoing session. Cannot reconnect.");
-        return;
-    }
-    if (peerConnection && peerConnection->state() == rtc::PeerConnection::State::Connected) {
-        juce::Logger::outputDebugString("Already connected. Skipping reconnection.");
-        return;
-    }
-    if (reconnectAttempts >= maxReconnectAttempts) {
-        juce::Logger::outputDebugString("Max reconnect attempts reached. Giving up.");
-        return;
-    }
-
-    juce::Logger::outputDebugString("Attempting to reconnect...");
-    reconnectAttempts++;
-
-    resetConnection();
-
-    reconnectTimer.callAfterDelay(reconnectDelayMs, [this]() {
-        if (!peerConnection || peerConnection->state() == rtc::PeerConnection::State::Closed) {
-            attemptReconnect();
-        } else {
-            juce::Logger::outputDebugString("Reconnection successful.");
-            reconnectAttempts = 0;
-        }
-    });
-}
-
-void WebRTCSenderConnexionHandler::monitorAnswer() {
+void WebRTCSenderConnexionHandler::startAnswerReceivedCheckTimer() {
     if (!answerTimer.has_value()) {
         answerTimer.emplace(ReconnectTimer([this]() {
             if (answerReceived) {
@@ -238,82 +179,4 @@ void WebRTCSenderConnexionHandler::monitorAnswer() {
     resendAttempts = 0;
 
     answerTimer->startTimer(resendIntervalMs);
-}
-
-bool WebRTCSenderConnexionHandler::isConnected() const {
-    if (!peerConnection) {
-        return false;
-    }
-    return peerConnection->state() == rtc::PeerConnection::State::Connected;
-}
-
-bool WebRTCSenderConnexionHandler::isConnecting() const {
-    if (!peerConnection) {
-        return false;
-    }
-    return peerConnection->state() == rtc::PeerConnection::State::Connecting;
-}
-
-void WebRTCSenderConnexionHandler::sendOfferToRemote(const rtc::Description &sdp) {
-    if (peerConnection->signalingState() != rtc::PeerConnection::SignalingState::HaveLocalOffer
-        || peerConnection->state() == rtc::PeerConnection::State::Connected) {
-        return;
-    }
-    if (ongoingSession.has_value()) {
-        const auto offerEvent = new RTCOfferSentEvent(sdp, ongoingSession.value());
-        meloWebSocketService.sendMessage(offerEvent->createMessage());
-        monitorAnswer();
-    }
-}
-
-void WebRTCSenderConnexionHandler::sendCandidateToRemote(const rtc::Candidate &candidate) {
-    if (!ongoingSession.has_value()) {
-        return;
-    }
-    const auto candidateEvent = new RTCIceCandidateSentEvent(candidate, ongoingSession.value());
-    meloWebSocketService.sendMessage(candidateEvent->createMessage());
-}
-
-juce::String WebRTCSenderConnexionHandler::getSignalingStateLabel() const {
-    if (!peerConnection) {
-        return juce::String::fromUTF8("Inconnu");
-    }
-    switch (peerConnection->signalingState()) {
-        case rtc::PeerConnection::SignalingState::Stable:
-            return juce::String::fromUTF8("Stable");
-        case rtc::PeerConnection::SignalingState::HaveLocalOffer:
-            return juce::String::fromUTF8("Offre locale");
-        case rtc::PeerConnection::SignalingState::HaveRemoteOffer:
-            return juce::String::fromUTF8("Offre distante");
-        case rtc::PeerConnection::SignalingState::HaveLocalPranswer:
-            return juce::String::fromUTF8("Pré-réponse locale");
-        case rtc::PeerConnection::SignalingState::HaveRemotePranswer:
-            return juce::String::fromUTF8("Pré-réponse distante");
-        default:
-            return juce::String::fromUTF8("Inconnu");
-    }
-}
-
-juce::String WebRTCSenderConnexionHandler::getIceCandidateStateLabel() const {
-    if (!peerConnection) {
-        return juce::String::fromUTF8("Inconnu");
-    }
-    switch (peerConnection->iceState()) {
-        case rtc::PeerConnection::IceState::New:
-            return juce::String::fromUTF8("Nouveau");
-        case rtc::PeerConnection::IceState::Checking:
-            return juce::String::fromUTF8("Vérification");
-        case rtc::PeerConnection::IceState::Connected:
-            return juce::String::fromUTF8("Connecté");
-        case rtc::PeerConnection::IceState::Completed:
-            return juce::String::fromUTF8("Complété");
-        case rtc::PeerConnection::IceState::Failed:
-            return juce::String::fromUTF8("Échoué");
-        case rtc::PeerConnection::IceState::Disconnected:
-            return juce::String::fromUTF8("Déconnecté");
-        case rtc::PeerConnection::IceState::Closed:
-            return juce::String::fromUTF8("Fermé");
-        default:
-            return juce::String::fromUTF8("Inconnu");
-    }
 }

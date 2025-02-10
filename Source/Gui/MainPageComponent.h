@@ -10,9 +10,9 @@
 #include "../Debug/DebugAudioAppPlayer.h"
 
 #ifdef IN_RECEIVING_MODE
-#include "../Rtc/WebRTCAudioReceiverService.h"
+#include "../RtcReceiver/WebRTCAudioReceiverService.h"
 #else
-#include "../Rtc/WebRTCAudioSenderService.h"
+#include "../RtcSender/WebRTCAudioSenderService.h"
 #endif
 
 class MainPageComponent final : public juce::Component, EventListener
