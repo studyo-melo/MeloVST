@@ -23,7 +23,6 @@ WebRTCAudioReceiverService::WebRTCAudioReceiverService(): WebRTCReceiverConnexio
 WebRTCAudioReceiverService::~WebRTCAudioReceiverService() {}
 
 void WebRTCAudioReceiverService::onAudioBlockReceived(const AudioBlockReceivedEvent &event) {
-    juce::Logger::outputDebugString("Audio block received");
     rtc::message_variant audioBlock = event.data;
     auto res = VectorUtils::convertMessageToUChar(audioBlock);
     if (!res.empty()) {

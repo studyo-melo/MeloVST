@@ -14,13 +14,15 @@ MainAudioProcessor::MainAudioProcessor()
 #endif
       )
 #ifdef IN_RECEIVING_MODE
-,circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels())
+      , circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels())
 #endif
 {
+    EventManager::getInstance().addListener(this);
 }
 
-MainAudioProcessor::~MainAudioProcessor()
-= default;
+MainAudioProcessor::~MainAudioProcessor() {
+    EventManager::getInstance().removeListener(this);
+};
 
 const juce::String MainAudioProcessor::getProgramName(const int index) {
 #ifdef MELO_PLUGIN_NAME
@@ -133,37 +135,34 @@ bool MainAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) cons
 void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                       juce::MidiBuffer &midiMessages) {
     const int totalFrameSamples = buffer.getNumSamples() * buffer.getNumChannels();
+    juce::Logger::outputDebugString("Total frame samples: " + std::to_string(totalFrameSamples));
+
     bool frameAvailable = false;
-    std::vector<float> frameData(buffer.getNumSamples()); {
+    std::vector<float> frameData(totalFrameSamples);  // 🔹 Fix allocation size
+    {
         juce::ScopedLock sl(circularBufferLock);
         if (circularBuffer.getNumAvailableSamples() >= totalFrameSamples) {
             circularBuffer.popSamples(frameData.data(), totalFrameSamples);
             frameAvailable = true;
         }
     }
+
     if (frameAvailable) {
         juce::Logger::outputDebugString("Frame available");
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
-            for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
-                buffer.getWritePointer(channel)[sample] = frameData[sample];
-            }
+        for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
+            juce::FloatVectorOperations::copy(buffer.getWritePointer(channel), frameData.data(), buffer.getNumSamples());
         }
     }
 }
 
 void MainAudioProcessor::onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) {
-    juce::Logger::outputDebugString("Audio block received decoded");
-    std::vector<float> audioBlock = event.data;
-
-    if (!audioBlock.empty()) {
-        {
-            const int numSamples = static_cast<int>(audioBlock.size());
-            juce::ScopedLock sl(circularBufferLock);
-            circularBuffer.pushSamples(audioBlock.data(), numSamples);
-        }
-        audioBlock.clear();
+    if (!event.data.empty()) {
+        const int numSamples = static_cast<int>(event.data.size());
+        juce::ScopedLock sl(circularBufferLock);
+        circularBuffer.pushSamples(event.data.data(), numSamples);
     }
 }
+
 
 #else
 void MainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
