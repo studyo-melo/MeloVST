@@ -48,9 +48,6 @@ void WebRTCSenderConnexionHandler::setupConnection() {
     peerConnection->onTrack([this](const std::shared_ptr<rtc::Track> &track) {
         juce::Logger::outputDebugString("Track received");
         audioTrack = track;
-        track->onFrame([this](const rtc::binary &data, const rtc::FrameInfo frameInfo) {
-            EventManager::getInstance().notifyOnAudioBlockReceived({data, frameInfo});
-        });
     });
 
     peerConnection->onIceStateChange([this](const rtc::PeerConnection::IceState state) {

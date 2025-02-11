@@ -142,6 +142,7 @@ void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
         }
     }
     if (frameAvailable) {
+        juce::Logger::outputDebugString("Frame available");
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
             for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
                 buffer.getWritePointer(channel)[sample] = frameData[sample];
@@ -151,6 +152,7 @@ void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 }
 
 void MainAudioProcessor::onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) {
+    juce::Logger::outputDebugString("Audio block received decoded");
     std::vector<float> audioBlock = event.data;
 
     if (!audioBlock.empty()) {

@@ -50,13 +50,11 @@ void WebRTCReceiverConnexionHandler::setupConnection() {
         notifyRTCStateChanged();
     });
 
-    // Gestion de la réception des pistes média
     peerConnection->onTrack([this](const std::shared_ptr<rtc::Track> &track) {
         juce::Logger::outputDebugString("Track received");
         audioTrack = track;
-        track->onFrame([this](const rtc::binary &data, const rtc::FrameInfo frameInfo) {
-            juce::Logger::outputDebugString("Frame received");
-            EventManager::getInstance().notifyOnAudioBlockReceived({data, frameInfo});
+        track->onMessage([this](const rtc::message_variant &message) {
+            EventManager::getInstance().notifyOnAudioBlockReceived({message});
         });
     });
 

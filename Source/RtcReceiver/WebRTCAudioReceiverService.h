@@ -17,11 +17,7 @@ public:
     ~WebRTCAudioReceiverService() override;
 
 private:
-    void stopAudioThread();
-    void startAudioThread();
-    void onRTCStateChanged(const RTCStateChangeEvent &event) override;
     void onAudioBlockReceived(const AudioBlockReceivedEvent &event) override;
-    void processingThreadFunction();
 
     OpusCodecWrapper opusCodec;
     ResamplerWrapper resampler;

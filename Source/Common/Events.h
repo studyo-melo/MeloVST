@@ -16,8 +16,7 @@ struct AudioBlockSentEvent {
 };
 
 struct AudioBlockReceivedEvent {
-    rtc::binary data;
-    rtc::FrameInfo frameInfo;
+    rtc::message_variant data;
 };
 
 struct AudioBlockReceivedDecodedEvent {
