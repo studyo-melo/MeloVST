@@ -17,10 +17,12 @@ struct AudioBlockSentEvent {
 
 struct AudioBlockReceivedEvent {
     rtc::message_variant data;
+    uint64_t timestamp;
 };
 
 struct AudioBlockReceivedDecodedEvent {
     std::vector<float> data;
+    uint64_t timestamp;
 };
 
 struct LoginEvent {

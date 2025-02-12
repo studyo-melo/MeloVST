@@ -135,7 +135,6 @@ bool MainAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) cons
 void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                       juce::MidiBuffer &midiMessages) {
     const int totalFrameSamples = buffer.getNumSamples() * buffer.getNumChannels();
-    juce::Logger::outputDebugString("Total frame samples: " + std::to_string(totalFrameSamples));
 
     bool frameAvailable = false;
     std::vector<float> frameData(totalFrameSamples);  // 🔹 Fix allocation size
@@ -148,7 +147,7 @@ void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     }
 
     if (frameAvailable) {
-        juce::Logger::outputDebugString("Frame available");
+        juce::Logger::outputDebugString("Writing " + std::to_string(frameData.size()) + " samples to buffer");
         for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
             juce::FloatVectorOperations::copy(buffer.getWritePointer(channel), frameData.data(), buffer.getNumSamples());
         }

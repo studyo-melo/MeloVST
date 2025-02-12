@@ -3,6 +3,7 @@
 #include "../ThirdParty/json.hpp"
 #include "../AudioSettings.h"
 #include "../Api/SocketRoutes.h"
+#include "time.h"
 
 WebRTCReceiverConnexionHandler::WebRTCReceiverConnexionHandler(const WsRoute wsRoute)
     : WebRTCConnexionState(wsRoute) {
@@ -54,7 +55,9 @@ void WebRTCReceiverConnexionHandler::setupConnection() {
         juce::Logger::outputDebugString("Track received");
         audioTrack = track;
         track->onMessage([this](const rtc::message_variant &message) {
-            EventManager::getInstance().notifyOnAudioBlockReceived({message});
+            auto chrono = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
+            uint64_t timestamp = chrono.count();
+            EventManager::getInstance().notifyOnAudioBlockReceived(AudioBlockReceivedEvent{message, timestamp});
         });
     });
 

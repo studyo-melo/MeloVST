@@ -24,6 +24,7 @@ WebRTCAudioReceiverService::~WebRTCAudioReceiverService() {}
 
 void WebRTCAudioReceiverService::onAudioBlockReceived(const AudioBlockReceivedEvent &event) {
     rtc::message_variant audioBlock = event.data;
+    uint64_t timestamp = event.timestamp;
     auto res = VectorUtils::convertMessageToUChar(audioBlock);
     if (!res.empty()) {
         std::vector<float> decodedPacket = opusCodec.decode_float(res);
@@ -31,7 +32,7 @@ void WebRTCAudioReceiverService::onAudioBlockReceived(const AudioBlockReceivedEv
             return;
         }
         auto floatPacket = VectorUtils::convertFloatInt8ToFloat(decodedPacket.data(), decodedPacket.size());
-        EventManager::getInstance().notifyOnAudioBlockReceivedDecoded(AudioBlockReceivedDecodedEvent{floatPacket});
+        EventManager::getInstance().notifyOnAudioBlockReceivedDecoded(AudioBlockReceivedDecodedEvent{floatPacket, timestamp});
         res.clear();
     }
 }
