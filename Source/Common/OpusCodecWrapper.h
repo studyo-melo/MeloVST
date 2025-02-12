@@ -20,6 +20,7 @@ public:
         }
         // Configuration de l'encodeur
         opus_encoder_ctl(encoder, OPUS_SET_BITRATE(bitrate));
+        opus_decoder_ctl(decoder, OPUS_SET_BITRATE(bitrate));
         // opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_AUTO));
         // opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(0));
         // opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(5));
@@ -55,7 +56,7 @@ public:
     std::vector<float> decode_float(const std::vector<unsigned char>& opus) const {
         // Allocation initiale pour frameSizePerChannel * numChannels échantillons
         std::vector<float> pcm(frameSizePerChannel * numChannels);
-        const int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
+        const int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 1);
         if (ret < 0) {
             return pcm;
         }
