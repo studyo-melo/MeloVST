@@ -31,8 +31,10 @@ void WebRTCAudioReceiverService::onAudioBlockReceived(const AudioBlockReceivedEv
         if (decodedPacket.empty()) {
             return;
         }
-        auto floatPacket = VectorUtils::convertFloatInt8ToFloat(decodedPacket.data(), decodedPacket.size());
-        EventManager::getInstance().notifyOnAudioBlockReceivedDecoded(AudioBlockReceivedDecodedEvent{floatPacket, timestamp});
-        res.clear();
+      
+        EventManager::getInstance().notifyOnAudioBlockSent(AudioBlockSentEvent{decodedPacket});
+//        auto floatPacket = VectorUtils::convertFloatInt8ToFloat(decodedPacket.data(), decodedPacket.size());
+        // EventManager::getInstance().notifyOnAudioBlockReceivedDecoded(AudioBlockReceivedDecodedEvent{decodedPacket, timestamp});
+        // res.clear();
     }
 }

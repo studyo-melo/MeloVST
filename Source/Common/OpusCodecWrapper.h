@@ -56,7 +56,7 @@ public:
     std::vector<float> decode_float(const std::vector<unsigned char>& opus) const {
         // Allocation initiale pour frameSizePerChannel * numChannels échantillons
         std::vector<float> pcm(frameSizePerChannel * numChannels);
-        const int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 1);
+        const int ret = opus_decode_float(decoder, opus.data(), opus.size(), pcm.data(), frameSizePerChannel, 0);
         if (ret < 0) {
             return pcm;
         }
