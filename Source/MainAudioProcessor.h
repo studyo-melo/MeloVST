@@ -5,7 +5,16 @@
 
 #include "Common/CircularBuffer.h"
 #include "Common/EventListener.h"
+#include <queue>
 
+struct TimestampedAudioBlock {
+    uint64_t timestamp;  // Timestamp du paquet
+    std::vector<float> data; // Données audio
+
+    bool operator<(const TimestampedAudioBlock &other) const {
+        return timestamp > other.timestamp; // Tri des paquets dans l'ordre croissant
+    }
+};
 //==============================================================================
 class MainAudioProcessor final : public juce::AudioProcessor, EventListener
 {
@@ -51,8 +60,10 @@ private:
 
 #ifdef IN_RECEIVING_MODE
     void onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) override;
-    CircularBuffer<float> circularBuffer;
-    juce::CriticalSection circularBufferLock;
+    std::priority_queue<TimestampedAudioBlock> audioPacketQueue;
+    juce::CriticalSection audioQueueLock;
+    // CircularBuffer<float> circularBuffer;
+    // juce::CriticalSection circularBufferLock;
 #endif
 
 };

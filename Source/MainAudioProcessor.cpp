@@ -14,7 +14,7 @@ MainAudioProcessor::MainAudioProcessor()
 #endif
       )
 #ifdef IN_RECEIVING_MODE
-      , circularBuffer(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels())
+      // , audioPacketQueue(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels())
 #endif
 {
     EventManager::getInstance().addListener(this);
@@ -132,33 +132,47 @@ bool MainAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) cons
 }
 
 #ifdef IN_RECEIVING_MODE
+
 void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                       juce::MidiBuffer &midiMessages) {
-    const int totalFrameSamples = buffer.getNumSamples() * buffer.getNumChannels();
+    const int numChannels = buffer.getNumChannels();
+    const int numSamples = buffer.getNumSamples();
+    const int totalFrameSamples = numChannels * numSamples;
 
+    std::vector<float> frameData(totalFrameSamples, 0.0f);
     bool frameAvailable = false;
-    std::vector<float> frameData(totalFrameSamples);  // 🔹 Fix allocation size
+
     {
-        juce::ScopedLock sl(circularBufferLock);
-        if (circularBuffer.getNumAvailableSamples() >= totalFrameSamples) {
-            circularBuffer.popSamples(frameData.data(), totalFrameSamples);
-            frameAvailable = true;
+        juce::ScopedLock sl(audioQueueLock);
+
+        if (!audioPacketQueue.empty()) {
+            auto &nextPacket = audioPacketQueue.top();
+
+            if (nextPacket.data.size() >= totalFrameSamples) {
+                std::copy(nextPacket.data.begin(), nextPacket.data.begin() + totalFrameSamples, frameData.begin());
+                frameAvailable = true;
+                audioPacketQueue.pop(); // Retirer le paquet traité
+            }
         }
     }
 
     if (frameAvailable) {
         juce::Logger::outputDebugString("Writing " + std::to_string(frameData.size()) + " samples to buffer");
-        for (int channel = 0; channel < buffer.getNumChannels(); channel++) {
-            juce::FloatVectorOperations::copy(buffer.getWritePointer(channel), frameData.data(), buffer.getNumSamples());
+
+        // Répartir les données sur plusieurs canaux
+        for (int channel = 0; channel < numChannels; ++channel) {
+            float* writePointer = buffer.getWritePointer(channel);
+            for (int sample = 0; sample < numSamples; ++sample) {
+                writePointer[sample] = frameData[channel + sample * numChannels];
+            }
         }
     }
 }
 
 void MainAudioProcessor::onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) {
     if (!event.data.empty()) {
-        const int numSamples = static_cast<int>(event.data.size());
-        juce::ScopedLock sl(circularBufferLock);
-        circularBuffer.pushSamples(event.data.data(), numSamples);
+        juce::ScopedLock sl(audioQueueLock);
+        audioPacketQueue.push({ event.timestamp, event.data });
     }
 }
 
