@@ -9,7 +9,6 @@
 
 #include "../Common/ResamplerWrapper.h"
 #include "WebRTCReceiverConnexionHandler.h"
-#include "../Common/CircularBuffer.h"
 
 class WebRTCAudioReceiverService final : public WebRTCReceiverConnexionHandler {
 public:
@@ -18,16 +17,11 @@ public:
 
 private:
     void onAudioBlockReceived(const AudioBlockReceivedEvent &event) override;
-
+    std::vector<float> decodeNextAudioPacket();
     OpusCodecWrapper opusCodec;
+    OpusDecoder* decoder;
     ResamplerWrapper resampler;
-    uint16_t seqNum = 1;
-    uint32_t timestamp = 0;
-    uint32_t ssrc = 12345;
-
-    std::atomic<bool> threadRunning{true};
-    std::thread encodingThread;
-
-    CircularBuffer<unsigned char> circularBuffer;
-    juce::CriticalSection circularBufferLock;
+    // Buffer pour stocker les paquets audio triés par timestamp
+    std::map<uint64_t, rtc::binary> audioBuffer;
+    std::mutex bufferMutex;
 };

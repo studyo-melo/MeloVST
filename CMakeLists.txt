@@ -138,7 +138,6 @@ set(SourceFiles
 
         Source/Debug/DebugAudioCallback.h
         Source/Debug/DebugAudioAppPlayer.h
-        Source/Debug/DebugAudioAppPlayer.cpp
         Source/Debug/DebugRTPWrapper.h
 
         Source/Common/CircularBuffer.h

@@ -19,6 +19,7 @@ MainPageComponent::MainPageComponent():
     addAndMakeVisible(appName);
     addAndMakeVisible(title);
     addAndMakeVisible(logoutButton);
+    addAndMakeVisible(refreshButton);
     addAndMakeVisible(mainText);
     addAndMakeVisible(connectButton);
     addAndMakeVisible(RTCStateText);
@@ -48,6 +49,10 @@ MainPageComponent::MainPageComponent():
     RTCIceCandidateStateText.setJustificationType(juce::Justification::centred);
     RTCSignalingStateText.setJustificationType(juce::Justification::centred);
 
+    refreshButton.setButtonText(juce::String::fromUTF8("Rafraîchir"));
+    refreshButton.onClick = [this] {
+        fetchOngoingSession();
+    };
     connectButton.setButtonText(juce::String::fromUTF8(("Se connecter avec l'artiste")));
     connectButton.onClick = [ meloWebRTCServerService = &webRTCAudioService] {
         if (meloWebRTCServerService->isConnecting()) {
@@ -65,6 +70,11 @@ MainPageComponent::MainPageComponent():
     logoutButton.setButtonText(juce::String::fromUTF8("Se déconnecter"));
     logoutButton.onClick = [] { onLogoutButtonClick(); };
 
+    fetchOngoingSession();
+    EventManager::getInstance().addListener(this);
+}
+
+void MainPageComponent::fetchOngoingSession() {
     if (const auto res = ApiService::makeGETRequest(ApiRoute::GetMyOngoingSessions); res.isNotEmpty()) {
         ongoingSessions = PopulatedSession::parseArrayFromJsonString(res);
         if (ongoingSessions.size() > 0) {
@@ -80,8 +90,6 @@ MainPageComponent::MainPageComponent():
             mainText.setColour(juce::Label::textColourId, juce::Colours::red);
         }
     }
-
-    EventManager::getInstance().addListener(this);
 }
 
 void MainPageComponent::onRTCStateChanged(const RTCStateChangeEvent &event) {
@@ -144,6 +152,12 @@ void MainPageComponent::resized() {
     titleFlexbox.justifyContent = juce::FlexBox::JustifyContent::flexStart;
     titleFlexbox.items.add(
         juce::FlexItem(logoutButton)
+        .withFlex(0).withHeight(30).withWidth(70)
+        .withMargin(juce::FlexItem::Margin(5, 5, 0, 0))
+        .withAlignSelf(juce::FlexItem::AlignSelf::flexEnd)
+    );
+    titleFlexbox.items.add(
+        juce::FlexItem(refreshButton)
         .withFlex(0).withHeight(30).withWidth(70)
         .withMargin(juce::FlexItem::Margin(5, 5, 0, 0))
         .withAlignSelf(juce::FlexItem::AlignSelf::flexEnd)

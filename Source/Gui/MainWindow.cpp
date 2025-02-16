@@ -12,8 +12,13 @@ MainWindow::MainWindow(const juce::String& name): Component(name)
         navigateToLoginPage();
     }
     else {
-        AuthService::getInstance().fetchUserContext();
-        navigateToMainPage();
+        auto autoContext = AuthService::getInstance().fetchUserContext();
+        if (autoContext.has_value()) {
+            navigateToMainPage();
+        }
+        else {
+            navigateToLoginPage();
+        }
     }
 
     Component::setVisible (true);

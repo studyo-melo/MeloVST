@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include <rtc/rtc.hpp>
 
 #include "../Common/EventListener.h"

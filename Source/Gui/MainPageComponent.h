@@ -23,13 +23,14 @@ public:
 
     static void onLogoutButtonClick();
     void onRTCStateChanged(const RTCStateChangeEvent &event) override;
+    void fetchOngoingSession();
 
     void resized() override;
     void paint(juce::Graphics &g) override;
 
 private:
     juce::Label title, mainText, RTCStateText, RTCIceCandidateStateText, RTCSignalingStateText, appName;
-    juce::TextButton logoutButton, connectButton;
+    juce::TextButton logoutButton, connectButton, refreshButton;
 #ifdef IN_RECEIVING_MODE
     WebRTCAudioReceiverService webRTCAudioService;
 #else

@@ -8,13 +8,13 @@ MainAudioProcessor::MainAudioProcessor()
     : juce::AudioProcessor(BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-          .withInput("Input", juce::AudioChannelSet::stereo(), true)
+        .withInput("Input", juce::AudioChannelSet::stereo(), true)
 #endif
-          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-      )
+    )
 #ifdef IN_RECEIVING_MODE
-      // , audioPacketQueue(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels())
+// , audioPacketQueue(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getNumChannels())
 #endif
 {
     EventManager::getInstance().addListener(this);
@@ -90,7 +90,7 @@ void MainAudioProcessor::prepareToPlay(const double sampleRate, const int sample
     AudioSettings::getInstance().setNumChannels(getMainBusNumOutputChannels());
     AudioSettings::getInstance().setBitDepth(16);
     AudioSettings::getInstance().setOpusSampleRate(48000);
-    AudioSettings::getInstance().setLatency(10); // 20 ms
+    AudioSettings::getInstance().setLatency(20); // 20 ms
     AudioSettings::getInstance().setOpusBitRate(96000);
 
     juce::Logger::outputDebugString("Sample rate: " + std::to_string(sampleRate));
@@ -134,7 +134,6 @@ bool MainAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) cons
 #ifdef IN_RECEIVING_MODE
 
 
-
 void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                       juce::MidiBuffer &midiMessages) {
     const int numChannels = buffer.getNumChannels();
@@ -142,8 +141,7 @@ void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     const int totalFrameSamples = numChannels * numSamples; // Ex: 512 samples
 
     std::vector<float> frameData(totalFrameSamples, 0.0f);
-    bool frameAvailable = false;
-    {
+    bool frameAvailable = false; {
         juce::ScopedLock sl(audioQueueLock);
 
         if (audioSampleBuffer.size() >= totalFrameSamples) {
@@ -160,35 +158,22 @@ void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     if (frameAvailable) {
         juce::Logger::outputDebugString("Writing " + std::to_string(frameData.size()) + " samples to buffer");
 
-        auto* leftChannel = buffer.getWritePointer(0);
-        auto* rightChannel = buffer.getWritePointer(1);
-
-        const int samplesToCopy = std::min(frameData.size() / 2, static_cast<size_t>(buffer.getNumChannels()));
-
-        for (int sample = 0; sample < samplesToCopy; ++sample) {
-            leftChannel[sample] = frameData[sample];
-            rightChannel[sample] = frameData[sample];
-        }
-
-        // Remplir le reste avec des zéros si besoin
-        for (int sample = samplesToCopy; sample < buffer.getNumSamples(); ++sample) {
-            leftChannel[sample] = 0.0f;
-            rightChannel[sample] = 0.0f;
+        for (int channel = 0; channel < numChannels; ++channel) {
+            auto* writePointer = buffer.getWritePointer(channel);
+            for (int sample = 0; sample < numSamples; ++sample) {
+                writePointer[sample] = frameData[sample];
+            }
         }
     }
 }
 
 void MainAudioProcessor::onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) {
-    if (event.data.empty()) return;
-
-    {
-        juce::ScopedLock sl(audioQueueLock);
-        // Ajout des nouvelles données au buffer
-        audioSampleBuffer.insert(audioSampleBuffer.end(), event.data.begin(), event.data.end());
-    }
+    // if (event.data.empty()) return; {
+    //     juce::ScopedLock sl(audioQueueLock);
+    //     // Ajout des nouvelles données au buffer
+    //     audioSampleBuffer.insert(audioSampleBuffer.end(), event.data.begin(), event.data.end());
+    // }
 }
-
-
 
 
 #else
