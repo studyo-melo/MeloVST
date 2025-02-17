@@ -36,7 +36,7 @@ private:
 #else
     WebRTCAudioSenderService webRTCAudioService;
 #endif
-    DebugAudioAppPlayer audioAppPlayer;
+    // DebugAudioAppPlayer audioAppPlayer;
     WebSocketService webSocketService;
     juce::Array<PopulatedSession> ongoingSessions;
     PopulatedSession currentOngoingSession;

@@ -136,43 +136,59 @@ bool MainAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) cons
 
 void MainAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                       juce::MidiBuffer &midiMessages) {
-    const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
-    const int totalFrameSamples = numChannels * numSamples; // Ex: 512 samples
+    const int numChannels = buffer.getNumChannels();
+    juce::Logger::outputDebugString("Num channels: " + std::to_string(numChannels));
 
-    std::vector<float> frameData(totalFrameSamples, 0.0f);
-    bool frameAvailable = false; {
-        juce::ScopedLock sl(audioQueueLock);
+    // Effacer le buffer pour éviter tout résidu
+    buffer.clear();
 
-        if (audioSampleBuffer.size() >= totalFrameSamples) {
-            // Récupération des `totalFrameSamples` premiers échantillons
-            std::copy(audioSampleBuffer.begin(), audioSampleBuffer.begin() + totalFrameSamples, frameData.begin());
+    int samplesWritten = 0;
 
-            // Suppression des échantillons utilisés
-            audioSampleBuffer.erase(audioSampleBuffer.begin(), audioSampleBuffer.begin() + totalFrameSamples);
+    // Boucle pour remplir le buffer audio
+    while (samplesWritten < numSamples) {
+        {
+            juce::ScopedLock sl(lock);
 
-            frameAvailable = true;
+            if (currentBlock.empty()) {
+                if (audioQueue.empty()) {
+                    // Aucun bloc disponible, on quitte la boucle (le buffer restant reste en silence)
+                    break;
+                } else {
+                    // Charger le bloc le plus ancien de la file
+                    currentBlock = std::move(audioQueue.front());
+                    audioQueue.pop_front();
+                    currentSampleIndex = 0;
+                }
+            }
         }
-    }
 
-    if (frameAvailable) {
-        juce::Logger::outputDebugString("Writing " + std::to_string(frameData.size()) + " samples to buffer");
-
+        // Calculer le nombre d'échantillons disponibles dans le bloc courant
+        int samplesRemainingInBlock = static_cast<int>(currentBlock.size()) - currentSampleIndex;
+        int samplesToCopy = std::min(numSamples - samplesWritten, samplesRemainingInBlock);
         for (int channel = 0; channel < numChannels; ++channel) {
-            auto* writePointer = buffer.getWritePointer(channel);
-            for (int sample = 0; sample < numSamples; ++sample) {
-                writePointer[sample] = frameData[sample];
+            auto writePointer = buffer.getWritePointer(channel, samplesWritten);
+            for (int sample = 0; sample < samplesToCopy; ++sample) {
+                writePointer[sample] = currentBlock[currentSampleIndex + sample];
+            }
+        }
+
+        samplesWritten += samplesToCopy; {
+            juce::ScopedLock sl(lock);
+            currentSampleIndex += samplesToCopy;
+
+            if (currentSampleIndex >= static_cast<int>(currentBlock.size())) {
+                // Le bloc courant est entièrement consommé
+                currentBlock.clear();
+                currentSampleIndex = 0;
             }
         }
     }
 }
 
 void MainAudioProcessor::onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) {
-    // if (event.data.empty()) return; {
-    //     juce::ScopedLock sl(audioQueueLock);
-    //     // Ajout des nouvelles données au buffer
-    //     audioSampleBuffer.insert(audioSampleBuffer.end(), event.data.begin(), event.data.end());
-    // }
+    juce::ScopedLock sl(lock);
+    audioQueue.push_back(event.data);
 }
 
 

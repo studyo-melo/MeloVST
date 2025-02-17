@@ -56,13 +56,11 @@ private:
 
 #ifdef IN_RECEIVING_MODE
     void onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) override;
-    // std::queue<TimestampedAudioBlock> audioPacketQueue;
-    juce::CriticalSection audioQueueLock;
-    // Utilisation d'une deque pour stocker les petits paquets partiels
-    std::deque<float> audioSampleBuffer;
-    // std::deque<uint64_t> timestampBuffer;
-    // CircularBuffer<float> circularBuffer;
-    // juce::CriticalSection circularBufferLock;
+    std::deque<std::vector<float>> audioQueue;
+    juce::CriticalSection lock;
+    std::vector<float> currentBlock;
+    size_t currentSampleIndex = 0;
+    double currentSampleRate = 0;
 #endif
 
 };

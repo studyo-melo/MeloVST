@@ -88,16 +88,15 @@ public:
         // Libérer les ressources audio
     }
 
-    void onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event)
-    {
-        juce::ScopedLock sl(lock);
-        audioQueue.push_back(event.data);
+    void onAudioBlockReceivedDecoded(const AudioBlockReceivedDecodedEvent &event) {
+        // juce::ScopedLock sl(lock);
+        // audioQueue.push_back(event.data);
     }
 
 private:
     std::deque<std::vector<float>> audioQueue;
+    juce::CriticalSection lock;
     std::vector<float> currentBlock;
     size_t currentSampleIndex = 0;
     double currentSampleRate = 0;
-    juce::CriticalSection lock;
 };
