@@ -36,10 +36,23 @@ void WebRTCAudioReceiverService::onAudioBlockReceived(const AudioBlockReceivedEv
         return;
 
     const rtc::binary& msg = std::get<rtc::binary>(audioBlock);
+    size_t rtpHeaderSize = 28;
+    rtc::binary encodedData(msg.begin() + rtpHeaderSize, msg.end());
     std::vector<unsigned char> encoded(msg.size());
-    std::transform(msg.begin(), msg.end(), encoded.begin(), [](std::byte b) {
+    std::transform(encodedData.begin(), encodedData.end(), encoded.begin(), [](std::byte b) {
         return static_cast<unsigned char>(b);
     });
+
+    auto packetFrameSize = opus_packet_get_samples_per_frame(encoded.data(), 48000);
+    auto nbChannels = opus_packet_get_nb_channels(encoded.data());
+    auto bandwidth = opus_packet_get_bandwidth(encoded.data());
+    auto nbSamples = opus_packet_get_nb_samples(encoded.data(), encoded.size(), 48000);
+    juce::Logger::outputDebugString("Audio block received");
+    juce::Logger::outputDebugString("Size: " + std::to_string(encoded.size()));
+    juce::Logger::outputDebugString("Frame size: " + std::to_string(packetFrameSize));
+    juce::Logger::outputDebugString("Nb channels: " + std::to_string(nbChannels));
+    juce::Logger::outputDebugString("Bandwidth: " + std::to_string(bandwidth));
+    juce::Logger::outputDebugString("Nb samples: " + std::to_string(nbSamples));
 
     // Extraction du timestamp contenu dans le message (les 8 premiers octets)
     // std::memcpy(&timestamp, msg.data(), sizeof(uint64_t));
@@ -64,6 +77,6 @@ void WebRTCAudioReceiverService::onAudioBlockReceived(const AudioBlockReceivedEv
     }
 
     // Ajustement de la taille du buffer pour contenir uniquement les échantillons décodés
-    pcmBuffer.resize(frameSize * 1);
+    pcmBuffer.resize(frameSize);
     EventManager::getInstance().notifyOnAudioBlockReceivedDecoded(AudioBlockReceivedDecodedEvent{pcmBuffer, timestamp});
 }
