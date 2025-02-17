@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-# Change to your project name
 project(MeloVST VERSION 0.0.1)
-option(IN_RECEIVING_MODE "Build Receiver VST plugin" OFF)
-option(MELO_PLUGIN_NAME "Nom du plugin" "MeloVST")
-
-message(STATUS "Le répertoire IN_RECEIVING_MODE est : $ENV{IN_RECEIVING_MODE}")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
@@ -14,20 +9,6 @@ set(USE_TLS ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if ($ENV{IN_RECEIVING_MODE})
-    set(MELO_PLUGIN_NAME "MeloVSTReceive")
-    add_definitions(-DIN_RECEIVING_MODE)
-    set(IN_RECEIVING_MODE ON)
-else ()
-    set(MELO_PLUGIN_NAME "MeloVSTSend")
-endif ()
-
-message(STATUS "Building ${MELO_PLUGIN_NAME}")
-message(STATUS "PROJECT_NAME ${PROJECT_NAME}")
-message(STATUS "IN_RECEIVING_MODE ${IN_RECEIVING_MODE}")
-
-# We're going to use CPM as our package manager to bring in JUCE
-# Check to see if we have CPM installed already.  Bring it in if we don't.
 set(CPM_DOWNLOAD_VERSION 0.34.0)
 set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
 
@@ -38,7 +19,6 @@ endif ()
 
 include(${CPM_DOWNLOAD_LOCATION})
 
-# Bring in JUCE locally
 CPMAddPackage(
         NAME juce
         GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
@@ -54,9 +34,7 @@ CPMAddPackage(
 CPMAddPackage(
         NAME libdatachannel
         GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
-        GIT_TAG v0.22.4
-        OPTIONS
-        "PREFER_SYSTEM_LIB=0"
+        GIT_TAG v0.22.5
 )
 
 CPMAddPackage(
@@ -64,10 +42,12 @@ CPMAddPackage(
         GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
         GIT_TAG origin/master
 )
+
 message(STATUS "OpenSSL SSL library: ${OPENSSL_SSL_LIBRARY}")
 message(STATUS "OpenSSL CRYPTO library: ${OPENSSL_CRYPTO_LIBRARY}")
 message(STATUS "ixwebsocket SOURCE_DIR: ${ixwebsocket_SOURCE_DIR}")
 message(STATUS "ixwebsocket BUILD DIR: ${ixwebsocket_SOURCE_DIR}")
+
 find_package(OpenSSL REQUIRED)
 target_link_libraries(ixwebsocket PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
@@ -163,9 +143,9 @@ set(SourceFiles
         Source/Api/SocketEvents.h
         Source/Api/SocketRoutes.h
 )
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 
-message(STATUS "PRODUCT_NAME: ${MELO_PLUGIN_NAME}")
-juce_add_plugin(${MELO_PLUGIN_NAME}
+juce_add_plugin(MeloVSTSend
         COMPANY_NAME melo
         IS_SYNTH FALSE
         NEEDS_MIDI_INPUT FALSE
@@ -175,17 +155,11 @@ juce_add_plugin(${MELO_PLUGIN_NAME}
         JUCE_VST3_CAN_REPLACE_VST2 FALSE
         COPY_PLUGIN_AFTER_BUILD TRUE
         PLUGIN_MANUFACTURER_CODE Tap1
-        PLUGIN_CODE MEL0
+        PLUGIN_CODE MEL0_SEND
         FORMATS VST3 AU Standalone
 )
-# How we want our SourceFiles to appear in our IDE
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
-
-# Make the SourceFiles buildable
-target_sources(${MELO_PLUGIN_NAME} PRIVATE ${SourceFiles})
-
-# These are some toggleable options from the JUCE CMake API
-target_compile_definitions(${MELO_PLUGIN_NAME}
+target_sources(MeloVSTSend PRIVATE ${SourceFiles})
+target_compile_definitions(MeloVSTSend
         PUBLIC
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0
@@ -194,11 +168,59 @@ target_compile_definitions(${MELO_PLUGIN_NAME}
         JUCE_BUILD_EXTRAS=ON
         PREFER_SYSTEM_LIB=1
         JUCE_COPY_PLUGIN_AFTER_BUILD=1
-
 )
 
 # JUCE libraries to bring into our project
-target_link_libraries(${MELO_PLUGIN_NAME}
+target_link_libraries(MeloVSTSend
+        PRIVATE
+        opus
+        datachannel
+        r8brain
+        ixwebsocket
+        datachannel_static INTERFACE datachannel
+        PUBLIC
+        juce::juce_analytics
+        juce::juce_audio_basics
+        juce::juce_audio_devices
+        juce::juce_core
+        juce::juce_data_structures
+        juce::juce_graphics
+        juce::juce_gui_basics
+        juce::juce_gui_extra
+        juce::juce_audio_utils
+        juce::juce_dsp
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags
+)
+
+juce_add_plugin(MeloVSTReceive
+        COMPANY_NAME melo
+        IS_SYNTH FALSE
+        NEEDS_MIDI_INPUT FALSE
+        NEEDS_MIDI_OUTPUT FALSE
+        IS_MIDI_EFFECT FALSE
+        EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+        JUCE_VST3_CAN_REPLACE_VST2 FALSE
+        COPY_PLUGIN_AFTER_BUILD TRUE
+        PLUGIN_MANUFACTURER_CODE Tap1
+        PLUGIN_CODE MEL0_RECV
+        FORMATS VST3 AU Standalone
+)
+target_sources(MeloVSTReceive PRIVATE ${SourceFiles})
+target_compile_definitions(MeloVSTReceive
+        PUBLIC
+        JUCE_WEB_BROWSER=0
+        JUCE_USE_CURL=0
+        JUCE_VST3_CAN_REPLACE_VST2=0
+        JUCE_ADD_R8BRAIN=1
+        JUCE_BUILD_EXTRAS=ON
+        PREFER_SYSTEM_LIB=1
+        JUCE_COPY_PLUGIN_AFTER_BUILD=1
+        IN_RECEIVING_MODE=1
+)
+
+target_link_libraries(MeloVSTReceive
         PRIVATE
         opus
         datachannel
