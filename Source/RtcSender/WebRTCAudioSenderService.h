@@ -11,16 +11,31 @@
 #include "WebRTCSenderConnexionHandler.h"
 #include "../Common/CircularBuffer.h"
 
+struct CompareAudioEvent {
+    bool operator()(const std::shared_ptr<AudioBlockProcessedEvent> &a,
+                    const std::shared_ptr<AudioBlockProcessedEvent> &b) const {
+        // Plus ancien en haut de la file
+        return a->timestamp > b->timestamp;
+    }
+};
+
 class WebRTCAudioSenderService final : public WebRTCSenderConnexionHandler {
 public:
     WebRTCAudioSenderService();
+
     ~WebRTCAudioSenderService() override;
 
 private:
     void stopAudioThread();
+
     void startAudioThread();
+
     void onRTCStateChanged(const RTCStateChangeEvent &event) override;
+
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
+
+    void sendOpusPacket(const std::vector<unsigned char> &opusPacket, int totalFrameSamples);
+
     void processingThreadFunction();
 
     OpusEncoderWrapper opusEncoder;
@@ -34,4 +49,12 @@ private:
 
     CircularBuffer<float> circularBuffer;
     juce::CriticalSection circularBufferLock;
+
+    std::deque<std::vector<float> > audioQueue;
+    std::priority_queue<
+        std::shared_ptr<AudioBlockProcessedEvent>,
+        std::vector<std::shared_ptr<AudioBlockProcessedEvent> >,
+        CompareAudioEvent
+    > audioEventQueue;
+    juce::CriticalSection dequeLock;
 };

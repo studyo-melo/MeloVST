@@ -26,17 +26,17 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-        NAME ssl
-        GIT_REPOSITORY https://github.com/jimmy-park/openssl-cmake.git
-        GIT_TAG 3.4.0
-)
-
-CPMAddPackage(
         NAME libdatachannel
         GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
         GIT_TAG v0.22.5
         OPTIONS
-        "PREFER_SYSTEM_LIB=1"
+        "PREFER_SYSTEM_LIB=ON"
+)
+
+CPMAddPackage(
+        NAME ssl
+        GIT_REPOSITORY https://github.com/jimmy-park/openssl-cmake.git
+        GIT_TAG 3.4.0
 )
 
 CPMAddPackage(

@@ -34,11 +34,11 @@ public:
 
     std::vector<unsigned char> encode_float(const std::vector<float>& pcm, const int nbSamples) const {
         // On définit une taille maximale pour le paquet de sortie (par exemple 4000 octets)
-        std::vector<unsigned char> res(4000);
+        std::vector<unsigned char> res(4000, 0);
 
         const int ret = opus_encode_float(encoder, pcm.data(), nbSamples, res.data(), static_cast<int>(res.size()));
         if (ret < 0) {
-            throw std::runtime_error("Encoding failed with error code: " + std::to_string(ret));
+            return res;
         }
 
         res.resize(ret);
