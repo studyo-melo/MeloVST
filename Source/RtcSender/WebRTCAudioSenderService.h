@@ -3,7 +3,7 @@
 #include <iostream>
 #include <juce_core/juce_core.h>
 
-#include "../Common/OpusCodecWrapper.h"
+#include "../Common/OpusEncoderWrapper.h"
 #include "../Api/WebSocketService.h"
 #include "../Common/EventListener.h"
 
@@ -23,7 +23,7 @@ private:
     void onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) override;
     void processingThreadFunction();
 
-    OpusCodecWrapper opusCodec;
+    OpusEncoderWrapper opusEncoder;
     ResamplerWrapper resampler;
     uint16_t seqNum = 1;
     uint32_t timestamp = 0;

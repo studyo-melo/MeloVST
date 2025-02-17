@@ -6,7 +6,7 @@
 #include "../Api/SocketRoutes.h"
 
 WebRTCAudioSenderService::WebRTCAudioSenderService(): WebRTCSenderConnexionHandler(WsRoute::GetOngoingSessionRTCInstru),
-                                                      opusCodec(AudioSettings::getInstance().getOpusSampleRate(),
+                                                      opusEncoder(AudioSettings::getInstance().getOpusSampleRate(),
                                                                 AudioSettings::getInstance().getNumChannels(),
                                                                 AudioSettings::getInstance().getLatency(),
                                                                 AudioSettings::getInstance().getOpusBitRate()),
@@ -57,7 +57,7 @@ void WebRTCAudioSenderService::processingThreadFunction() {
         if (frameAvailable) {
             EventManager::getInstance().notifyOnAudioBlockSent(AudioBlockSentEvent{frameData});
 
-            std::vector<unsigned char> opusPacket = opusCodec.encode_float(frameData, frameSamples);
+            std::vector<unsigned char> opusPacket = opusEncoder.encode_float(frameData, frameSamples);
             if (opusPacket.empty()) {
                 return;
             }

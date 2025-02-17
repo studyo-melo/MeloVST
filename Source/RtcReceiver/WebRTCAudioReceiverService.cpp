@@ -46,12 +46,10 @@ void WebRTCAudioReceiverService::onAudioBlockReceived(const AudioBlockReceivedEv
 
     auto packetFrameSize = opus_packet_get_samples_per_frame(encoded.data(), 48000);
     auto nbChannels = opus_packet_get_nb_channels(encoded.data());
+    juce::ignoreUnused(packetFrameSize, nbChannels);
+
     auto nbSamples = opus_packet_get_nb_samples(encoded.data(), encoded.size(), 48000);
-    juce::Logger::outputDebugString("Audio block received");
-    juce::Logger::outputDebugString("Size: " + std::to_string(encoded.size()));
-    juce::Logger::outputDebugString("Frame size: " + std::to_string(packetFrameSize));
-    juce::Logger::outputDebugString("Nb channels: " + std::to_string(nbChannels));
-    juce::Logger::outputDebugString("Nb samples: " + std::to_string(nbSamples));
+    juce::Logger::outputDebugString("Audio block received with " + std::to_string(encoded.size()) + " bytes");
 
     std::vector<float> pcmBuffer(nbSamples, 0.0f);
     int frameSize = opus_decode_float(decoder, encoded.data(), encoded.size(), pcmBuffer.data(), nbSamples, 0);
@@ -60,8 +58,6 @@ void WebRTCAudioReceiverService::onAudioBlockReceived(const AudioBlockReceivedEv
         return;
     }
 
-    // Ajustement de la taille du buffer pour contenir uniquement les échantillons décodés
     pcmBuffer.resize(frameSize);
-    juce::Logger::outputDebugString("Decoded frame size: " + std::to_string(frameSize));
     EventManager::getInstance().notifyOnAudioBlockReceivedDecoded(AudioBlockReceivedDecodedEvent{pcmBuffer, timestamp});
 }

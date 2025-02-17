@@ -35,6 +35,8 @@ CPMAddPackage(
         NAME libdatachannel
         GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
         GIT_TAG v0.22.5
+        OPTIONS
+        "PREFER_SYSTEM_LIB=1"
 )
 
 CPMAddPackage(
@@ -126,7 +128,7 @@ set(SourceFiles
         Source/Common/EventManager.h
         Source/Common/Events.h
         Source/Common/JuceLocalStorage.h
-        Source/Common/OpusCodecWrapper.h
+        Source/Common/OpusEncoderWrapper.h
         Source/Common/OpusFileHandler.h
         Source/Common/ReconnectTimer.h
         Source/Common/ResamplerWrapper.h
@@ -155,7 +157,7 @@ juce_add_plugin(MeloVSTSend
         JUCE_VST3_CAN_REPLACE_VST2 FALSE
         COPY_PLUGIN_AFTER_BUILD TRUE
         PLUGIN_MANUFACTURER_CODE Tap1
-        PLUGIN_CODE MEL0_SEND
+        PLUGIN_CODE MELS
         FORMATS VST3 AU Standalone
 )
 target_sources(MeloVSTSend PRIVATE ${SourceFiles})
@@ -204,7 +206,7 @@ juce_add_plugin(MeloVSTReceive
         JUCE_VST3_CAN_REPLACE_VST2 FALSE
         COPY_PLUGIN_AFTER_BUILD TRUE
         PLUGIN_MANUFACTURER_CODE Tap1
-        PLUGIN_CODE MEL0_RECV
+        PLUGIN_CODE MELR
         FORMATS VST3 AU Standalone
 )
 target_sources(MeloVSTReceive PRIVATE ${SourceFiles})

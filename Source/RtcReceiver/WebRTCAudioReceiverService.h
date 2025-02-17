@@ -3,7 +3,7 @@
 #include <iostream>
 #include <juce_core/juce_core.h>
 
-#include "../Common/OpusCodecWrapper.h"
+#include "../Common/OpusEncoderWrapper.h"
 #include "../Api/WebSocketService.h"
 #include "../Common/EventListener.h"
 
@@ -18,7 +18,7 @@ public:
 private:
     void onAudioBlockReceived(const AudioBlockReceivedEvent &event) override;
     std::vector<float> decodeNextAudioPacket();
-    OpusCodecWrapper opusCodec;
+    OpusEncoderWrapper opusCodec;
     OpusDecoder* decoder;
     ResamplerWrapper resampler;
     // Buffer pour stocker les paquets audio triés par timestamp

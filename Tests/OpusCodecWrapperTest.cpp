@@ -1,6 +1,6 @@
 #include <CDSPResampler.h>
 
-#include "Common/OpusCodecWrapper.h"
+#include "Common/OpusEncoderWrapper.h"
 #include <juce_core/juce_core.h>
 #include <vector>
 
@@ -26,7 +26,7 @@ private:
         const int sampleRate = 48000;
         const int channels = 2;
         const int frameSize = static_cast<int>(frameDurationInMs * sampleRate);
-        OpusCodecWrapper codec(sampleRate, channels, 1000 * frameDurationInMs);
+        OpusEncoderWrapper codec(sampleRate, channels, 1000 * frameDurationInMs);
 
         std::vector<int16_t> inbuf = generate_music(frameSize * channels);
 
