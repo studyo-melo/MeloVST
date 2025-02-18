@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set(USE_OPEN_SSL ON)
 set(USE_TLS ON)
-
+set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual")
+set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Developer ID Application: Silver Roves Studio (9W2L5R73RN)")
+set(CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "9W2L5R73RN")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(CPM_DOWNLOAD_VERSION 0.34.0)
@@ -22,7 +24,7 @@ include(${CPM_DOWNLOAD_LOCATION})
 CPMAddPackage(
         NAME juce
         GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
-        GIT_TAG 8.0.6
+        GIT_TAG origin/develop
 )
 
 CPMAddPackage(
@@ -77,7 +79,6 @@ add_library(
 target_link_libraries(
         datachannel_static INTERFACE datachannel
 )
-
 
 # Make sure you include any new source files here
 set(SourceFiles
@@ -172,6 +173,12 @@ target_compile_definitions(MeloVSTSend
         JUCE_COPY_PLUGIN_AFTER_BUILD=1
 )
 
+set_target_properties(MeloVSTSend PROPERTIES
+        XCODE_ATTRIBUTE_CODE_SIGN_STYLE ${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE}
+        XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}
+        XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_CURRENT_SOURCE_DIR}/MeloVSTSend.entitlements"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
+)
 # JUCE libraries to bring into our project
 target_link_libraries(MeloVSTSend
         PRIVATE
@@ -221,7 +228,12 @@ target_compile_definitions(MeloVSTReceive
         JUCE_COPY_PLUGIN_AFTER_BUILD=1
         IN_RECEIVING_MODE=1
 )
-
+set_target_properties(MeloVSTReceive PROPERTIES
+        XCODE_ATTRIBUTE_CODE_SIGN_STYLE ${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE}
+        XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}
+        XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_CURRENT_SOURCE_DIR}/MeloVSTSend.entitlements"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
+)
 target_link_libraries(MeloVSTReceive
         PRIVATE
         opus
@@ -245,6 +257,7 @@ target_link_libraries(MeloVSTReceive
         juce::juce_recommended_warning_flags
 )
 
+# IXWebSocket
 get_target_property(IXWEB_INCLUDE ixwebsocket INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "IXWEB_INCLUDE: ${IXWEB_INCLUDE}")
 

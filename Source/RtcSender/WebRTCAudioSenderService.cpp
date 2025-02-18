@@ -23,49 +23,49 @@ WebRTCAudioSenderService::~WebRTCAudioSenderService() {
 }
 
 void WebRTCAudioSenderService::onAudioBlockProcessedEvent(const AudioBlockProcessedEvent &event) {
-    juce::ScopedLock sl(dequeLock);
-    // Ajoute l'événement dans une file de priorité
-    audioEventQueue.push(std::make_shared<AudioBlockProcessedEvent>(event));
+    std::vector<float> audioBlock = event.data;
+    currentNumSamples = event.numSamples;
+    currentSampleIndex = 0;
+
+    // On vérifie que le buffer audio (audioBlock) contient des données
+    if (!audioBlock.empty()) {
+        const int numSamples = static_cast<int>(audioBlock.size()); {
+            juce::ScopedLock sl(circularBufferLock);
+            circularBuffer.pushSamples(audioBlock.data(), numSamples);
+        }
+        // On vide le buffer temporaire pour éviter une réécriture multiple
+        audioBlock.clear();
+    }
 }
+
 void WebRTCAudioSenderService::processingThreadFunction() {
-    const int sampleRate = AudioSettings::getInstance().getSampleRate();
-    const int frameDurationMs = AudioSettings::getInstance().getLatency(); // par exemple 20 ms
-    const int totalFrameSamples = static_cast<int>(sampleRate * frameDurationMs / 1000.0); // traitement mono
-
-    std::vector<float> accumulatedData;
+     // Calcul du nombre d'échantillons par canal pour une trame de 20 ms
+    const int frameSamples = static_cast<int>(AudioSettings::getInstance().getSampleRate() * AudioSettings::getInstance().getLatency() / 1000.0); // 48000 * 20/1000 = 960
+    const int totalFrameSamples = frameSamples * AudioSettings::getInstance().getNumChannels(); // Pour un signal interleaved
     while (threadRunning) {
-        {
-            // Accumuler tous les événements disponibles dans la file triée
-            juce::ScopedLock sl(dequeLock);
-            while (!audioEventQueue.empty()) {
-                auto event = audioEventQueue.top();
-                audioEventQueue.pop();
-                // Ajouter les données de l'événement à notre tampon d'accumulation
-                accumulatedData.insert(accumulatedData.end(),
-                                       event->data.begin(),
-                                       event->data.end());
+        bool frameAvailable = false;
+        std::vector<float> frameData(totalFrameSamples); {
+            juce::ScopedLock sl(circularBufferLock);
+            if (circularBuffer.getNumAvailableSamples() >= totalFrameSamples) {
+                circularBuffer.popSamples(frameData.data(), totalFrameSamples);
+                frameAvailable = true;
             }
-        } // Fin du verrou
-
-        // Vérifier si on a assez d'échantillons pour une trame complète
-        if (accumulatedData.size() < static_cast<size_t>(totalFrameSamples)) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-            continue;
         }
 
-        // Extraire les échantillons nécessaires pour la trame
-        std::vector<float> frameData(accumulatedData.begin(),
-                                     accumulatedData.begin() + totalFrameSamples);
-        // Supprimer les échantillons extraits du tampon d'accumulation
-        accumulatedData.erase(accumulatedData.begin(),
-                              accumulatedData.begin() + totalFrameSamples);
+        if (frameAvailable) {
+            EventManager::getInstance().notifyOnAudioBlockSent(AudioBlockSentEvent{frameData});
 
-        // Encoder la trame avec Opus
-        std::vector<unsigned char> opusPacket = opusEncoder.encode_float(frameData, totalFrameSamples);
-        if (opusPacket.empty())
-            continue;
-
-        sendOpusPacket(opusPacket, totalFrameSamples);
+            std::vector<unsigned char> opusPacket = opusEncoder.encode_float(frameData, frameSamples);
+            if (opusPacket.empty()) {
+                return;
+            }
+            if (audioTrack) {
+                sendOpusPacket(opusPacket, totalFrameSamples);
+            }
+        } else {
+            // Si pas assez d'échantillons, on attend un peu
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
     }
 }
 
@@ -100,3 +100,5 @@ void WebRTCAudioSenderService::onRTCStateChanged(const RTCStateChangeEvent &even
         stopAudioThread();
     }
 }
+
+

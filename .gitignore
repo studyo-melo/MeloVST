@@ -38,6 +38,7 @@ build/
 Builds/
 builds/
 cmake-build-debug/
+cmmake-build-release/
 cmake-build-melovstreceive/
 cmake-build-melovstsend/
 Testing/

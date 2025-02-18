@@ -46,7 +46,8 @@ private:
 
     std::atomic<bool> threadRunning{true};
     std::thread encodingThread;
-
+    uint16_t currentNumSamples = 0;
+    uint16_t currentSampleIndex = 0;
     CircularBuffer<float> circularBuffer;
     juce::CriticalSection circularBufferLock;
 
