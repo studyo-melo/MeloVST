@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.24)
 
 project(MeloVST VERSION 0.0.1)
 
+####################################################################################################
+### VARIABLES ###
+####################################################################################################
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set(USE_OPEN_SSL ON)
@@ -9,10 +12,14 @@ set(USE_TLS ON)
 set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual")
 set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Developer ID Application: Silver Roves Studio (9W2L5R73RN)")
 set(CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "9W2L5R73RN")
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
 set(CPM_DOWNLOAD_VERSION 0.34.0)
 set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+
+####################################################################################################
+### INSTALL ###
+####################################################################################################
 
 if (NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
     message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
@@ -80,7 +87,10 @@ target_link_libraries(
         datachannel_static INTERFACE datachannel
 )
 
-# Make sure you include any new source files here
+####################################################################################################
+### SOURCES ###
+####################################################################################################
+
 set(SourceFiles
         Source/MainApplication.cpp
         Source/MainApplication.h
@@ -148,37 +158,100 @@ set(SourceFiles
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 
+
+####################################################################################################
+### Plugins ###
+####################################################################################################
+#juce_set_aax_sdk_path("/Applications/Avid/AAX_SDKs/AAX_SDK_2p3p2")
+#juce_set_vst3_sdk_path("/Applications/VST_SDK/VST3_SDK")
+#juce_set_vst2_sdk_path("/Applications/VST_SDK/VST_SDK")
+
 juce_add_plugin(MeloVSTSend
+        PRODUCT_NAME "MeloVSTSend"
+        VERSION 0.0.1
+        BUILD_VERSION 0.0.1
+        BUNDLE_ID com.melo.MeloVSTSend
         COMPANY_NAME melo
+        COMPANY_WEBSITE "https://studio-melo.com"
+        COMPANY_EMAIL "contact@studio-melo.com"
+        PLUGIN_NAME "MeloVSTSend"
+        PLUGIN_MANUFACTURER_CODE MelS
+        PLUGIN_CODE MEL0
+        DESCRIPTION "Melo Plugin to send the music to the artist"
+
+        VST3_CATEGORIES "Network"
+        COPY_PLUGIN_AFTER_BUILD TRUE
+        HARDENED_RUNTIME_ENABLED TRUE
+        FORMATS VST3 AU Standalone
+        VST3_AUTO_MANIFEST FALSE
+
         IS_SYNTH FALSE
         NEEDS_MIDI_INPUT FALSE
         NEEDS_MIDI_OUTPUT FALSE
         IS_MIDI_EFFECT FALSE
         EDITOR_WANTS_KEYBOARD_FOCUS FALSE
         JUCE_VST3_CAN_REPLACE_VST2 FALSE
-        COPY_PLUGIN_AFTER_BUILD TRUE
-        PLUGIN_MANUFACTURER_CODE Tap1
+)
+
+juce_add_plugin(MeloVSTReceive
+        PRODUCT_NAME "MeloVSTReceive"
+        VERSION 0.0.1
+        BUILD_VERSION 0.0.1
+        BUNDLE_ID com.melo.MeloVSTReceive
+        COMPANY_NAME melo
+        COMPANY_WEBSITE "https://studio-melo.com"
+        COMPANY_EMAIL "contact@studio-melo.com"
+        PLUGIN_NAME "MeloVSTReceive"
+        PLUGIN_MANUFACTURER_CODE MelR
         PLUGIN_CODE MEL0
+        DESCRIPTION "Melo Plugin to receive the voice of the artist"
+
+        VST3_CATEGORIES "Network"
+        COPY_PLUGIN_AFTER_BUILD TRUE
+        HARDENED_RUNTIME_ENABLED TRUE
         FORMATS VST3 AU Standalone
         VST3_AUTO_MANIFEST FALSE
+
+        IS_SYNTH FALSE
+        NEEDS_MIDI_INPUT FALSE
+        NEEDS_MIDI_OUTPUT FALSE
+        IS_MIDI_EFFECT FALSE
+        EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+        JUCE_VST3_CAN_REPLACE_VST2 FALSE
 )
+
 target_sources(MeloVSTSend PRIVATE ${SourceFiles})
+target_sources(MeloVSTReceive PRIVATE ${SourceFiles})
+
 target_compile_definitions(MeloVSTSend
         PUBLIC
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0
-        JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_ADD_R8BRAIN=1
         JUCE_BUILD_EXTRAS=OFF
-        JUCE_COPY_PLUGIN_AFTER_BUILD=1
 )
+
+target_compile_definitions(MeloVSTReceive
+        PUBLIC
+        JUCE_WEB_BROWSER=0
+        JUCE_USE_CURL=0
+        JUCE_ADD_R8BRAIN=1
+        JUCE_BUILD_EXTRAS=OFF
+        IN_RECEIVING_MODE=1
+)
+
 
 set_target_properties(MeloVSTSend PROPERTIES
         XCODE_ATTRIBUTE_CODE_SIGN_STYLE "${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE}"
         XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}"
         XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM}"
 )
-# JUCE libraries to bring into our project
+set_target_properties(MeloVSTReceive PROPERTIES
+        XCODE_ATTRIBUTE_CODE_SIGN_STYLE "${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE}"
+        XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}"
+        XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM}"
+)
+
 target_link_libraries(MeloVSTSend
         PRIVATE
         opus
@@ -200,38 +273,6 @@ target_link_libraries(MeloVSTSend
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
-)
-
-juce_add_plugin(MeloVSTReceive
-        COMPANY_NAME melo
-        IS_SYNTH FALSE
-        NEEDS_MIDI_INPUT FALSE
-        NEEDS_MIDI_OUTPUT FALSE
-        IS_MIDI_EFFECT FALSE
-        EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-        JUCE_VST3_CAN_REPLACE_VST2 FALSE
-        COPY_PLUGIN_AFTER_BUILD TRUE
-        PLUGIN_MANUFACTURER_CODE Tap1
-        PLUGIN_CODE MEL0
-        FORMATS VST3 AU Standalone
-        VST3_AUTO_MANIFEST FALSE
-)
-target_sources(MeloVSTReceive PRIVATE ${SourceFiles})
-target_compile_definitions(MeloVSTReceive
-        PUBLIC
-        JUCE_WEB_BROWSER=0
-        JUCE_USE_CURL=0
-        JUCE_VST3_CAN_REPLACE_VST2=0
-        JUCE_ADD_R8BRAIN=1
-        JUCE_BUILD_EXTRAS=OFF
-        JUCE_COPY_PLUGIN_AFTER_BUILD=1
-        IN_RECEIVING_MODE=1
-        VST3_AUTO_MANIFEST=FALSE
-)
-set_target_properties(MeloVSTReceive PROPERTIES
-        XCODE_ATTRIBUTE_CODE_SIGN_STYLE "${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE}"
-        XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}"
-        XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM}"
 )
 
 target_link_libraries(MeloVSTReceive
@@ -257,7 +298,13 @@ target_link_libraries(MeloVSTReceive
         juce::juce_recommended_warning_flags
 )
 
-# IXWebSocket
+#juce_enable_vst3_manifest_step(MeloVSTSend)
+#juce_enable_vst3_manifest_step(MeloVSTReceive)
+#juce_enable_copy_plugin_step(MeloVSTSend)
+#juce_enable_copy_plugin_step(MeloVSTReceive)
+####################################################################################################
+### IXWebsocket headers ###
+####################################################################################################
 get_target_property(IXWEB_INCLUDE ixwebsocket INTERFACE_INCLUDE_DIRECTORIES)
 message(STATUS "IXWEB_INCLUDE: ${IXWEB_INCLUDE}")
 
